@@ -1,6 +1,6 @@
 param(
     [string]$ProjectPath = "C:\ThuyNT_Viec\3. gscm_app_git_khoadulieu\3. gscm_app_git_khoadulieu",
-    [string]$RemoteUrl = "",
+    [string]$RemoteUrl = "https://github.com/thuynt5853/gscm_app_nghiencuu.git",
     [string]$Branch = "main",
     [string]$CommitMessage = "Initial commit",
     [switch]$AllowEmptyCommit
@@ -47,7 +47,7 @@ try {
 
 if ([string]::IsNullOrWhiteSpace($originUrl)) {
     if ([string]::IsNullOrWhiteSpace($RemoteUrl)) {
-        throw "Repo chua co remote origin. Hay chay lai voi -RemoteUrl 'https://github.com/<owner>/<repo>.git'"
+        throw "Repo chua co remote origin. Hay chay lai voi -RemoteUrl 'https://github.com/thuynt5853/gscm_app_nghiencuu.git'"
     }
 
     git remote add origin $RemoteUrl

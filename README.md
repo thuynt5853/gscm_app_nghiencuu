@@ -15,9 +15,13 @@ Vi du:
 ```powershell
 powershell -ExecutionPolicy Bypass -File .\scripts\push-to-git.ps1 `
   -ProjectPath "C:\ThuyNT_Viec\3. gscm_app_git_khoadulieu\3. gscm_app_git_khoadulieu" `
-  -RemoteUrl "https://github.com/<owner>/<repo>.git" `
+  -RemoteUrl "https://github.com/thuynt5853/gscm_app_nghiencuu.git" `
   -Branch "main" `
   -CommitMessage "Initial commit"
 ```
 
-Thay `https://github.com/<owner>/<repo>.git` bang URL repo Git that cua ban.
+Neu dung dung repo nay, co the bo qua tham so `-RemoteUrl` vi script da dat san:
+
+```powershell
+https://github.com/thuynt5853/gscm_app_nghiencuu.git
+```
