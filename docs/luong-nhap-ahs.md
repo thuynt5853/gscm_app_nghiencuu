@@ -215,3 +215,7 @@ Quy uoc:
 - Cot `Control` la ID control WebForms.
 - Cot `Column` la cot du lieu trong bang cua sheet.
 - Cot `Source/Logic` ghi ham/code luu du lieu hoac ghi chu dac biet.
+- Cot `Is Lookup` danh dau truong co lay tu danh muc/dropdown/radio hardcode.
+- Cot `Lookup Name/Group` ghi ten nhom danh muc, enum, hoac bang nguon.
+- Cot `Lookup Source` ghi bang/procedure/code dung de load danh muc.
+- Cot `Hardcoded/Filter Values` ghi cac ma hardcode hoac dieu kien loc danh muc.
