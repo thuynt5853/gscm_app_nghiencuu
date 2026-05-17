@@ -1,0 +1,26 @@
+﻿using System;
+using System.Drawing;
+using System.Collections;
+using System.ComponentModel;
+using DevExpress.XtraReports.UI;
+
+namespace WEB.GSTP.QLAN.GDTTT.VuAn.BaoCao.Thongke
+{
+    public partial class rptThongKeTLGQDQH : DevExpress.XtraReports.UI.XtraReport
+    {
+        public rptThongKeTLGQDQH()
+        {
+            InitializeComponent();
+        }
+
+        private void xrTableCell25_BeforePrint(object sender, System.Drawing.Printing.PrintEventArgs e)
+        {
+            xrTableCell25.Text = Parameters["TenPhongban"].Value.ToString().ToUpper() + "";
+        }
+
+        private void xrTableCell14_BeforePrint(object sender, System.Drawing.Printing.PrintEventArgs e)
+        {
+            xrTableCell14.Text = "(Từ ngày " + Parameters["TuNgay"].Value + " đến ngày " + Parameters["DenNgay"].Value + ")";
+        }
+    }
+}

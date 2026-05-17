@@ -1,0 +1,84 @@
+﻿<%@ Page Title="" Language="C#" MasterPageFile="~/MasterPages/GSTP.Master" AutoEventWireup="true" CodeBehind="ViewReport.aspx.cs" Inherits="WEB.GSTP.BaoCao.TDKT.ViewReport" %>
+
+<%@ Register Assembly="DevExpress.XtraReports.v18.2.Web.WebForms, Version=18.2.6.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a" Namespace="DevExpress.XtraReports.Web" TagPrefix="dx" %>
+<asp:Content ID="Content1" ContentPlaceHolderID="head" runat="server">
+</asp:Content>
+<asp:Content ID="Content2" ContentPlaceHolderID="ContentPlaceHolder1" runat="server">
+    <div class="box">
+        <div class="box_nd">
+            <div class="truong">
+                <table class="table1">
+                    <tr>
+                        <td style="width: 95px;"><b>Đơn vị đề nghị</b></td>
+                        <td>
+                            <asp:DropDownList ID="DropDonVi_DeNghi" Width="411px" runat="server" CssClass="chosen-select" AutoPostBack="true" OnSelectedIndexChanged="DropDonVi_DeNghi_SelectedIndexChanged"></asp:DropDownList>
+                        </td>
+                    </tr>
+                    <%--<tr>
+                        <td><b>Phòng ban/ Đơn vị cơ sở</b></td>
+                        <td>
+                            <asp:DropDownList ID="DropPhongBan" Width="411px" runat="server" CssClass="chosen-select" AutoPostBack="true" OnSelectedIndexChanged="DropPhongBan_SelectedIndexChanged"></asp:DropDownList></td>
+                    </tr>--%>
+                    <tr id="RowDonViCapTren" runat="server">
+                        <td><b>Đơn vị cấp trên</b></td>
+                        <td>
+                            <asp:DropDownList ID="DropDonVi_CapTren" Width="411px" runat="server" CssClass="chosen-select"></asp:DropDownList>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><b>Danh sách</b></td>
+                        <td>
+                            <asp:DropDownList ID="DropDanhSach" Width="411px" runat="server" CssClass="chosen-select"></asp:DropDownList>
+                        </td>
+                    </tr>
+                    <%--<tr>
+                        <td><b>Đối tượng</b></td>
+                        <td>
+                            <table class="table2" style="width: 411px;">
+                                <tr class="header">
+                                    <td style="width: 30px;">Chọn<asp:CheckBox ID="chkAll" runat="server" AutoPostBack="true" OnCheckedChanged="chkAll_CheckedChanged" /></td>
+                                    <td style="width: 86px;">Loại đối tượng</td>
+                                    <td>Tên đối tượng</td>
+                                </tr>
+                                <asp:Repeater ID="rpt" runat="server" OnItemDataBound="rpt_ItemDataBound">
+                                    <ItemTemplate>
+                                        <tr>
+                                            <td style="text-align: center;">
+                                                <asp:CheckBox ID="chkChon" ToolTip='<%#Eval("ID")%>' runat="server" /></td>
+                                            <td>
+                                                <asp:Label ID="LblLoaiDoiTuong" runat="server"></asp:Label></td>
+                                            <td><%# Eval("TEN_DOI_TUONG") %></td>
+                                        </tr>
+                                    </ItemTemplate>
+                                </asp:Repeater>
+                            </table>
+                        </td>
+                    </tr>--%>
+                    <tr>
+                        <td></td>
+                        <td>
+                            <asp:Button ID="BtnXem" runat="server" CssClass="buttoninput" Text="Xem biểu mẫu" OnClick="BtnXem_Click" />
+                            <asp:Button ID="BtnLamMoi" runat="server" CssClass="buttoninput" Text="Làm mới" OnClick="BtnLamMoi_Click" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td>
+                            <asp:Label runat="server" ID="Lblthongbao" CssClass="msg_error"></asp:Label></td>
+                    </tr>
+                    <tr>
+                        <td colspan="2">
+                            <dx:ASPxWebDocumentViewer ID="rptView" runat="server" Visible="true" Height="1000px"></dx:ASPxWebDocumentViewer>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+    <script type="text/javascript">
+        function pageLoad(sender, args) {
+            var config = { '.chosen-select': {}, '.chosen-select-deselect': { allow_single_deselect: true }, '.chosen-select-no-single': { disable_search_threshold: 10 }, '.chosen-select-no-results': { no_results_text: 'Oops, nothing found!' }, '.chosen-select-rtl': { rtl: true }, '.chosen-select-width': { width: '95%' } }
+            for (var selector in config) { $(selector).chosen(config[selector]); }
+        }
+    </script>
+</asp:Content>

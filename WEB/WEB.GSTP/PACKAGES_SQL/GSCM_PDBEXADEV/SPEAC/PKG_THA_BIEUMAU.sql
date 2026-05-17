@@ -1,0 +1,11 @@
+﻿CREATE OR REPLACE PACKAGE GSCM.PKG_THA_BIEUMAU
+AS
+	  PROCEDURE DELETE_THA_FILE_VUANIDBIAN_QUYETDINH(
+      v_vuanID   IN NUMBER,
+      v_bianID   IN NUMBER,
+      v_listMABM IN VARCHAR2  -- danh sách mã BM, ví dụ: 'THA-01,THA-02,THA-03'
+  );
+
+
+-- Package header
+END PKG_THA_BIEUMAU;

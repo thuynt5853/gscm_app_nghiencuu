@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<configuration>
+  <configSections>
+    <!-- For more information on Entity Framework configuration, visit http://go.microsoft.com/fwlink/?LinkID=237468 -->
+    <section name="entityFramework" type="System.Data.Entity.Internal.ConfigFile.EntityFrameworkSection, EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" requirePermission="false" />
+    <section name="oracle.manageddataaccess.client" type="OracleInternal.Common.ODPMSectionHandler, Oracle.ManagedDataAccess, Version=4.122.1.0, Culture=neutral, PublicKeyToken=89b483f429c47342" />
+    <sectionGroup name="devExpress">
+      <section name="themes" type="DevExpress.Web.ThemesConfigurationSection, DevExpress.Web.v18.2, Version=18.2.6.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a" requirePermission="false" />
+      <section name="compression" type="DevExpress.Web.CompressionConfigurationSection, DevExpress.Web.v18.2, Version=18.2.6.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a" requirePermission="false" />
+      <section name="settings" type="DevExpress.Web.SettingsConfigurationSection, DevExpress.Web.v18.2, Version=18.2.6.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a" requirePermission="false" />
+      <section name="errors" type="DevExpress.Web.ErrorsConfigurationSection, DevExpress.Web.v18.2, Version=18.2.6.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a" requirePermission="false" />
+      <section name="resources" type="DevExpress.Web.ResourcesConfigurationSection, DevExpress.Web.v18.2, Version=18.2.6.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a" requirePermission="false" />
+    </sectionGroup>
+  </configSections>
+  <appSettings>
+
+    <add key="URLMaHoaView" value="https://trolyao.toaan.gov.vn/vtcc-editor" />
+    <add key="MaHoaUrlGetToken" value="https://gateway-tla.toaan.gov.vn/mobile/auth/login" />
+    <add key="MaHoaUserName" value="it.mahoabanan" />
+    <add key="MaHoaPassword" value="123456a@" />
+    <add key="FolderWorkFiles" value="C:\FolderWorkFiles\QLA" />
+
+    <add key="FolderUploadTemplate" value="FileUpload/ExportExcel" />
+    <add key="FolderTaiLieu" value="FileUpload/TaiLieu" />
+    <add key="FolderTemplate" value="/TemplateExcel" />
+    <add key="LDAPSVR" value="LDAP://ncs.com.vn" />
+    <add key="ValidationSettings:UnobtrusiveValidationMode" value="None" />
+	<!-- <add key="TemplateWord" value="C:/IIS_SERVER/qlta.toaan.gov.vn/QLAN/GDTTT/Template/" />	 -->
+    <add key="TemplateWord" value="C:/iis_server/qlta.toaan.gov.vn/BaoCao/Template/GDT/" />
+    <add key="TemplateWordSTPT" value="C:/iis_server/qlta.toaan.gov.vn/BaoCao/Template/STPT/" />
+    <add key="TemplateWordBAOCAO" value="C:/iis_server/qlta.toaan.gov.vn/BaoCao/Template/BAOCAO/" />
+    <add key="IpTongDat" value="http://10.1.82.57:8088/rest/dataMigration/" />
+  </appSettings>
+  <connectionStrings configProtectionProvider="RsaProtectedConfigurationProvider">
+    <EncryptedData Type="http://www.w3.org/2001/04/xmlenc#Element"
+      xmlns="http://www.w3.org/2001/04/xmlenc#">
+      <EncryptionMethod Algorithm="http://www.w3.org/2001/04/xmlenc#tripledes-cbc" />
+      <KeyInfo xmlns="http://www.w3.org/2000/09/xmldsig#">
+        <EncryptedKey xmlns="http://www.w3.org/2001/04/xmlenc#">
+          <EncryptionMethod Algorithm="http://www.w3.org/2001/04/xmlenc#rsa-1_5" />
+          <KeyInfo xmlns="http://www.w3.org/2000/09/xmldsig#">
+            <KeyName>Rsa Key</KeyName>
+          </KeyInfo>
+          <CipherData>
+            <CipherValue>Pm+aCaq6jx9qVc64FZ5u7zhtGOZYA0RHgcp0QU6RCOKeP0912E2J8Qa0zC+2wlWiJS1kpezGF1BSU+2Nk/4uVDW9Wa/ycZNAV7zP21Mnz1KpIcel6RrJwzUSR96WDp9Ix4cNwOhQG6cSif5Agh0OX0Ny/QgsMQ9bL96zI4V4EXxWrChkGem+Ousyf+TeOt0P7AMWr6i17yy/HxVxbfPcGdJvsE1baP5uqXbCaZuvKGEpzaGL1lmmYFYa1AjPBxilg2/m6IJeHqW3813EQ0RRIj9Py7i9Sqn4kt+B8QLdtux7yIbRjoU0DZcN2WQFU9zzu/vi5FrnTWgN1pNIVaAlWg==</CipherValue>
+          </CipherData>
+        </EncryptedKey>
+      </KeyInfo>
+      <CipherData>
+        <CipherValue>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</CipherValue>
+      </CipherData>
+    </EncryptedData>
+  </connectionStrings>
+ 
+  <system.web>
+   <!--<customErrors mode="RemoteOnly" defaultRedirect="/Login.aspx"/>-->
+    <sessionState timeout="30"></sessionState>
+	<customErrors mode="Off" />
+    <compilation targetFramework="4.5.2" batch="false">
+      <assemblies>
+        <add assembly="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=B77A5C561934E089" />
+        <add assembly="System.Design, Version=4.0.0.0, Culture=neutral, PublicKeyToken=B03F5F7F11D50A3A" />
+        <add assembly="Microsoft.ReportViewer.Common, Version=14.0.0.0, Culture=neutral, PublicKeyToken=89845DCD8080CC91" />
+        <add assembly="Microsoft.ReportViewer.WebForms, Version=14.0.0.0, Culture=neutral, PublicKeyToken=89845DCD8080CC91" />
+        <add assembly="DevExpress.XtraReports.v18.2.Web, Version=18.2.6.0, Culture=neutral, PublicKeyToken=B88D1754D700E49A" />
+        <add assembly="DevExpress.XtraReports.v18.2.Web.WebForms, Version=18.2.6.0, Culture=neutral, PublicKeyToken=B88D1754D700E49A" />
+        <add assembly="DevExpress.Web.v18.2, Version=18.2.6.0, Culture=neutral, PublicKeyToken=B88D1754D700E49A" />
+        <add assembly="DevExpress.RichEdit.v18.2.Core, Version=18.2.6.0, Culture=neutral, PublicKeyToken=B88D1754D700E49A" />
+        <add assembly="DevExpress.DataAccess.v18.2, Version=18.2.6.0, Culture=neutral, PublicKeyToken=B88D1754D700E49A" />
+        <add assembly="DevExpress.Web.Resources.v18.2, Version=18.2.6.0, Culture=neutral, PublicKeyToken=B88D1754D700E49A" />
+        <add assembly="DevExpress.Web.ASPxThemes.v18.2, Version=18.2.6.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a" />
+      </assemblies>
+      <buildProviders>
+        <add extension=".rdlc" type="Microsoft.Reporting.RdlBuildProvider, Microsoft.ReportViewer.WebForms, Version=14.0.0.0, Culture=neutral, PublicKeyToken=89845DCD8080CC91" />
+      </buildProviders>
+    </compilation>
+    <httpRuntime targetFramework="4.5.2" maxRequestLength="1000048576" />
+    <pages validateRequest="false">
+      <controls>
+        <add tagPrefix="ajaxToolkit" assembly="AjaxControlToolkit" namespace="AjaxControlToolkit" />
+      </controls>
+    </pages>
+    <httpHandlers>
+      <add path="Reserved.ReportViewerWebControl.axd" verb="*" type="Microsoft.Reporting.WebForms.HttpHandler, Microsoft.ReportViewer.WebForms, Version=14.0.0.0, Culture=neutral, PublicKeyToken=89845DCD8080CC91" validate="false" />
+      <add type="DevExpress.Web.ASPxHttpHandlerModule, DevExpress.Web.v18.2, Version=18.2.6.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a" verb="GET,POST" path="DX.ashx" validate="false" />
+      <add type="DevExpress.Web.ASPxUploadProgressHttpHandler, DevExpress.Web.v18.2, Version=18.2.6.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a" verb="GET,POST" path="ASPxUploadProgressHandlerPage.ashx" validate="false" />
+      <add type="DevExpress.Web.ASPxHttpHandlerModule, DevExpress.Web.v18.2, Version=18.2.6.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a" verb="GET,POST" path="DXXRDV.axd" validate="false" />
+      <add validate="false" verb="GET,POST" path="DXXRD.axd" type="DevExpress.Web.ASPxHttpHandlerModule, DevExpress.Web.v18.2, Version=18.2.6.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a" />
+      <add validate="false" verb="GET,POST" path="DXQB.axd" type="DevExpress.Web.ASPxHttpHandlerModule, DevExpress.Web.v18.2, Version=18.2.6.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a" />
+      <add validate="false" verb="GET,POST" path="DXXCD.axd" type="DevExpress.Web.ASPxHttpHandlerModule, DevExpress.Web.v18.2, Version=18.2.6.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a" />
+    </httpHandlers>
+    <httpModules>
+      <add type="DevExpress.Web.ASPxHttpHandlerModule, DevExpress.Web.v18.2, Version=18.2.6.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a" name="ASPxHttpHandlerModule" />
+    </httpModules>
+  </system.web>
+  <entityFramework>
+    <defaultConnectionFactory type="System.Data.Entity.Infrastructure.SqlConnectionFactory, EntityFramework" />
+    <providers>
+      <provider invariantName="System.Data.SqlClient" type="System.Data.Entity.SqlServer.SqlProviderServices, EntityFramework.SqlServer" />
+      <provider invariantName="Oracle.ManagedDataAccess.Client" type="Oracle.ManagedDataAccess.EntityFramework.EFOracleProviderServices, Oracle.ManagedDataAccess.EntityFramework, Version=6.122.1.0, Culture=neutral, PublicKeyToken=89b483f429c47342" />
+    </providers>
+  </entityFramework>
+  <system.webServer>
+    <validation validateIntegratedModeConfiguration="false" />
+    <modules runAllManagedModulesForAllRequests="true">
+      <add type="DevExpress.Web.ASPxHttpHandlerModule, DevExpress.Web.v18.2, Version=18.2.6.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a" name="ASPxHttpHandlerModule" />
+    </modules>
+    <handlers>
+      <add name="ReportViewerWebControlHandler" preCondition="integratedMode" verb="*" path="Reserved.ReportViewerWebControl.axd" type="Microsoft.Reporting.WebForms.HttpHandler, Microsoft.ReportViewer.WebForms, Version=14.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91" />
+      <add type="DevExpress.Web.ASPxHttpHandlerModule, DevExpress.Web.v18.2, Version=18.2.6.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a" verb="GET,POST" path="DX.ashx" name="ASPxHttpHandlerModule" preCondition="integratedMode" />
+      <add type="DevExpress.Web.ASPxUploadProgressHttpHandler, DevExpress.Web.v18.2, Version=18.2.6.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a" verb="GET,POST" path="ASPxUploadProgressHandlerPage.ashx" name="ASPxUploadProgressHandler" preCondition="integratedMode" />
+      <add type="DevExpress.Web.ASPxHttpHandlerModule, DevExpress.Web.v18.2, Version=18.2.6.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a" verb="GET,POST" path="DXXRDV.axd" name="ASPxWebDocumentViewerHandlerModule" preCondition="integratedMode" />
+      <add name="ScriptResource" verb="GET,HEAD" path="ScriptResource.axd" type="System.Web.Handlers.ScriptResourceHandler, System.Web.Extensions, Version=3.5.0.0, Culture=neutral, PublicKeyToken=31BF3856AD364E35" preCondition="integratedMode" />
+      <add name="ASPxReportDesignerHandlerModule" preCondition="integratedMode" verb="GET,POST" path="DXXRD.axd" type="DevExpress.Web.ASPxHttpHandlerModule, DevExpress.Web.v18.2, Version=18.2.6.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a" />
+      <add name="ASPxQueryBuilderDesignerHandlerModule" preCondition="integratedMode" verb="GET,POST" path="DXQB.axd" type="DevExpress.Web.ASPxHttpHandlerModule, DevExpress.Web.v18.2, Version=18.2.6.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a" />
+      <add name="ASPxChartDesignerHandlerModule" preCondition="integratedMode" verb="GET,POST" path="DXXCD.axd" type="DevExpress.Web.ASPxHttpHandlerModule, DevExpress.Web.v18.2, Version=18.2.6.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a" />
+      <remove name="ExtensionlessUrlHandler-Integrated-4.0" />
+      <remove name="OPTIONSVerbHandler" />
+      <remove name="TRACEVerbHandler" />
+      <add name="ExtensionlessUrlHandler-Integrated-4.0" path="*." verb="*" type="System.Web.Handlers.TransferRequestHandler" preCondition="integratedMode,runtimeVersionv4.0" />
+    </handlers>
+    <defaultDocument>
+      <files>
+        <add value="Trangchu.aspx" />
+      </files>
+    </defaultDocument>
+  </system.webServer>
+  <system.data>
+    <DbProviderFactories>
+      <remove invariant="Oracle.ManagedDataAccess.Client" />
+      <add name="ODP.NET, Managed Driver" invariant="Oracle.ManagedDataAccess.Client" description="Oracle Data Provider for .NET, Managed Driver" type="Oracle.ManagedDataAccess.Client.OracleClientFactory, Oracle.ManagedDataAccess, Version=4.122.1.0, Culture=neutral, PublicKeyToken=89b483f429c47342" />
+    </DbProviderFactories>
+  </system.data>
+  <runtime>
+    <assemblyBinding xmlns="urn:schemas-microsoft-com:asm.v1">
+      <dependentAssembly>
+        <assemblyIdentity name="Newtonsoft.Json" publicKeyToken="30ad4fe6b2a6aeed" culture="neutral" />
+        <bindingRedirect oldVersion="0.0.0.0-11.0.0.0" newVersion="11.0.0.0" />
+      </dependentAssembly>
+      <dependentAssembly>
+        <publisherPolicy apply="no" />
+        <assemblyIdentity name="Oracle.ManagedDataAccess" publicKeyToken="89b483f429c47342" culture="neutral" />
+      </dependentAssembly>
+      <dependentAssembly>
+        <assemblyIdentity name="System.Net.Http.Formatting" publicKeyToken="31bf3856ad364e35" culture="neutral" />
+        <bindingRedirect oldVersion="0.0.0.0-5.2.3.0" newVersion="5.2.3.0" />
+      </dependentAssembly>
+      <dependentAssembly>
+        <assemblyIdentity name="System.Web.Http" publicKeyToken="31bf3856ad364e35" culture="neutral" />
+        <bindingRedirect oldVersion="0.0.0.0-5.2.4.0" newVersion="5.2.4.0" />
+      </dependentAssembly>
+    </assemblyBinding>
+  </runtime>
+  <oracle.manageddataaccess.client>
+    <version number="*">
+      <dataSources>
+        <dataSource alias="GSTP" descriptor="(DESCRIPTION=(ADDRESS=(PROTOCOL=tcp)(HOST=exadb-scan.toaan.gov.vn)(PORT=1521))(CONNECT_DATA=(SERVICE_NAME=pdbspc.toaan.gov.vn)))" />
+      </dataSources>
+    </version>
+  </oracle.manageddataaccess.client>
+  <devExpress>
+    <themes enableThemesAssembly="true" styleSheetTheme="" theme="" customThemeAssemblies="" baseColor="" font="" />
+    <compression enableHtmlCompression="false" enableCallbackCompression="true" enableResourceCompression="true" enableResourceMerging="true" />
+    <settings accessibilityCompliant="false" bootstrapMode="Bootstrap3" doctypeMode="Html5" rightToLeft="false" checkReferencesToExternalScripts="true" protectControlState="true" ieCompatibilityVersion="edge" />
+    <errors callbackErrorRedirectUrl="" />
+    <resources>
+      <add type="ThirdParty" />
+      <add type="DevExtreme" />
+    </resources>
+  </devExpress>
+  <system.serviceModel>
+    <bindings>
+      <basicHttpBinding>
+        <binding name="UCMServicesMngrBinding" />
+      </basicHttpBinding>
+    </bindings>
+    <client>
+      <endpoint address="http://www.toaan.gov.vn:8080/soa-infra/services/default/SOAUCMServices/ucmservicesmngr_client_ep" binding="basicHttpBinding" bindingConfiguration="UCMServicesMngrBinding" contract="WS_CTTDT.UCMServicesMngr" name="UCMServicesMngr_pt" />
+    </client>
+  </system.serviceModel>
+</configuration>
+<!--ProjectGuid: AE40A246-1034-4DDA-9FF5-F95778A292D0-->

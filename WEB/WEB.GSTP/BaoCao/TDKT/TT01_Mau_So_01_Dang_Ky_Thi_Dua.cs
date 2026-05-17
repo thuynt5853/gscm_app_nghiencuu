@@ -1,0 +1,40 @@
+﻿using System;
+using System.Drawing;
+using System.Collections;
+using System.ComponentModel;
+using DevExpress.XtraReports.UI;
+
+namespace WEB.GSTP.BaoCao.TDKT
+{
+    public partial class TT01_Mau_So_01_Dang_Ky_Thi_Dua : DevExpress.XtraReports.UI.XtraReport
+    {
+        public TT01_Mau_So_01_Dang_Ky_Thi_Dua()
+        {
+            InitializeComponent();
+        }
+
+        private void xrTableCell_Ten_Doi_Tuong_BeforePrint(object sender, CancelEventArgs e)
+        {
+            if (xrTableCell_STT.Text.Contains("I"))
+            {
+                xrTableCell_Ten_Doi_Tuong.Font = new Font("Times New Roman", 11, FontStyle.Bold);
+            }
+            else
+            {
+                xrTableCell_Ten_Doi_Tuong.Font = new Font("Times New Roman", 11, FontStyle.Regular);
+            }
+        }
+
+        private void xrTableCell_STT_BeforePrint(object sender, CancelEventArgs e)
+        {
+            if (xrTableCell_STT.Text.Contains("I"))
+            {
+                xrTableCell_STT.Font = new Font("Times New Roman", 11, FontStyle.Bold);
+            }
+            else
+            {
+                xrTableCell_STT.Font = new Font("Times New Roman", 11, FontStyle.Regular);
+            }
+        }
+    }
+}

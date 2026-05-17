@@ -1,0 +1,32 @@
+--------------------------------------------------------
+--  DDL for Package PKG_COVID_APP
+--------------------------------------------------------
+
+  CREATE OR REPLACE NONEDITIONABLE PACKAGE "GSCM"."PKG_COVID_APP" AS
+FUNCTION COVID_BAOCAO
+RETURN SYS_REFCURSOR;
+FUNCTION COVID_DANGKY_DS_ALL
+(
+  V_DENNGAY IN VARCHAR2,
+  v_TRANGTHAI in varchar2,
+  vDV_TRUCTHUOC in varchar2,
+  vPhongbanID in varchar2,
+  vChucDanhID in varchar2,
+  vChucVuID in varchar2,
+  v_KeySearch in varchar2,
+  V_CANBOID IN NVARCHAR2 DEFAULT NULL,
+  PageIndex	in	NUMBER,
+  PageSize	in	NUMBER
+)
+RETURN SYS_REFCURSOR;
+FUNCTION GET_CHUCVU_CHECK
+(
+  V_CANBOID IN NVARCHAR2 DEFAULT NULL
+)
+RETURN SYS_REFCURSOR;
+FUNCTION CANH_BAO_TK
+(
+  V_CANBOID IN NVARCHAR2 DEFAULT NULL
+)
+RETURN SYS_REFCURSOR;
+END PKG_COVID_APP;

@@ -1,0 +1,33 @@
+﻿using System;
+using System.Drawing;
+using System.Collections;
+using System.ComponentModel;
+using DevExpress.XtraReports.UI;
+
+namespace WEB.GSTP.BaoCao.THA
+{
+    public partial class rpt01THA : DevExpress.XtraReports.UI.XtraReport
+    {
+        public rpt01THA()
+        {
+            InitializeComponent();
+        }
+        private void xrLabel4_BeforePrint(object sender, CancelEventArgs e)
+        {
+            xrLabel4.Text = xrLabel4.Text.ToUpper();
+        }
+        private void xrTableCell36_BeforePrint(object sender, CancelEventArgs e)
+        {
+            xrTableCell36.Text = xrTableCell36.Text.Replace("Ông", "").Replace("Bà", "");
+        }
+        private void xrTableCell4_BeforePrint(object sender, CancelEventArgs e)
+        {
+            xrTableCell4.Text = xrTableCell4.Text.ToUpper();
+        }
+
+        private void xrLabel1_BeforePrint(object sender, CancelEventArgs e)
+        {
+
+        }
+    }
+}

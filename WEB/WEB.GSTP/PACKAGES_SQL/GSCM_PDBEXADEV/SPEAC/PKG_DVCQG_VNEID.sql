@@ -1,0 +1,43 @@
+﻿CREATE OR REPLACE PACKAGE GSCM."PKG_DVCQG_VNEID" AS 
+
+
+PROCEDURE THONGBAO_TONGDAT_VNEID
+(
+    V_LOAIVUVIEC IN NUMBER,
+    V_TONGDAT IN NUMBER,
+    V_DOITUONGID IN NUMBER,
+    curReturn OUT SYS_REFCURSOR
+);
+
+
+PROCEDURE EXPORT_THONGBAO_VNEID
+(
+    V_DONVI IN NUMBER,
+    V_LOAITB IN VARCHAR2,
+    V_DATE_FROM IN VARCHAR2,
+    V_DATE_TO IN VARCHAR2,
+    curReturn OUT SYS_REFCURSOR
+);
+
+
+PROCEDURE pdf_to_file 
+(
+    p_content    IN SYS_REFCURSOR,
+    p_dir        IN VARCHAR2
+);
+
+PROCEDURE blob_to_file 
+(
+    p_blob       IN BLOB,
+    p_dir        IN VARCHAR2,
+    p_filename   IN VARCHAR2
+);
+
+
+PROCEDURE excel_to_file 
+(
+    p_content    IN SYS_REFCURSOR,
+    p_dir        IN VARCHAR2,
+    p_filename   IN VARCHAR2
+);
+END PKG_DVCQG_VNEID;

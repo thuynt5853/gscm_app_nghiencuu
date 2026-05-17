@@ -1,0 +1,43 @@
+﻿using System;
+using System.Drawing;
+using System.Collections;
+using System.ComponentModel;
+using DevExpress.XtraReports.UI;
+
+namespace WEB.GSTP.QLAN.GDTTT.In
+{
+    public partial class rptNoiBoDanhsach : DevExpress.XtraReports.UI.XtraReport
+    {
+        public rptNoiBoDanhsach()
+        {
+            InitializeComponent();
+        }
+        private string getTenToa(string strTenToa)
+        {
+            try
+            {
+                if (strTenToa.Contains("CẤP CAO"))
+                {
+                    strTenToa = strTenToa.Replace("CẤP CAO", "CẤP CAO\n");
+                }
+
+                return strTenToa;
+            }
+            catch { return ""; }
+        }
+        private void xrTableCell12_BeforePrint(object sender, System.Drawing.Printing.PrintEventArgs e)
+        {
+            
+        }
+
+        private void xrTableCell1_BeforePrint(object sender, System.Drawing.Printing.PrintEventArgs e)
+        {
+           
+        }
+
+        private void xrTableCell68_BeforePrint(object sender, System.Drawing.Printing.PrintEventArgs e)
+        {
+            xrTableCell68.Text = System.Web.HttpUtility.HtmlDecode(xrTableCell68.Text);
+        }
+    }
+}

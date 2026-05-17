@@ -1,0 +1,95 @@
+﻿<%@ Master Language="C#" AutoEventWireup="true" CodeBehind="AN_PHI.master.cs" Inherits="WEB.TP.MasterPages.AN_PHI" %>
+
+<%@ Register Src="~/UC/Header.ascx" TagName="Header" TagPrefix="uc1" %>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head runat="server">
+    <title>Thông tin tạm ứng án phí</title>
+    <link href="/UI/css/TAble.css" rel="stylesheet" />
+    <link href="/UI/css/paging.css" rel="stylesheet" />
+
+    <link href="/UI/css/style.css" rel="stylesheet" />
+    <link href="/UI/img/spcLogo.png" type="image/png" rel="shortcut icon" />
+    <link href="/UI/css/chosen.css" rel="stylesheet" />
+
+    <link href="/UI/css/jquery.enhsplitter.css" rel="stylesheet" />
+    <link href="/UI/css/jquery-ui.css" rel="stylesheet" />
+    <script src="/UI/js/jquery-3.3.1.js"></script>
+    <script src="/UI/js/jquery-ui.min.js"></script>
+    <asp:ContentPlaceHolder ID="head" runat="server">
+    </asp:ContentPlaceHolder>
+</head>
+<body>
+    <form id="form1" runat="server">
+        <asp:ScriptManager ID="ScriptManager1" runat="server" EnablePageMethods="true"></asp:ScriptManager>
+        <uc1:Header runat="server" ID="Header" />
+        <div>
+            <asp:UpdatePanel ID="UpdatePanel1" runat="server">
+                <ContentTemplate>
+                    <asp:ContentPlaceHolder ID="ContentPlaceHolder1" runat="server">
+                    </asp:ContentPlaceHolder>
+                </ContentTemplate>
+            </asp:UpdatePanel>
+            <asp:UpdateProgress ID="UpdateProgress1" runat="server" AssociatedUpdatePanelID="UpdatePanel1">
+                <ProgressTemplate>
+                    <div class="processmodal">
+                        <div class="processcenter">
+                            <img src="/UI/img/process.gif" />
+                        </div>
+                    </div>
+                </ProgressTemplate>
+            </asp:UpdateProgress>
+        </div>
+        <div style="clear: both;"></div>
+        <div class="footer" style="background-color: #b20c0c; padding: 15px 0px;">
+            <div class="content_center">
+                <div style="float: left; margin-left: 2%; margin-right: 2%;">
+                    <div style="font-size: 15px; text-transform: uppercase; margin-bottom: 7px;">
+                        TÒA ÁN NHÂN DÂN TỐI CAO
+                    </div>
+                    <div style="color: white; font-size: 14px; line-height: 20px;">
+                        Địa chỉ : 48 Lý Thường Kiệt, Hoàn Kiếm, Hà Nội.
+                                <br />
+                        Điện thoại: 024.3939.3335<br />
+                        Bản quyền thuộc Tòa án nhân dân tối cao
+                                <br />
+                    </div>
+                </div>
+                <div style="float: left;margin-left:3px; margin-right: 2%;">
+                    <div style="font-size: 15px; text-transform: uppercase; margin-bottom: 7px;">
+                        TỔNG CỤC THI HÀNH ÁN DÂN SỰ - BỘ TƯ PHÁP
+                    </div>
+                    <div style="color: white; font-size: 14px; line-height: 20px;">
+                        Địa chỉ :  60 Trần Phú, Ba Đình, Hà Nội. 
+                                <br />
+                        Điện thoại: 02432 444 269 - Fax: 02432 444 214.<br />
+                    </div>
+                </div>
+                <div style="float: right; text-align: right; margin-top: 7px; margin-right: 10px;">
+                    <a href="http://www.toaan.gov.vn" target="_blank" style="float: left; margin-right: 40px;">
+                        <img src="/UI/img/logo_TAND.png" style="border: none; height: 60px;" /></a> <a href="http://congbobanan.toaan.gov.vn/" target="_blank" style="float: left; margin-right: 40px;">
+                            <img src="/UI/img/logo_Congbobanan.png" style="border: none; height: 60px;" /></a> <a href="https://capsaobanan.toaan.gov.vn/" target="_blank" style="float: right;">
+                                <img src="/UI/img/logo_DK_cap_sao.png" style="border: none; height: 60px;" /></a>
+                </div>
+            </div>
+        </div>
+    </form>
+</body>
+<script src="/UI/js/chosen.jquery.js"></script>
+<script src="/UI/js/init.js"></script>
+</html>
+<style>
+    .footer {
+        float: left;
+        width: 100%;
+        overflow: hidden;
+        background: #fff;
+        background-color: rgb(255, 255, 255);
+        position: relative;
+        bottom: 0px;
+        font-size: 16px;
+        color: white;
+        font-family: Roboto Condensed;
+        border-top: solid 1px #b12323;
+    }
+</style>

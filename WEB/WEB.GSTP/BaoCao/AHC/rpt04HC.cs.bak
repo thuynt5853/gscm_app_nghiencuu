@@ -1,0 +1,42 @@
+﻿using System;
+using System.Drawing;
+using System.Collections;
+using System.ComponentModel;
+using DevExpress.XtraReports.UI;
+
+namespace WEB.GSTP.BaoCao.AHC
+{
+    public partial class rpt04HC : DevExpress.XtraReports.UI.XtraReport
+    {
+        public rpt04HC()
+        {
+            InitializeComponent();
+        }
+        private void xrTableCell18_BeforePrint(object sender, System.Drawing.Printing.PrintEventArgs e)
+        {
+            xrTableCell18.Text = xrTableCell18.Text.ToUpper();
+        }
+        private void PageFooter_BeforePrint(object sender, System.Drawing.Printing.PrintEventArgs e)
+        {
+            e.Cancel = PrintingSystem.PageCount % 2 == 1; //> 0;
+        }
+        private void xrTableCell27_BeforePrint(object sender, System.Drawing.Printing.PrintEventArgs e)
+        {
+            xrTableCell27.Text = xrTableCell27.Text.ToUpper();
+        }
+        private void PageHeader_BeforePrint(object sender, System.Drawing.Printing.PrintEventArgs e)
+        {
+            e.Cancel = PrintingSystem.PageCount % 2 == 1; //> 0;
+        }
+        private void DeleteEnterTentoaan_BeforePrint(object sender, System.Drawing.Printing.PrintEventArgs e)
+        {
+            xrTableCell24.Text = xrTableCell24.Text.Replace("TAND", "Tòa án nhân dân");
+            xrTableCell24.Text = xrTableCell24.Text.Replace("\n", ",");
+            xrTableCell22.Text = xrTableCell22.Text.Replace("TAND", "Tòa án nhân dân");
+            xrTableCell22.Text = xrTableCell22.Text.Replace("\n", ",");
+            xrTableCell25.Text = xrTableCell25.Text.Replace("TAND", "Tòa án nhân dân");
+            xrTableCell25.Text = xrTableCell25.Text.Replace("THADS", "thi hành án dân sự");
+            xrTableCell25.Text = xrTableCell25.Text.Replace("\n", ",");
+        }
+    }
+}

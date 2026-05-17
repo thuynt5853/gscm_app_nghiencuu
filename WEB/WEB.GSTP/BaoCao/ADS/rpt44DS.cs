@@ -1,0 +1,64 @@
+﻿using System;
+using System.Drawing;
+using System.Collections;
+using System.ComponentModel;
+using DevExpress.XtraReports.UI;
+
+namespace WEB.GSTP.BaoCao.ADS
+{
+    public partial class rpt44DS : DevExpress.XtraReports.UI.XtraReport
+    {
+        public rpt44DS()
+        {
+            InitializeComponent();
+        }
+
+        private void xrTableCell36_BeforePrint(object sender, CancelEventArgs e)
+        {
+            xrTableCell36.Text = xrTableCell36.Text.Replace("Ông", "").Replace("Bà", "");
+        }
+
+        private void xrLabel4_BeforePrint(object sender, CancelEventArgs e)
+        {
+            xrLabel4.Text = xrLabel4.Text.ToUpper();
+        }
+
+        private void DetailReport_BeforePrint(object sender, CancelEventArgs e)
+        {
+            System.Data.DataRowView r = (System.Data.DataRowView)DetailReport.GetCurrentRow();
+
+            if (r == null || r.DataView.Count == 0)
+            {
+                xrTable13.Visible = false;
+                xrTable9.Visible = false;
+            }
+        }
+
+        private void DetailReport1_BeforePrint(object sender, CancelEventArgs e)
+        {
+            System.Data.DataRowView r = (System.Data.DataRowView)DetailReport1.GetCurrentRow();
+
+            if (r == null || r.DataView.Count == 0)
+            {
+                xrTable10.Visible = false;
+                xrTable11.Visible = false;
+            }
+        }
+
+        private void DetailReport5_BeforePrint(object sender, CancelEventArgs e)
+        {
+            System.Data.DataRowView r = (System.Data.DataRowView)DetailReport5.GetCurrentRow();
+
+            if (r == null || r.DataView.Count == 0)
+            {
+                xrTable7.Visible = false;
+                xrTable5.Visible = false;
+            }
+        }
+
+        private void xrTableCell1_BeforePrint(object sender, CancelEventArgs e)
+        {
+            xrTableCell1.Text = xrTableCell1.Text.ToUpper();
+        }
+    }
+}

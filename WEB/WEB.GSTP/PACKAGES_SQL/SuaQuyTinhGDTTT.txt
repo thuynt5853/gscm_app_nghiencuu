@@ -1,0 +1,157 @@
+
+1. Quy trình xử lý đơn tư pháp
+- Toàn bộ đơn/công văn đề nghị/kiến nghị theo Giám đốc thẩm, tái thẩm sau khi phòng Hành chính tư pháp tiếp nhận, xử lý xác định thẩm quyền sẽ thực hiện chuyển về các Vụ Giám đốc kiểm tra để giải quyết, không thực hiện chuyển các đồng chí Thẩm phán nhân dân tối cao và sau đó Thẩm phán thực hiện chuyển đơn cho các Vụ Giám đốc thẩm như quy trình trước đây.
+- Khi thực hiện theo quy trình mới, phần mềm sẽ ràng buộc đơn phải có số Tờ trình, số Thông báo phân công Thẩm phán và số Công văn chuyển nội bộ thì mới thực hiện được thao tác Chuyển đơn cho các Vụ Giám đốc kiểm tra (dùng chung sổ Công văn chuyển nội bộ hiện tại).
+
+- Trên phần mềm Quản lý Tòa án (QLTA), thẩm phán không thực hiện nhận đơn từ Hành chính tư pháp. Đơn sau khi HCTP chuyển đến các Vụ Giám đốc kiểm tra sẽ mặc định được chuyển đến kho đơn “Đã nhận” của chức năng “Nhận đơn TP” đang được phân quyền cho các đồng chí Thẩm phán sử dụng.
+
+- Về chức năng chuyển đơn Giám đốc thẩm Dân sự trong giai đoạn này, các đơn Dân sự sẽ được chuyển toàn bộ sang các Vụ GĐKT III và IV, không thực hiện chuyển đến Vụ GĐKT II. Cục Công nghệ thông tin đã hoàn thành bổ sung loại án Dân sự vào thẩm quyền giải quyết của Vụ GĐKT III và IV. Cán bộ phòng Hành chính tư pháp có thể xác định đơn vị tiếp nhận trên phần mềm.
+-----------------------------------------------------------------------
+
+- Số tờ trình
+- Số Thông báo phân công Thẩm phán 
+
+- Số Công văn chuyển nội bộ thì mới thực hiện được thao tác Chuyển đơn cho các Vụ Giám đốc kiểm tra (kiểm tra lại)
+
+----------
+gải pháp: 
++ khi chuyển các vụ sẽ chuyển luôn thẩm phán.-> update trang thái TRANGTHAI=2 của bảng GDTTT_DON_CHUYEN
++ chức năng chuyển của thẩm phán sẽ tích hợp với chức năng chuyển của văn phòng
+
+----------------------
+
+- Nhóm là những đơn đi với nhau để đủ điều kiện thụ lý (thụ lý mới, đã thụ lý) thì mới nhóm
+- isthuly: 1 Thụ lý mới,Thụ lý lại (ARR_DON_ID=DON_ID(đơn trùng với đơn DON_ID))
+,2 Đã thụ lý
+- CD_TA_TRANGTHAI: 1 Đơn chưa đủ điều kiện,0 Đơn đủ điều kiện, 2 chưa đủ điều kiện (chuyển từ chưa đủ đk sang đủ đk), 3 Thêm đơn kèm theo
+- CD_TRANGTHAI: TRANG THAI CHUYEN(0,null Chưa chuyển,1 Đã chuyển,2 Đã nhận,3 Bị trả lại (phải xóa công văn chuyển vụ mới được trả lại),4 Bị trả lại chỉ sửa thông tin cơ bản khi trả lại vẫn xóa trong bảng chuyển nhận như bình thường bên dưới phía HCTP sẽ bắt trạng thái này để check chặn)';
+-ISTHULY: 1 thụ lý mới (Thụ lý lại: ARR_DON_ID!=0)->Thụ lý lại, 2 đã thụ lý,
+-CD_LOAI: 0 nội bộ, 1 chuyển tòa khác, 2 ngoài tòa
+- Khi thêm đơn kèm theo số đơn sẽ là n+1
+- Nếu thụ lý lại của đơn đã thụ lý theo kểu thêm đơn trùng không làm được rất phức tạp.(phải tìm đơn trùng đấy có đơn thụ thụ lý mới nào có mấy đơn mới thụ lý, và phải tìm đơn thụ lý mới chưa có kết quả thì mới có thụ lý lại, trong khi có thể tìm ra cả đơn đã có kết quả)
+- Thêm đơn kèm theo là đơn có trạng thái  V_CD_TA_TRANGTHAI=3 ( --1 Đơn chưa đủ điều kiện,0 Đơn đủ điều kiện,2 chuyển từ chưa đủ đk sang đủ đk, 3 đơn kèm theo)
+- Đơn kèm theo sẽ có hai danh sách: Danh sách đơn kèm theo, Đơn chưa đủ điều kiện bổ sung
+- Nhập 1 đơn chưa đủ điều kiện chuyển nội bộ + 1 đơn thu lý mới chuyển ngoài tòa -> dải đơn (Duytm 05/07/2024)
+
+----------------------
+select * FROM GDTTT_DON_CHUYEN;
+--TRANGTHAI - 1:Chưa nhận, 2:Đã nhận, 3:Trả lại,4:Đã chuyển
+SELECT * FROM GDTTT_DON_CHUYEN ORDER BY ngaycv DESC;
+-------------
+select * from GDTTT_DON;
+--COMMENT ON COLUMN GDTTT_DON.CD_TRANGTHAI 
+--IS 'TRANG THAI CHUYEN(
+--0,null Chưa chuyển
+--1 Đã chuyển,2 Đã nhận,3 Bị trả lại (phải xóa công văn chuyển vụ mới được trả lại),4 Bị trả lại nhưng không được sửa)';
+-------------------------
+Số BA/QĐ: 223311 Ngày: 19/01/2026  Tòa án nhân dân tỉnh Hà Giang
+Thủ tục giải quyết: Giám đốc thẩm
+BA: 12s
+Thẩm phán: ĐÀO THỊ MINH THỦY (TPTC) (1/TTr-TANDTC-VP - 19/01/2026; 1/TB-TANDTC-VP - 19/01/2026)
+Chưa chuyển: Thẩm phán
+Đơn vị giải quyết: Vụ Giám đốc, kiểm tra về hành chính (Số - )
+Ghi chú: 
+--------------
+duy.namnh / TaTc@2620
+
+
+------------------------
+select * from qt_nguoisudung where username='duy.namnh';
+select * from qt_nguoisudung where username='anhvh.tp';
+select * from dm_canbo where id=14968;
+select * from dm_canbo where toaanid=1 and chucdanhid=486;
+select * from dm_dataitem where groupid=12;-- and upper(TEN) LIKE '%TỐI%';
+--TPTATC
+--------------------
+select * from hu_organization where id='40BA199D92B944D88516533A8A15C3D6';
+select * from hu_subordinate where id='40BA199D92B944D88516533A8A15C3D6';
+--------
+select * from 
+ where id='40BA199D92B944D88516533A8A15C3D6';
+select * from syn_hu_organization where id='A9C911D41356F442BC48C6026A5BA72C';
+------------
+select * from dm_dataitem where groupid=12;
+
+select * from dm_canbo where toaanid=1 and chucdanhid=486;
+
+--------------------
+select * FROM GDTTT_DON_CHUYEN;
+--TRANGTHAI - 1:Chưa nhận, 2:Đã nhận, 3:Trả lại,4:Đã chuyển
+SELECT * FROM GDTTT_DON_CHUYEN ORDER BY ngaycv DESC;
+-------------
+select * from GDTTT_DON;
+--COMMENT ON COLUMN GDTTT_DON.CD_TRANGTHAI 
+--IS 'TRANG THAI CHUYEN(
+--0,null Chưa chuyển
+--1 Đã chuyển,2 Đã nhận,3 Bị trả lại (phải xóa công văn chuyển vụ mới được trả lại),4 Bị trả lại nhưng không được sửa)';
+select * from gdttt_don where id IN(384260,384261);
+
+select ID,CD_TRANGTHAI,CD_LOAI,CD_TA_TRANGTHAI,BAQD_TOAANID
+,BAQD_LOAIAN,BAQD_CAPXETXU,DONTRUNGID,CD_SOCV 
+from gdttt_don where id IN(384260,384261);
+----------
+SELECT * FROM GDTTT_DON_CHUYEN WHERE donid IN(384260,384261);
+
+select * from dm_toaan where ma='D01.HDTPTATC';
+
+select * from dm_phongban where toaanid=1;
+select * from dm_canbo where toaanid=1 and chucdanhid=486 and id=12563;--102;
+--update dm_canbo
+--set phongbanid=102
+--where id=12563;
+--commit;
+SELECT tc.donid,tc.TRANGTHAI,decode(tc.TRANGTHAI,1,'Đã chuyển','Chưa chuyển')||'</span>'|| '<span >: Thẩm phán</b></i> </span><br />' TRANGTHAICHUYEN_TP,'<br/><i>Ngày chuyển : '||to_char(NGAYCHUYEN,'dd/MM/yyyy hh24:mi:ss')||'</i><br/>' NGAYCHUYEN FROM GDTTT_DON_CHUYEN tc  
+where tc.PHONGBANNHANID=102 and tc.donid=384260;
+----------------
+select * from qt_nguoisudung where username='duy.namnh';
+select * from qt_nguoisudung where username='anhvh.tp';
+select * from dm_canbo where id=14968;
+select * from dm_canbo where toaanid=1 and chucdanhid=486;
+select * from dm_dataitem where groupid=12;-- and upper(TEN) LIKE '%TỐI%';
+--TPTATC
+	SELECT DEPARTMENT_ID FROM   SYN_HU_EMPLOYEE@dblink_DBUTILS WHERE ID='E6E941A421AE404BBA8F68FE9DA0AFB3';
+
+	SELECT DEPARTMENT_ID FROM   SYN_HU_EMPLOYEE WHERE ID='E6E941A421AE404BBA8F68FE9DA0AFB3';
+
+	SELECT DEPARTMENT_ID FROM   SYN_HU_EMPLOYEE WHERE ID='E6E941A421AE404BBA8F68FE9DA0AFB3';
+
+	SELECT * FROM   SYN_HU_EMPLOYEE where DEPARTMENT_ID is null;
+
+	SELECT DEPARTMENT_ID FROM   CCVC_EMPLOYEE_CV WHERE EMPLOYEE_ID='E6E941A421AE404BBA8F68FE9DA0AFB3';
+
+	select * from dm_phongban where id=382;
+
+SELECT * from dm_dataitem where groupid=13 and upper(ten) like '%VỤ%';
+
+SELECT * FROM DM_CANBO WHERE phongbanid=382 AND chucvuid=432;
+
+select * from dm_toaan where id in(11,15);
+select * from DM_TOAAN_TACH_NHAP_MAPPING where toaanid=15;
+
+
+SELECT * FROM DM_PHONGBAN;
+
+SELECT * FROM DM_CANBO WHERE phongbanid IS NULL;
+
+select * from dm_canbo where toaanid=1 and chucdanhid=486 ;--and id=12563;--102;
+
+-----------------
+select ID,CD_TRANGTHAI,CD_LOAI,CD_TA_TRANGTHAI,BAQD_TOAANID
+,BAQD_LOAIAN,BAQD_CAPXETXU,DONTRUNGID,CD_SOCV,to_char(NGAYTAO,'dd/MM/yyyy') NGAYTAO
+from gdttt_don where id IN(384263);
+-----------------
+SELECT * FROM GDTTT_DON_CHUYEN WHERE donid IN(384263);
+----------------
+select * from dm_canbo where toaanid=1 and chucdanhid=486 and id=12563;--102;
+
+-----------------
+select ID,CD_TRANGTHAI,CD_LOAI,CD_TA_TRANGTHAI,BAQD_TOAANID
+,BAQD_LOAIAN,BAQD_CAPXETXU,DONTRUNGID,CD_SOCV 
+from gdttt_don where id IN(384260,384261);
+-----------------
+SELECT * FROM GDTTT_DON_CHUYEN WHERE donid IN(384260,384261);
+----------------
+
+
+ALTER TABLE DM_CANBO READ WRITE;
+ALTER TABLE DM_CANBO READ ONLY;

@@ -1,0 +1,21 @@
+﻿using System;
+using System.Drawing;
+using System.Collections;
+using System.ComponentModel;
+using DevExpress.XtraReports.UI;
+
+namespace WEB.GSTP.QLAN.GDTTT.VuAn.BaoCao.Thongke
+{
+    public partial class rptThongKeAnQuocHoi : DevExpress.XtraReports.UI.XtraReport
+    {
+        public rptThongKeAnQuocHoi()
+        {
+            InitializeComponent();
+        }
+
+        private void xrTableCell25_BeforePrint(object sender, CancelEventArgs e)
+        {
+            xrTableCell25.Text = Parameters["TenPhongban"].Value.ToString().ToUpper() + "";
+        }
+    }
+}

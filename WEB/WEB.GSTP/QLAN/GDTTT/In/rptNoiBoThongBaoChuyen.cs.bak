@@ -1,0 +1,21 @@
+﻿using System;
+using System.Drawing;
+using System.Collections;
+using System.ComponentModel;
+using DevExpress.XtraReports.UI;
+
+namespace WEB.GSTP.QLAN.GDTTT.In
+{
+    public partial class rptNoiBoThongBaoChuyen : DevExpress.XtraReports.UI.XtraReport
+    {
+        public rptNoiBoThongBaoChuyen()
+        {
+            InitializeComponent();
+        }
+
+        private void xrTableCell12_BeforePrint(object sender, System.Drawing.Printing.PrintEventArgs e)
+        {
+            xrTableCell12.Text = xrTableCell12.Text.ToUpper();
+        }
+    }
+}

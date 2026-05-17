@@ -1,0 +1,108 @@
+﻿using System;
+using System.Drawing;
+using System.Collections;
+using System.ComponentModel;
+using DevExpress.XtraReports.UI;
+
+namespace WEB.GSTP.BaoCao.AHC
+{
+    public partial class rpt16HC : DevExpress.XtraReports.UI.XtraReport
+    {
+        public rpt16HC()
+        {
+            InitializeComponent();
+        }
+
+        private void xrTableCell19_BeforePrint(object sender, System.Drawing.Printing.PrintEventArgs e)
+        {
+            xrTableCell19.Text = xrTableCell19.Text.ToUpper();
+        }
+
+        private void DetailReport_BeforePrint(object sender, System.Drawing.Printing.PrintEventArgs e)
+        {
+            System.Data.DataRowView r = (System.Data.DataRowView)DetailReport.GetCurrentRow();
+            if (r == null || r.DataView.Count == 0)
+            {
+                xrTable2.Visible = false;
+                xrTable3.Visible = false;
+            }
+        }
+
+        private void DetailReport1_BeforePrint(object sender, System.Drawing.Printing.PrintEventArgs e)
+        {
+            System.Data.DataRowView r = (System.Data.DataRowView)DetailReport1.GetCurrentRow();
+            if (r == null || r.DataView.Count == 0)
+            {
+                xrTable4.Visible = false;
+                xrTable5.Visible = false;
+            }
+        }
+
+        private void DetailReport2_BeforePrint(object sender, System.Drawing.Printing.PrintEventArgs e)
+        {
+            System.Data.DataRowView r = (System.Data.DataRowView)DetailReport2.GetCurrentRow();
+            if (r == null || r.DataView.Count == 0)
+            {
+                xrTable7.Visible = false;
+                xrTable8.Visible = false;
+            }
+        }
+
+        private void DetailReport4_BeforePrint(object sender, System.Drawing.Printing.PrintEventArgs e)
+        {
+            System.Data.DataRowView r = (System.Data.DataRowView)DetailReport4.GetCurrentRow();
+            if (r == null || r.DataView.Count == 0)
+            {
+                xrTable17.Visible = false;
+                xrTable11.Visible = false;
+            }
+        }
+
+        private void xrTable12_BeforePrint(object sender, System.Drawing.Printing.PrintEventArgs e)
+        {
+            if (string.IsNullOrEmpty(GetCurrentColumnValue("THAMPHANDUKHUYET") + ""))
+            {
+                xrTable12.Visible = false;
+            }
+        }
+
+        private void DetailReport6_BeforePrint(object sender, System.Drawing.Printing.PrintEventArgs e)
+        {
+            System.Data.DataRowView r = (System.Data.DataRowView)DetailReport6.GetCurrentRow();
+            if (r == null || r.DataView.Count == 0)
+            {
+                xrTable14.Visible = false;
+                xrTable13.Visible = false;
+            }
+        }
+
+        private void DetailReport8_BeforePrint(object sender, System.Drawing.Printing.PrintEventArgs e)
+        {
+            System.Data.DataRowView r = (System.Data.DataRowView)DetailReport8.GetCurrentRow();
+            if (r == null || r.DataView.Count == 0)
+            {
+                xrTable22.Visible = false;
+                xrTable16.Visible = false;
+            }
+        }
+
+        private void DetailReport9_BeforePrint(object sender, System.Drawing.Printing.PrintEventArgs e)
+        {
+            System.Data.DataRowView r = (System.Data.DataRowView)DetailReport9.GetCurrentRow();
+            if (r == null || r.DataView.Count == 0)
+            {
+                xrTable18.Visible = false;
+                xrTable19.Visible = false;
+            }
+        }
+
+        private void GroupHeader7_BeforePrint(object sender, System.Drawing.Printing.PrintEventArgs e)
+        {
+            System.Data.DataRowView r = (System.Data.DataRowView)GetCurrentRow();
+            if (string.IsNullOrEmpty(GetCurrentColumnValue("HOITHAMDUKHUYET") + ""))
+            {
+                GroupHeader7.Visible = false;
+            }
+        }
+    }
+}

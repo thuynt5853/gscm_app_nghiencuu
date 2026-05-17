@@ -1,0 +1,105 @@
+﻿using System;
+using System.Drawing;
+using System.Collections;
+using System.ComponentModel;
+using DevExpress.XtraReports.UI;
+
+namespace WEB.GSTP.BaoCao.ADS
+{
+    public partial class rpt47DS : DevExpress.XtraReports.UI.XtraReport
+    {
+        public rpt47DS()
+        {
+            InitializeComponent();
+        }
+
+        private void xrLabel4_BeforePrint(object sender, System.Drawing.Printing.PrintEventArgs e)
+        {
+            xrLabel4.Text = xrLabel4.Text.ToUpper();
+        }
+
+        private void xrTableCell36_BeforePrint(object sender, System.Drawing.Printing.PrintEventArgs e)
+        {
+            xrTableCell36.Text = xrTableCell36.Text.Replace("Ông", "").Replace("Bà", "");
+        }
+
+        private void xrTableCell1_BeforePrint(object sender, System.Drawing.Printing.PrintEventArgs e)
+        {
+            xrTableCell1.Text = xrTableCell1.Text.ToUpper();
+        }
+
+        private void DetailReport_NVLQ_BeforePrint(object sender, System.Drawing.Printing.PrintEventArgs e)
+        {
+            System.Data.DataRowView r = (System.Data.DataRowView)DetailReport_NVLQ.GetCurrentRow();
+            if (r == null || r.DataView.Count == 0)
+            {
+                GroupHeader_NVLQ.Visible = false;
+                Detail_NVLQ.Visible = false;
+            }
+        }
+
+        private void DetailReport_ThamPhan_BeforePrint(object sender, System.Drawing.Printing.PrintEventArgs e)
+        {
+            System.Data.DataRowView r = (System.Data.DataRowView)DetailReport_ThamPhan.GetCurrentRow();
+            if (r == null || r.DataView.Count == 0)
+            {
+                GroupHeader_ThamPhan.Visible = false;
+                Detail_ThamPhan.Visible = false;
+            }
+        }
+
+        private void DetailReport_TPDK_BeforePrint(object sender, System.Drawing.Printing.PrintEventArgs e)
+        {
+            if (string.IsNullOrEmpty(GetCurrentColumnValue("THAMPHANDUKHUYET") + ""))
+            {
+                DetailReport_TPDK.Visible = false;
+            }
+        }
+
+        private void DetailReport_HoiTham_BeforePrint(object sender, System.Drawing.Printing.PrintEventArgs e)
+        {
+            System.Data.DataRowView r = (System.Data.DataRowView)DetailReport_HoiTham.GetCurrentRow();
+            if (r == null || r.DataView.Count == 0)
+            {
+                GroupHeader_HoiTham.Visible = false;
+                Detail_HoiTham.Visible = false;
+            }
+        }
+
+        private void GroupHeader_HoiThamDK_BeforePrint(object sender, System.Drawing.Printing.PrintEventArgs e)
+        {
+            if (string.IsNullOrEmpty(GetCurrentColumnValue("HOITHAMDUKHUYET") + ""))
+            {
+                GroupHeader_HoiThamDK.Visible = false;
+            }
+        }
+
+        private void DetailReport_TGTT_BeforePrint(object sender, System.Drawing.Printing.PrintEventArgs e)
+        {
+            System.Data.DataRowView r = (System.Data.DataRowView)DetailReport_TGTT.GetCurrentRow();
+            if (r == null || r.DataView.Count == 0)
+            {
+                GroupHeader_TGTT.Visible = false;
+                Detail_TGTT.Visible = false;
+            }
+        }
+
+        private void DetailReport_KSV_BeforePrint(object sender, System.Drawing.Printing.PrintEventArgs e)
+        {
+            System.Data.DataRowView r = (System.Data.DataRowView)DetailReport_KSV.GetCurrentRow();
+            if (r == null || r.DataView.Count == 0)
+            {
+                Detail_KSV.Visible = false;
+            }
+        }
+
+        private void DetailReport_VKS_BeforePrint(object sender, System.Drawing.Printing.PrintEventArgs e)
+        {
+            System.Data.DataRowView r = (System.Data.DataRowView)DetailReport_KSV.GetCurrentRow();
+            if (r == null || r.DataView.Count == 0)
+            {
+                DetailReport_VKS.Visible = false;
+            }
+        }
+    }
+}

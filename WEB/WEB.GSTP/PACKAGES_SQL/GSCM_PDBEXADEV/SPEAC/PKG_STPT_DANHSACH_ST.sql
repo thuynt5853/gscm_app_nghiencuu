@@ -1,0 +1,76 @@
+--------------------------------------------------------
+--  DDL for Package PKG_STPT_DANHSACH_ST
+--------------------------------------------------------
+
+  CREATE OR REPLACE EDITIONABLE PACKAGE "GSCM"."PKG_STPT_DANHSACH_ST" AS
+PROCEDURE DANHSACH_AN_DANSUMORONG
+(
+    V_CAP_XET_XU_LOGIN      IN VARCHAR2,
+    V_TEN_VU_AN             IN VARCHAR2, 
+    V_TOIDANH               IN VARCHAR2, 
+    V_MA_VU_AN              IN VARCHAR2, 
+    V_BI_CAN                IN VARCHAR2,
+    V_CAPXX                 IN VARCHAR2,
+    V_TOAAN_ID              IN VARCHAR2, 
+    V_TINHTRANG_THULY       IN VARCHAR2,
+    V_NGAYTHULY_TU          IN VARCHAR2,
+    V_NGAYTHULY_DEN         IN VARCHAR2,
+    V_SOTHULY               IN VARCHAR2,
+    V_TINHTRANG_GIAIQUYET   IN VARCHAR2,
+    V_TUNGAY                IN VARCHAR2,
+    V_DENNGAY               IN VARCHAR2,
+    V_KETQUA                IN VARCHAR2,
+    V_SO_QD                 IN VARCHAR2,
+    V_NGAY_QD               IN VARCHAR2,
+    V_THAMPHAN_ID           IN VARCHAR2,  
+    V_VAITRO_THAMPHAN       IN VARCHAR2,
+    V_THUKY_ID              IN VARCHAR2, 
+    V_THOIHAN_GQ            IN VARCHAR2, 
+    V_QD_TAMGIAM            IN VARCHAR2,
+    V_UTTP                  IN VARCHAR2,
+    V_LOAIAN_ID             IN VARCHAR2,
+    V_AN_KET_THUC           IN NUMBER,
+    PAGE_INDEX              IN INT,
+    PAGE_SIZE	            IN INT,
+    CURRETURN               OUT SYS_REFCURSOR
+);
+
+FUNCTION DON_SEARCH_ITEM_ADS
+(   
+    V_DONID T_ID
+)
+RETURN T_TYPE_OF_20_COLUMN_VARCHAR;
+
+FUNCTION DON_SEARCH_ITEM_AHN
+(   
+    V_DONID T_ID
+)
+RETURN T_TYPE_OF_20_COLUMN_VARCHAR;
+
+FUNCTION DON_SEARCH_ITEM_AKT
+(   
+    V_DONID T_ID
+)
+RETURN T_TYPE_OF_20_COLUMN_VARCHAR;
+
+FUNCTION DON_SEARCH_ITEM_ALD
+(   
+    V_DONID T_ID
+)
+RETURN T_TYPE_OF_20_COLUMN_VARCHAR;
+
+FUNCTION DON_SEARCH_ITEM_AHC
+(   
+    V_DONID T_ID
+)
+RETURN T_TYPE_OF_20_COLUMN_VARCHAR;
+
+FUNCTION DON_SEARCH_ITEM_AHS
+(   
+    V_DONID T_ID
+)
+RETURN T_DANHSACH_AHS_DAXU_ST;
+
+END PKG_STPT_DANHSACH_ST;
+
+/

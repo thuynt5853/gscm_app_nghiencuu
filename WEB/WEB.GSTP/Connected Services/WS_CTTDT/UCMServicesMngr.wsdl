@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<wsdl:definitions xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:plnk="http://docs.oasis-open.org/wsbpel/2.0/plnktype" xmlns:client="http://www.gsolution.vn" name="UCMServicesMngr" targetNamespace="http://www.gsolution.vn" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">
+  <wsdl:documentation>
+    <abstractWSDL>http://www.toaan.gov.vn:8080/soa-infra/services/default/SOAUCMServices!1.0/WSDLs/UCMServicesMngr.wsdl</abstractWSDL>
+  </wsdl:documentation>
+  <plnk:partnerLinkType name="UCMServicesMngr">
+    <plnk:role name="UCMServicesMngrProvider" portType="client:UCMServicesMngr" />
+  </plnk:partnerLinkType>
+  <wsdl:types>
+    <schema xmlns="http://www.w3.org/2001/XMLSchema">
+      <import schemaLocation="http://www.toaan.gov.vn:8080/soa-infra/services/default/SOAUCMServices/ucmservicesmngr_client_ep?XSD=../Schemas/UCMServiceMngr.xsd" namespace="http://www.gsolution.vn" />
+    </schema>
+  </wsdl:types>
+  <wsdl:message name="AnLeRequestMessage">
+    <wsdl:part name="payload" element="client:key" />
+  </wsdl:message>
+  <wsdl:message name="AnLeResponseMessage">
+    <wsdl:part name="payload" element="client:anLeTypeOutput" />
+  </wsdl:message>
+  <wsdl:message name="TLDSRequestMessage">
+    <wsdl:part name="payload" element="client:thongBaoTypeInput" />
+  </wsdl:message>
+  <wsdl:message name="TLDSResponseMessage">
+    <wsdl:part name="payload" element="client:result" />
+  </wsdl:message>
+  <wsdl:portType name="UCMServicesMngr">
+    <wsdl:operation name="getAnLe">
+      <wsdl:input message="client:AnLeRequestMessage" />
+      <wsdl:output message="client:AnLeResponseMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="getQuanLyAn">
+      <wsdl:input message="client:TLDSRequestMessage" />
+      <wsdl:output message="client:TLDSResponseMessage" />
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:binding name="UCMServicesMngrBinding" type="client:UCMServicesMngr">
+    <soap:binding transport="http://schemas.xmlsoap.org/soap/http" />
+    <wsdl:operation name="getAnLe">
+      <soap:operation soapAction="getAnLe" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="getQuanLyAn">
+      <soap:operation soapAction="getQuanLyAn" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:service name="ucmservicesmngr_client_ep">
+    <wsdl:port name="UCMServicesMngr_pt" binding="client:UCMServicesMngrBinding">
+      <soap:address location="http://www.toaan.gov.vn:8080/soa-infra/services/default/SOAUCMServices/ucmservicesmngr_client_ep" />
+    </wsdl:port>
+  </wsdl:service>
+</wsdl:definitions>

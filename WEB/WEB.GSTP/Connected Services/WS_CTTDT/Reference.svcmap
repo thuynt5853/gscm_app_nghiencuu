@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ReferenceGroup xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" ID="c7d07b30-2601-4a0c-88d3-17ce1d4d3e32" xmlns="urn:schemas-microsoft-com:xml-wcfservicemap">
+  <ClientOptions>
+    <GenerateAsynchronousMethods>false</GenerateAsynchronousMethods>
+    <GenerateTaskBasedAsynchronousMethod>true</GenerateTaskBasedAsynchronousMethod>
+    <EnableDataBinding>true</EnableDataBinding>
+    <ExcludedTypes />
+    <ImportXmlTypes>false</ImportXmlTypes>
+    <GenerateInternalTypes>false</GenerateInternalTypes>
+    <GenerateMessageContracts>false</GenerateMessageContracts>
+    <NamespaceMappings />
+    <CollectionMappings />
+    <GenerateSerializableTypes>true</GenerateSerializableTypes>
+    <Serializer>Auto</Serializer>
+    <UseSerializerForFaults>true</UseSerializerForFaults>
+    <ReferenceAllAssemblies>true</ReferenceAllAssemblies>
+    <ReferencedAssemblies />
+    <ReferencedDataContractTypes />
+    <ServiceContractMappings />
+  </ClientOptions>
+  <MetadataSources>
+    <MetadataSource Address="http://www.toaan.gov.vn:8080/soa-infra/services/default/SOAUCMServices/ucmservicesmngr_client_ep?WSDL" Protocol="http" SourceId="1" />
+  </MetadataSources>
+  <Metadata>
+    <MetadataFile FileName="UCMServiceMngr.xsd" MetadataType="Schema" ID="eac646bf-73ca-4328-886b-1b2c95138242" SourceId="1" SourceUrl="http://www.toaan.gov.vn:8080/soa-infra/services/default/SOAUCMServices/ucmservicesmngr_client_ep?XSD=../Schemas/UCMServiceMngr.xsd" />
+    <MetadataFile FileName="UCMServicesMngr.wsdl" MetadataType="Wsdl" ID="97f3a472-f89b-4a99-9561-44f8f9b8b66b" SourceId="1" SourceUrl="http://www.toaan.gov.vn:8080/soa-infra/services/default/SOAUCMServices/ucmservicesmngr_client_ep?WSDL" />
+  </Metadata>
+  <Extensions>
+    <ExtensionFile FileName="configuration91.svcinfo" Name="configuration91.svcinfo" />
+    <ExtensionFile FileName="configuration.svcinfo" Name="configuration.svcinfo" />
+  </Extensions>
+</ReferenceGroup>

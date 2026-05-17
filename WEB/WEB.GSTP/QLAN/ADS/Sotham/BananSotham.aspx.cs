@@ -1,0 +1,3497 @@
+﻿using AjaxControlToolkit;
+using BL.GSTP;
+using BL.GSTP.ADS;
+using BL.GSTP.BANGSETGET;
+using BL.GSTP.BANGSETGET.CONGBOBAQD;
+using BL.GSTP.BANGSETGET.QUANTRI;
+using BL.GSTP.BANGSETGET.THONGKE;
+using BL.GSTP.DLQGC12;
+using BL.GSTP.QLAN;
+using BL.GSTP.Quantri;
+using DAL.DKK;
+using DAL.GSTP;
+using DevExpress.XtraRichEdit.Fields;
+using Module.Common;
+using Module.Common.Auth;
+using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using System.Text.RegularExpressions;
+using System.Web;
+using System.Web.Script.Serialization;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+using WEB.GSTP.GSTP.HoatDongCongBoBAQD;
+
+namespace WEB.GSTP.QLAN.ADS.Sotham
+{
+    public partial class BananSotham : System.Web.UI.Page
+    {
+        GSTPContext dt = new GSTPContext();
+        DKKContextContainer dkk = new DKKContextContainer();
+        CultureInfo cul = new CultureInfo("vi-VN");
+        public Decimal DSID = 0;
+        private const decimal BANAN = 1, QUYETDINH = 2;
+
+        public bool GetNumber(object obj)
+        {
+            try
+            {
+                if ((obj + "") == "")
+                    return false;
+                else
+                    return Convert.ToBoolean(obj);
+            }
+            catch
+            { return false; }
+        }
+        public string GetTextDate(object obj)
+        {
+            try
+            {
+                if ((obj + "") == "")
+                    return "";
+                else
+                    return (Convert.ToDateTime(obj).ToString("dd/MM/yyyy", cul));
+            }
+            catch
+            { return ""; }
+        }
+
+        protected void Page_Load(object sender, EventArgs e)
+        {
+            if (!IsPostBack)
+            {
+                DSID = (String.IsNullOrEmpty(Session[ENUM_LOAIAN.AN_DANSU] + "")) ? 0 : Convert.ToDecimal(Session[ENUM_LOAIAN.AN_DANSU]);
+                hddURLKS.Value = Cls_Comon.GetRootURL() + "/FileUploadHandler.aspx";
+                hddDonID.Value = Session[ENUM_LOAIAN.AN_DANSU] + "" == "" ? "0" : Session[ENUM_LOAIAN.AN_DANSU] + "";
+                if (hddDonID.Value == "0") Response.Redirect(Cls_Comon.GetRootURL() + "/QLAN/ADS/Hoso/Danhsach.aspx");
+                decimal DONID = Convert.ToDecimal(hddDonID.Value);
+                txtNgayQD.Text = DateTime.Now.ToString("dd/MM/yyyy");
+
+                LoadDrop_Anle();
+                LoadCombobox();
+                LoadBoLuat();
+
+                CheckQuyen(DONID);
+                CheckQuyenSua(DONID);
+
+                LoadBanAnInfo(DONID);
+                LoadDieuLuat();
+                LoadAnPhi();
+                LoadTGTT();
+                GetTrangThaiBanDauDONKK_USER_DKNHANVB(DONID);
+                SetNewSoQD();
+                LoadNguoiKyInfo();
+                LoadGrid();
+                CheckCongbo(DONID);
+                //check vụ án đã kết thúc không cho sửa xóa
+                Boolean anKetThuc = Session[ENUM_LOAIAN.AN_DA_KET_THUC] != null ? Convert.ToBoolean(Session[ENUM_LOAIAN.AN_DA_KET_THUC]) : false;
+                if (anKetThuc)
+                {
+                    lbthongbao.Text = "Vụ án đã kết thúc tại tòa cũ, không thể chỉnh sửa tại tòa mới";
+                    Cls_Comon.SetButton(cmdUpdate, false);
+                    Cls_Comon.SetButton(cmdLammoi, false);
+                    Cls_Comon.SetButton(cmdHuyBanAn, false);
+                    Cls_Comon.SetButton(cmdLuatUpdate, false);
+                    Cls_Comon.SetButton(cmdAnphi, false);
+                    Cls_Comon.SetButton(cmdXoaAnphi, false);
+                    Cls_Comon.SetButton(cmdTGTT, false);
+                    Cls_Comon.SetButton(cmdXoaTGTT, false);
+                    Cls_Comon.SetButton(btnUpdate, false);
+                }
+            }
+            LoadFile();
+
+        }
+        private void LoadDrop_Anle()
+        {
+            try
+            {
+                CONGBO_BL TK_BL = new CONGBO_BL();
+                DataTable tbl = TK_BL.DBLINK_GET_LIST_ANLE();
+                ddlCBBA_Anle.DataSource = ddlCBBA_AnleQD.DataSource = tbl;
+                ddlCBBA_Anle.DataTextField = ddlCBBA_AnleQD.DataTextField = "SO_ANLE";
+                ddlCBBA_Anle.DataValueField = ddlCBBA_AnleQD.DataValueField = "SO_ANLE";
+                ddlCBBA_Anle.DataBind();
+                ddlCBBA_AnleQD.DataBind();
+                ddlCBBA_Anle.Items.Insert(0, new ListItem("Không áp dụng án lệ", "0"));
+                ddlCBBA_AnleQD.Items.Insert(0, new ListItem("Không áp dụng án lệ", "0"));
+            }
+            catch (Exception)
+            {
+                // GTEL-DUCPH  NC: 13-09-2025 Fake rỗng
+                DataTable tbl = new DataTable();
+                tbl.Columns.Add("TEN", typeof(string));
+                tbl.Columns.Add("SO_ANLE", typeof(string));
+                ddlCBBA_Anle.DataSource = tbl;
+                ddlCBBA_Anle.DataTextField = "SO_ANLE";
+                ddlCBBA_Anle.DataValueField = "SO_ANLE";
+                ddlCBBA_Anle.DataBind();
+                ddlCBBA_Anle.Items.Insert(0, new ListItem("Không áp dụng án lệ", "0"));
+            }
+
+        }
+        void SetNewSoQD()
+        {
+            DateTime ngay = DateTime.Parse(this.txtNgayQD.Text.Trim(), cul, DateTimeStyles.NoCurrentDateDefault);
+            Decimal DonViID = Convert.ToDecimal(Session[ENUM_SESSION.SESSION_DONVIID]);
+            ADS_SOTHAM_BL oSTBL = new ADS_SOTHAM_BL();
+            Decimal LoaiQD = Convert.ToDecimal(ddlQuyetdinh.SelectedValue);
+        }
+        bool CheckCongbo(decimal ID)
+        {
+            var list = DataExtensions.GetAllWithClause<BAQD_CONGBO>(
+                $"VUVIECID = {ID} AND LOAIANID = {ENUM_LOAIVUVIEC_NUMBER.AN_DANSU} AND CAPXETXU = 2 AND TRANGTHAI IN (2,3)"
+            );
+
+            BAQD_CONGBO lstCongbo = list?.FirstOrDefault();
+            if (lstCongbo != null)
+            {
+                DisableButtonsBanan();
+                DisableButtonsQuyetdinh();
+                lbthongbaoA.Text = lbthongbaoQD.Text = "Đã có thông tin về công bố!";
+                return false;
+            }
+
+            return true;
+        }
+        void CheckQuyen(decimal ID)
+        {
+            MenuPermission oPer = Cls_Comon.GetMenuPer(Request.FilePath, Convert.ToDecimal(Session[ENUM_SESSION.SESSION_USERID]));
+            Cls_Comon.SetButton(cmdUpdate, oPer.CAPNHAT);
+            Cls_Comon.SetButton(cmdLuatUpdate, oPer.CAPNHAT);
+            Cls_Comon.SetButton(cmdAnphi, oPer.CAPNHAT);
+            Cls_Comon.SetButton(cmdTGTT, oPer.CAPNHAT);
+            Cls_Comon.SetButton(cmdHuyBanAn, oPer.CAPNHAT);
+            Cls_Comon.SetLinkButton(lkChoiceDieuLuat, oPer.CAPNHAT);
+
+            Cls_Comon.SetButton(btnUpdate, true);
+
+            DM_QUYETDINH_VUAN_KETTHUC oBL = new DM_QUYETDINH_VUAN_KETTHUC();
+            DataTable oDT = oBL.DGLIST_BAQD_QUYETDINH_KETTHUC_ST(ENUM_LOAIVUVIEC_NUMBER.AN_DANSU, ID);
+            if (oDT.Rows.Count > 0)
+            {
+                pnQDVV.Visible = true;
+                pnBAST.Visible = false;
+                rdbPanelQD.Enabled = false;
+                rdbPanelQD.SelectedValue = QUYETDINH.ToString();
+
+                lstErr.Text = lbthongbaoQD.Text = "Vụ viêc đã có quyết định kết thúc!";
+                DisableButtonsQuyetdinh();
+            }
+            else
+            {
+                rdbPanelQD.Enabled = true;
+            }
+
+            //Kiểm tra xem đã thụ lý chưa
+            List<ADS_SOTHAM_THULY> lstCount = dt.ADS_SOTHAM_THULY.Where(x => x.DONID == ID).ToList();
+            if (lstCount.Count == 0)
+            {
+                lstErr.Text = lbthongbaoQD.Text = "Chưa cập nhật thông tin thụ lý sơ thẩm !";
+                DisableButtonsBanan();
+                DisableButtonsQuyetdinh();
+                return;
+            }
+
+            //Kiểm tra đã phân công thẩm phán chưa
+            List<ADS_DON_THAMPHAN> lstTPGQ = dt.ADS_DON_THAMPHAN.Where(x => x.DONID == ID && x.MAVAITRO == "VTTP_GIAIQUYETSOTHAM").ToList();
+            if (lstTPGQ.Count == 0)
+            {
+                lstErr.Text = lbthongbaoQD.Text = "Chưa cập nhật phân công thẩm phán !";
+                DisableButtonsBanan();
+                DisableButtonsQuyetdinh();
+                return;
+            }
+
+            //Kiểm tra đã phân công thẩm phán chủ tọa
+            List<ADS_SOTHAM_HDXX> lstTPCT = dt.ADS_SOTHAM_HDXX.Where(x => x.DONID == ID && x.MAVAITRO == ENUM_NGUOITIENHANHTOTUNG.THAMPHAN).ToList();
+            if (lstTPCT.Count == 0)
+            {
+                lstErr.Text = lbthongbaoQD.Text = "Chưa cập nhật thông tin hội đồng xét xử !";
+                DisableButtonsBanan();
+                DisableButtonsQuyetdinh();
+                return;
+            }
+
+            //Kiểm tra xem đã có quyết định đưa vụ việc ra xét xử hay không
+            //AnhPN - Rào lại đoạn code kiểm tra theo yêu cầu phòng 3 ngày 25/08/2025
+            //decimal IDLQD = 0;
+            //DM_QD_LOAI oLQD = dt.DM_QD_LOAI.Where(x => x.MA == "DVARXX").FirstOrDefault();
+            //if (oLQD != null) IDLQD = oLQD.ID;
+            //ADS_SOTHAM_QUYETDINH QDST = dt.ADS_SOTHAM_QUYETDINH.Where(x => x.DONID == ID && x.LOAIQDID == IDLQD).OrderByDescending(x => x.NGAYQD).FirstOrDefault();
+            //if (QDST == null)
+            //{
+            //    lstErr.Text = "Chưa cập nhật quyết định đưa vụ án ra xét xử !";
+            //    DisableButtonsBanan();
+            //}
+            //else
+            //{
+            //    hddNgayQDXX.Value = QDST.NGAYQD + "" == "" ? "" : ((DateTime)QDST.NGAYQD).ToString("dd/MM/yyyy");
+            //}
+
+            //GTEL-HUNGQ 22-09-2025 thêm check có đương sự chưa xác thực thì không cho Lưu
+            //Decimal soDuongSuChuaXacThuc = dt.ADS_DON_DUONGSU.Count(x => x.DONID == ID && x.XACTHUC_DLDCQG == 0 && x.QUOCTICHID == 2);
+            //if (soDuongSuChuaXacThuc > 0)
+            //{
+            //    lstErr.Text = lbthongbaoQD.Text = "Có đương sự chưa xác thực thông tin. Đề nghị xác thực tại màn hình Danh sách đương sự.";
+            //    DisableButtonsBanan();
+            //    DisableButtonsQuyetdinh();
+            //    return;
+            //}
+
+            if (rdbPanelQD.SelectedValue == "2" && ddlQuyetdinh.SelectedValue == "0")
+            {
+                DisableButtonsQuyetdinh();
+            }
+        }
+        private bool CheckQuyenSua(decimal ID)
+        {
+            Cls_Comon.SetButton(btnUpdate, true);
+            hddShowCommand.Value = "True";
+
+            ADS_SOTHAM_BANAN ba = dt.ADS_SOTHAM_BANAN.Where(x => x.DONID == ID).FirstOrDefault();
+            if (ba != null)
+            {
+                lbthongbao.Text = lbthongbaoQD.Text = "Vụ việc đã có bản án.";
+                DisableButtonsQuyetdinh();
+            }
+            else
+            {
+                Cls_Comon.SetButton(cmdLuatUpdate, false); lkChoiceDieuLuat.Enabled = false; lkChoiceDieuLuat.Visible = false;
+                Cls_Comon.SetButton(cmdAnphi, false);
+                Cls_Comon.SetButton(cmdTGTT, false);
+                Cls_Comon.SetButton(cmdHuyBanAn, false);
+                Cls_Comon.SetButton(cmdXoaAnphi, false);
+                Cls_Comon.SetButton(cmdXoaTGTT, false);
+            }
+
+            ADS_DON oT = dt.ADS_DON.Where(x => x.ID == ID).FirstOrDefault();
+            if (oT != null)
+            {
+                if (oT.MAGIAIDOAN == ENUM_GIAIDOANVUAN.PHUCTHAM || oT.MAGIAIDOAN == ENUM_GIAIDOANVUAN.THULYGDT)
+                {
+                    lstErr.Text = lbthongbaoQD.Text = "Vụ việc đã được chuyển lên tòa cấp trên, không được sửa đổi !";
+                    DisableButtonsBanan();
+                    DisableButtonsQuyetdinh();
+                    return false;
+                }
+            }
+
+            List<decimal> dmQDIds = dt.DM_QD_QUYETDINH.Where(x => x.ISSOTHAM == 1 && x.ISDANSU == 1 && x.KET_THUC == 1).Select(x => x.ID).ToList();
+            List<ADS_SOTHAM_QUYETDINH> qdKetThuc = dt.ADS_SOTHAM_QUYETDINH.Where(x => x.DONID == ID && dmQDIds.Contains(x.QUYETDINHID.Value)).ToList();
+            if (ba != null && qdKetThuc != null)
+            {
+
+                ADS_SOTHAM_KHANGCAO kc2 = dt.ADS_SOTHAM_KHANGCAO.Where(x => x.DONID == ID).FirstOrDefault();
+                if (kc2 != null)
+                {
+                    lstErr.Text = lbthongbaoQD.Text = "Vụ việc đã có kháng cáo. Không được sửa đổi.";
+                    DisableButtonsBanan();
+                    DisableButtonsQuyetdinh();
+                    return false;
+                }
+                ADS_SOTHAM_KHANGNGHI kn2 = dt.ADS_SOTHAM_KHANGNGHI.Where(x => x.DONID == ID).FirstOrDefault();
+                if (kn2 != null)
+                {
+                    lstErr.Text = lbthongbaoQD.Text = "Vụ việc đã có kháng nghị. Không được sửa đổi.";
+                    DisableButtonsBanan();
+                    DisableButtonsQuyetdinh();
+                    return false;
+                }
+            }
+            else
+            {
+                ADS_SOTHAM_KHANGCAO kc = dt.ADS_SOTHAM_KHANGCAO.Where(x => x.DONID == ID && x.TINHTRANG_GIAIQUYET == 1).OrderByDescending(x => x.ID).FirstOrDefault();
+                ADS_SOTHAM_KHANGNGHI kn = dt.ADS_SOTHAM_KHANGNGHI.Where(x => x.DONID == ID && x.TINHTRANG_GIAIQUYET == 1).OrderByDescending(x => x.ID).FirstOrDefault();
+                if (kc != null)
+                {
+                    var kcChuaGiaiQuyet = dt.ADS_SOTHAM_KHANGCAO.Where(x => x.DONID == ID && x.ID > kc.ID && x.TINHTRANG_GIAIQUYET != 2).ToList();
+                    if (kcChuaGiaiQuyet != null && kcChuaGiaiQuyet.Count > 0)
+                    {
+                        lstErr.Text = lbthongbaoQD.Text = "Vụ việc đã có kháng cáo. Không được sửa đổi.";
+                        DisableButtonsBanan();
+                        DisableButtonsQuyetdinh();
+                        return false;
+                    }
+                }
+                else
+                {
+                    ADS_SOTHAM_KHANGCAO kc2 = dt.ADS_SOTHAM_KHANGCAO.Where(x => x.DONID == ID).FirstOrDefault();
+                    if (kc2 != null)
+                    {
+                        lstErr.Text = lbthongbaoQD.Text = "Vụ việc đã có kháng cáo. Không được sửa đổi.";
+                        DisableButtonsBanan();
+                        DisableButtonsQuyetdinh();
+                        return false;
+                    }
+                }
+                if (kn != null)
+                {
+                    var knChuaGiaiQuyet = dt.ADS_SOTHAM_KHANGNGHI.Where(x => x.DONID == ID && x.ID > kn.ID && x.TINHTRANG_GIAIQUYET != 3).ToList();
+                    if (knChuaGiaiQuyet != null && knChuaGiaiQuyet.Count > 0)
+                    {
+                        lstErr.Text = lbthongbaoQD.Text = "Vụ việc đã có kháng nghị. Không được sửa đổi.";
+                        DisableButtonsBanan();
+                        DisableButtonsQuyetdinh();
+                        return false;
+                    }
+                }
+                else
+                {
+                    ADS_SOTHAM_KHANGNGHI kn2 = dt.ADS_SOTHAM_KHANGNGHI.Where(x => x.DONID == ID).FirstOrDefault();
+                    if (kn2 != null)
+                    {
+                        lstErr.Text = lbthongbaoQD.Text = "Vụ việc đã có kháng nghị. Không được sửa đổi.";
+                        DisableButtonsBanan();
+                        DisableButtonsQuyetdinh();
+                        return false;
+                    }
+                }
+            }
+
+            string StrMsg = "Không được sửa đổi thông tin.";
+            string Result = new ADS_CHUYEN_NHAN_AN_BL().Check_NhanAn(ID, StrMsg, Convert.ToDecimal(Session[ENUM_SESSION.SESSION_DONVIID]));
+            if (Result != "")
+            {
+                lstErr.Text = lbthongbaoQD.Text = Result;
+                DisableButtonsBanan();
+                DisableButtonsQuyetdinh();
+                return false;
+            }
+            ADS_TONGDAT td = dt.ADS_TONGDAT.Where(x => x.DONID == ID && (x.BIEUMAUID == 230 || x.BIEUMAUID == 261)).FirstOrDefault();
+            if (td != null)
+            {
+                lstErr.Text = lbthongbaoQD.Text = "Vụ việc đã tống đạt không được xóa";
+                DisableButtonsBanan();
+                DisableButtonsQuyetdinh();
+                return false;
+            }
+
+            //GTEL-HUNGQ 22-09-2025 thêm check có đương sự chưa xác thực thì không cho Lưu
+            //AnhPN - 13/04/2026 chỉ check trong trường hợp nhập mới chưa xác thực thì không cho nhập bản án
+            //Decimal soDuongSuChuaXacThuc = dt.ADS_DON_DUONGSU.Count(x => x.DONID == ID && x.XACTHUC_DLDCQG == 0 && x.QUOCTICHID == 2);
+            //if (soDuongSuChuaXacThuc > 0)
+            //{
+            //    lbthongbaoQD.Text = "Có đương sự chưa xác thực thông tin. Đề nghị xác thực tại màn hình Danh sách đương sự.";
+            //    DisableButtonsBanan();
+            //    DisableButtonsQuyetdinh();
+            //    return false;
+            //}
+
+            //Check neu da chia sẻ dữ liệu không được xóa
+            KHOBAQD_BL ads = new KHOBAQD_BL();
+            bool isExist = ads.IsExistKHOBADQ(0, ID, 2,ENUM_LOAIVUVIEC_TEXT.AN_DANSU);
+            if (isExist)
+            {
+                lstErr.Text = lbthongbaoQD.Text = "Vụ việc đã được đồng bộ. Phải thu hồi đồng bộ trước khi chỉnh sửa/xóa";
+                DisableButtonsBanan();
+                DisableButtonsQuyetdinh();
+                return false;
+            }
+
+            isExist = ads.IsExistKHOBADQ(1, ID, 2, ENUM_LOAIVUVIEC_TEXT.AN_DANSU);
+            if (isExist)
+            {
+                lstErr.Text = lbthongbaoQD.Text = "Vụ việc đã được đồng bộ. Phải thu hồi đồng bộ trước khi chỉnh sửa/xóa";
+                DisableButtonsBanan();
+                DisableButtonsQuyetdinh();
+                return false;
+            }
+
+            return true;
+        }
+        // Hàm tắt các nút
+        private void DisableButtonsBanan()
+        {
+            SetEnable_data_BA();
+            Cls_Comon.SetButton(cmdUpdate, false);
+            Cls_Comon.SetButton(cmdLuatUpdate, false);
+            lkChoiceDieuLuat.Enabled = false;
+            lkChoiceDieuLuat.Visible = false;
+            Cls_Comon.SetButton(cmdAnphi, false);
+            Cls_Comon.SetButton(cmdTGTT, false);
+            Cls_Comon.SetButton(cmdHuyBanAn, false);
+            Cls_Comon.SetButton(cmdXoaAnphi, false);
+            Cls_Comon.SetButton(cmdXoaTGTT, false);
+        }
+        private void DisableButtonsQuyetdinh()
+        {
+            //SetEnable_data_QD();
+            Cls_Comon.SetButton(btnUpdate, false);
+            hddShowCommand.Value = "False";
+        }
+
+        #region thông tin quyết định - HIEUVM
+        public void LoadGrid()
+        {
+            decimal ID = Convert.ToDecimal(hddDonID.Value);
+            DM_QUYETDINH_VUAN_KETTHUC oBL = new DM_QUYETDINH_VUAN_KETTHUC();
+            DataTable oDT = oBL.DGLIST_BAQD_QUYETDINH_KETTHUC_ST(ENUM_LOAIVUVIEC_NUMBER.AN_DANSU, ID);
+
+            if (oDT != null && oDT.Rows.Count > 0)
+            {
+                #region "Xác định số lượng trang"
+                hddTotalPage.Value = Cls_Comon.GetTotalPage(Convert.ToInt32(oDT.Rows.Count), Convert.ToInt32(20)).ToString();
+                lstSobanghiT.Text = lstSobanghiB.Text = "Có <b>" + oDT.Rows.Count.ToString() + " </b> bản ghi trong <b>" + hddTotalPage.Value + "</b> trang";
+                Cls_Comon.SetPageButton(hddTotalPage, hddPageIndex, lbTFirst, lbBFirst, lbTLast, lbBLast, lbTNext, lbBNext, lbTBack, lbBBack, lbTStep1, lbBStep1, lbTStep2,
+                             lbBStep2, lbTStep3, lbBStep3, lbTStep4, lbBStep4, lbTStep5, lbBStep5, lbTStep6, lbBStep6);
+                #endregion
+
+                dgList.DataSource = oDT;
+                dgList.DataBind();
+                pndata.Visible = true;
+            }
+            else
+            {
+                pndata.Visible = false;
+            }
+        }
+        private void LoadDuongSuYC()
+        {
+            ddlNguoiYC.Items.Clear(); ddlNguoiBiYC.Items.Clear();
+            decimal DonID = Convert.ToDecimal(hddDonID.Value);
+            List<ADS_DON_DUONGSU> lstDS = dt.ADS_DON_DUONGSU.Where(x => x.DONID == DonID).OrderBy(x => x.TENDUONGSU).ToList<ADS_DON_DUONGSU>();
+            ddlNguoiYC.DataSource = ddlNguoiBiYC.DataSource = lstDS;
+            ddlNguoiYC.DataTextField = ddlNguoiBiYC.DataTextField = "TENDUONGSU";
+            ddlNguoiYC.DataValueField = ddlNguoiBiYC.DataValueField = "ID";
+            ddlNguoiYC.DataBind(); ddlNguoiBiYC.DataBind();
+            ddlNguoiYC.Items.Insert(0, new ListItem("-- Chọn --", "0"));
+            ddlNguoiBiYC.Items.Insert(0, new ListItem("-- Chọn --", "0"));
+        }
+        private void LoadQD()
+        {
+            //Load Tên quyết định PKG_LOAD_DM_QDVUAN_KETTHUC
+            DM_QUYETDINH_VUAN_KETTHUC oBL = new DM_QUYETDINH_VUAN_KETTHUC();
+            DataTable oDT = oBL.DM_QUYETDINH_VUAN_SOTHAM_KETTHUC(ENUM_LOAIVUVIEC_NUMBER.AN_DANSU);
+
+            if (oDT != null)
+            {
+                ddlQuyetdinh.DataSource = oDT;
+                ddlQuyetdinh.DataTextField = "TEN";
+                ddlQuyetdinh.DataValueField = "ID";
+                ddlQuyetdinh.DataBind();
+            }
+
+            ddlQuyetdinh.Items.Insert(0, new ListItem("--- Chọn ---", "0"));
+            ddlQuyetdinh.SelectedIndex = 0;
+            LoadLydo();
+        }
+        private void LoadLydo()
+        {
+            if (ddlQuyetdinh.Items.Count > 0 && ddlQuyetdinh.SelectedValue != "0")
+            {
+                decimal ID = Convert.ToDecimal(ddlQuyetdinh.SelectedValue);
+                List<DM_QD_QUYETDINH_LYDO> lst = dt.DM_QD_QUYETDINH_LYDO.Where(x => x.QDID == ID & x.HIEULUC == 1).OrderBy(y => y.THUTU).ToList();
+                if (lst != null && lst.Count > 0)
+                {
+                    if (ddlQuyetdinh.Text == "1")
+                    {
+                        pnLyDo.Visible = false;
+                    }
+                    else
+                    {
+                        pnLyDo.Visible = true;
+                    }
+
+                    ddlLydo.Items.Clear();
+                    foreach (DM_QD_QUYETDINH_LYDO item in lst)
+                    {
+                        ddlLydo.Items.Insert(0, new ListItem(item.TEN, item.ID.ToString()));
+                    }
+
+                    //ddlLydo.DataSource = lst;
+                    //ddlLydo.DataTextField = "TEN";
+                    //ddlLydo.DataValueField = "ID";
+                    //ddlLydo.DataBind();
+                    ddlLydo.Items.Insert(0, new ListItem("--- Chọn ---", "0"));
+                }
+                else
+                {
+                    pnLyDo.Visible = false;
+                }
+            }
+        }
+        private void LoadNguoiKyInfo()
+        {
+            decimal DonID = Convert.ToDecimal(hddDonID.Value);
+            DM_CANBO_BL cb_BL = new DM_CANBO_BL();
+            ADS_SOTHAM_HDXX oND = dt.ADS_SOTHAM_HDXX.Where(x => x.DONID == DonID && x.MAVAITRO == ENUM_NGUOITIENHANHTOTUNG.THAMPHAN).OrderByDescending(x => x.NGAYPHANCONG).FirstOrDefault<ADS_SOTHAM_HDXX>();
+            if (oND != null)
+            {
+                decimal CanBoID = Convert.ToDecimal(oND.CANBOID.ToString());
+
+                DataTable dtCanBo = cb_BL.DM_CANBO_GETINFOBYID(CanBoID);
+                if (dtCanBo.Rows.Count > 0)
+                {
+                    txtNguoiKyTTVV.Text = dtCanBo.Rows[0]["HOTEN"].ToString();
+                    txtChucvu.Text = dtCanBo.Rows[0]["ChucVu"].ToString();
+                    hddNguoiKyID.Value = dtCanBo.Rows[0]["ID"].ToString();
+                }
+            }
+            else
+            {
+                ADS_DON_THAMPHAN oTP = dt.ADS_DON_THAMPHAN.Where(x => x.DONID == DonID && x.MAVAITRO == ENUM_VAITROTHAMPHAN.VTTP_GIAIQUYETSOTHAM).OrderByDescending(x => x.NGAYPHANCONG).FirstOrDefault();
+                if (oTP != null)
+                {
+                    decimal CanBoID = Convert.ToDecimal(oTP.CANBOID.ToString());
+                    DataTable dtCanBo = cb_BL.DM_CANBO_GETINFOBYID(CanBoID);
+                    if (dtCanBo.Rows.Count > 0)
+                    {
+                        txtNguoiKyTTVV.Text = dtCanBo.Rows[0]["HOTEN"].ToString();
+                        txtChucvu.Text = dtCanBo.Rows[0]["ChucVu"].ToString();
+                        hddNguoiKyID.Value = dtCanBo.Rows[0]["ID"].ToString();
+                    }
+                }
+                else
+                    txtNguoiKyTTVV.Text = txtChucvu.Text = "";
+            }
+        }
+        private void ResetControl_Quyetdinh()
+        {
+            ddlLoaiQD.SelectedIndex = 0;
+            ddlLoaiQD_SelectedIndexChanged(new object(), new EventArgs());
+            ddlQuyetdinh.SelectedIndex = 0;
+            ddlCBBA_AnleQD.SelectedValue = "0";
+            rdbVKSThamgia_QD.ClearSelection();
+            txtSoQDTraiPLBiHuy_QD.Text = "";
+
+            rdqHoaGiaiThanhQD.ClearSelection();
+            LoadDuongSuYC();
+            txtNgayQD.Text = DateTime.Now.ToString("dd/MM/yyyy");
+            txtSoQD.Text = txtHieuLucDenNgay.Text = hddFilePath.Value = lbthongbao.Text = "";
+            txtQHPLQDVV.Text = "";
+        }
+        protected void btnLammoi_Click(object sender, EventArgs e)
+        {
+            decimal ID = Convert.ToDecimal(hddDonID.Value);
+            List<ADS_SOTHAM_QUYETDINH> lstQD = dt.ADS_SOTHAM_QUYETDINH.Where(x => x.DONID == ID && (x.LOAIQDID == 10 || x.QUYETDINHID == 423 || x.QUYETDINHID == 422 || x.QUYETDINHID == 70 || x.QUYETDINHID == 425 || x.LOAIQDID == 3)).ToList();
+            if (lstQD.Count >= 1)
+            {
+                ddlQuyetdinh.Enabled = true;
+                Cls_Comon.SetButton(btnUpdate, false);
+            }
+            ResetControl_Quyetdinh();
+        }
+        protected void ddlLoaiQD_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            LoadQD();
+            Cls_Comon.SetFocus(this, this.GetType(), ddlQuyetdinh.ClientID);
+        }
+        public void xoa(decimal id)
+        {
+
+            ADS_SOTHAM_QUYETDINH oND = dt.ADS_SOTHAM_QUYETDINH.Where(x => x.ID == id).FirstOrDefault();
+            if (oND.NOIDUNG == null && oND.QT_FILE_ID != null)
+            {
+                QT_FILE qtFileDelete = DataExtensions.FindById<QT_FILE>(oND.QT_FILE_ID.Value);
+                if (qtFileDelete != null)
+                {
+                    qtFileDelete.DESCRIPTION = "Tài khoản " + Session[ENUM_SESSION.SESSION_USERNAME] + " đã xóa file tại form BanAnSoTham " + ENUM_LOAIAN.AN_DANSU + ".";
+                    QT_FILE_BL fileH = new QT_FILE_BL();
+                    fileH.DeleteFileLogic(qtFileDelete);
+                }
+            }
+            TK_SOTHAM_QUYETDINH TK = DataExtensions.GetAllWithClause<TK_SOTHAM_QUYETDINH>($"QUYETDINHID = {id} AND LOAIAN =  {Convert.ToDecimal(ENUM_LOAIVUVIEC_NUMBER.AN_DANSU)}").FirstOrDefault();
+            if (TK != null)
+            {
+                DataExtensions.Delete(TK);
+            }
+
+            var list = DataExtensions.GetAllWithClause<BAQD_CONGBO>($"  VUVIECID = {oND.DONID.Value} " +
+                                                                    $"  AND LOAIANID = {Convert.ToDecimal(ENUM_LOAIVUVIEC_NUMBER.AN_DANSU)} " +
+                                                                    $"  AND CAPXETXU = {2} ");
+
+            BAQD_CONGBO temp_congbo = list?.FirstOrDefault();
+            if (temp_congbo != null)
+            {
+                temp_congbo.BAQDID = 0;
+                temp_congbo.NGAYHIEULUC = null;
+                temp_congbo.NGAYSUA = DateTime.Now;
+                temp_congbo.NGUOISUA = Session[ENUM_SESSION.SESSION_USERNAME] + "";
+                DataExtensions.Update(temp_congbo);
+            }
+
+
+            if (CheckQuyenSua(Convert.ToDecimal(oND.DONID + "")) == true)
+                if (oND != null)
+                {
+                    decimal FileID = 0;
+                    if (oND.FILEID != null) FileID = (decimal)oND.FILEID;
+
+                    dt.ADS_SOTHAM_QUYETDINH.Remove(oND);
+                    SetTrangThaibanDauDONKK_USER_DKNHANVB(oND.DONID.Value);
+                    dt.SaveChanges();
+                    if (FileID > 0)
+                    {
+                        try
+                        {
+                            ADS_FILE objf = dt.ADS_FILE.Where(x => x.ID == FileID).FirstOrDefault();
+                            dt.ADS_FILE.Remove(objf);
+                            dt.SaveChanges();
+                        }
+                        catch (Exception ex) { }
+                    }
+                    dgList.CurrentPageIndex = 0;
+                    ResetControl_Quyetdinh();
+                    LoadGrid();
+                    lbthongbao.Text = "Xóa thành công!";
+                    Page.Response.Redirect(Page.Request.Url.ToString(), true);
+                }
+        }
+        protected void rdbPanelBA_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            lbthongbao.Text = "";
+            if (rdbPanelBA.SelectedValue == BANAN.ToString()) // Bản án
+            {
+                rdbPanelBA.SelectedValue = BANAN.ToString();
+                pnBAST.Visible = true; hddShowBA.Value = "1";
+                pnQDVV.Visible = false;
+                Cls_Comon.SetFocus(this, this.GetType(), txtNgaymophientoa.ClientID);
+            }
+            else // quyết định
+            {
+                rdbPanelQD.SelectedValue = QUYETDINH.ToString();
+                pnBAST.Visible = false; hddShowBA.Value = "0";
+                pnQDVV.Visible = true;
+                Cls_Comon.SetFocus(this, this.GetType(), txtNgayMoPhienToaQD.ClientID);
+            }
+        }
+        protected void rdbPanelQD_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            lbthongbao.Text = "";
+            if (rdbPanelQD.SelectedValue == BANAN.ToString()) // Bản án
+            {
+                rdbPanelBA.SelectedValue = BANAN.ToString();
+                pnBAST.Visible = true; hddShowBA.Value = "1";
+                pnQDVV.Visible = false;
+                Cls_Comon.SetFocus(this, this.GetType(), txtNgaymophientoa.ClientID);
+            }
+            else // quyết định
+            {
+                rdbPanelQD.SelectedValue = QUYETDINH.ToString();
+                pnBAST.Visible = false; hddShowBA.Value = "0";
+                pnQDVV.Visible = true;
+                Cls_Comon.SetFocus(this, this.GetType(), txtNgayMoPhienToaQD.ClientID);
+            }
+        }
+        protected void btnUpdate_Quyetdinh_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                decimal ID = Convert.ToDecimal(hddid.Value);
+                decimal DONID = Convert.ToDecimal(hddDonID.Value);
+
+                if (!CheckValidQDVV(ID) || !CheckCongbo(DONID)) return;
+                ADS_DON oDon = dt.ADS_DON.Where(x => x.ID == DONID).FirstOrDefault();
+                decimal FileID = 0;
+
+                DateTime NgayQD;
+                if (!String.IsNullOrEmpty(txtNgayQD.Text)) { NgayQD = DateTime.Parse(this.txtNgayQD.Text.Trim(), cul, DateTimeStyles.NoCurrentDateDefault); }
+                else
+                {
+                    DateTime? a = null;
+                    NgayQD = Convert.ToDateTime(a);
+                }
+                ADS_SOTHAM_QUYETDINH oND;
+                TK_SOTHAM_QUYETDINH TK = new TK_SOTHAM_QUYETDINH();
+
+                decimal STTQD = 0;
+                if ((hddid.Value == "" || hddid.Value == "0"))
+                {
+                    oND = new ADS_SOTHAM_QUYETDINH();
+                    ADS_DON_BL oBL = new ADS_DON_BL();
+
+                    if (!String.IsNullOrEmpty(txtNgayQD.Text.Trim()))
+                        STTQD = oBL.GETFILENEWTT(Convert.ToDecimal(Session[ENUM_SESSION.SESSION_DONVIID]), ENUM_GIAIDOANVUAN.SOTHAM, NgayQD.Year, 1);
+                    else
+                    {
+                        Decimal? a = null;
+                        STTQD = oBL.GETFILENEWTT(Convert.ToDecimal(Session[ENUM_SESSION.SESSION_DONVIID]), ENUM_GIAIDOANVUAN.SOTHAM, Convert.ToDecimal(a), 1);
+                    }
+                }
+                else
+                {
+                    TK = DataExtensions.GetAllWithClause<TK_SOTHAM_QUYETDINH>($"QUYETDINHID= {ID} AND LOAIAN =  {Convert.ToDecimal(ENUM_LOAIVUVIEC_NUMBER.AN_DANSU)} AND DONID = {DONID}").FirstOrDefault();
+
+                    oND = dt.ADS_SOTHAM_QUYETDINH.Where(x => x.ID == ID).FirstOrDefault();
+                    if (oND.TOAANID.ToString() != Session[ENUM_SESSION.SESSION_DONVIID].ToString())
+                    {
+                        lbthongbao.Text = "Quyết định đang chọn thuộc thẩm quyền của tòa án khác, không được phép thay đổi !";
+                        return;
+                    }
+                    if (oND.FILEID != null) FileID = (decimal)oND.FILEID;
+                }
+                try
+                {
+                    if (hddFilePathQD.Value != "")
+                    {
+                        string strFilePath = hddFilePathQD.Value.Replace("/", "\\");
+                        QT_FILE_BL fileHelper = new QT_FILE_BL();
+                        QT_FILE qtFile = fileHelper.InsertFile_Minio_Banan(strFilePath, Convert.ToInt32(ENUM_LOAIVUVIEC_NUMBER.AN_DANSU), "BANANSOTHAM");
+                        if (qtFile == null)
+                        {
+                            lstErr.Text = "Lỗi khi lưu file!";
+                            return;
+                        }
+                        #region Lưu file
+                        //bỏ lưu trên BLOD chuyển qua lưu nội dung trên minio 
+                        //đã hỏi ý kiến Tuấn vna bỏ cũng không sợ ảnh hưởng
+                        //Thêm mới trường QT_FILE_ID để map với bảng Log QT_FILE khi lưu trên minio 
+
+                        //byte[] buff = null;
+                        //using (FileStream fs = File.OpenRead(strFilePath))
+                        //{
+                        //BinaryReader br = new BinaryReader(fs);
+                        FileInfo oF = new FileInfo(strFilePath);
+                        //long numBytes = oF.Length;
+                        //buff = br.ReadBytes((int)numBytes);
+                        //oND.NOIDUNGFILE = buff;
+                        oND.TENFILE = Cls_Comon.ChuyenTenFileUpload(oF.Name);
+                        oND.KIEUFILE = oF.Extension;
+                        oND.QT_FILE_ID = qtFile.ID;
+                        //}
+                        #endregion
+                        //File.Delete(strFilePath);
+                    }
+                }
+                catch
+                {
+                    lstErr.Text = "Lỗi khi lưu file!";
+                    return;
+                }
+                oND.SOQD = txtSoQD.Text.Trim();
+                oND.NGAYQD = (String.IsNullOrEmpty(txtNgayQD.Text.Trim())) ? (DateTime?)null : DateTime.Parse(this.txtNgayQD.Text.Trim(), cul, DateTimeStyles.NoCurrentDateDefault);
+
+                oND.NGAYMOPT = (String.IsNullOrEmpty(txtNgayMoPhienToaQD.Text.Trim())) ? (DateTime?)null : DateTime.Parse(this.txtNgayMoPhienToaQD.Text.Trim(), cul, DateTimeStyles.NoCurrentDateDefault);
+                oND.DIADIEMMOPT = txtDiaDiem.Text.Trim();
+
+                oND.DONID = DONID;
+                oND.TOAANID = Convert.ToDecimal(Session[ENUM_SESSION.SESSION_DONVIID]);
+                oND.LOAIQDID = Convert.ToDecimal(ddlLoaiQD.SelectedValue);
+                oND.QUYETDINHID = Convert.ToDecimal(ddlQuyetdinh.SelectedValue);
+                oND.QHPLTKID = Convert.ToDecimal(ddlQHPLTK.SelectedValue);
+                oND.QUANHEPHAPLUAT = txtQHPLQDVV.Text;
+
+                //set_valueLydo(oND);
+                oND.ISCONGBOQD = rdCongBoQD.SelectedValue == "" ? 0 : Convert.ToDecimal(rdCongBoQD.SelectedValue);
+                oND.HIEULUCTU = (String.IsNullOrEmpty(txtHieuLucTuNgay.Text.Trim())) ? (DateTime?)null : DateTime.Parse(this.txtHieuLucTuNgay.Text.Trim(), cul, DateTimeStyles.NoCurrentDateDefault);
+                oND.HIEULUCDEN = (String.IsNullOrEmpty(txtHieuLucDenNgay.Text.Trim())) ? (DateTime?)null : DateTime.Parse(this.txtHieuLucDenNgay.Text.Trim(), cul, DateTimeStyles.NoCurrentDateDefault);
+                oND.NGUOIKYID = Convert.ToDecimal(hddNguoiKyID.Value);
+                oND.CHUCVU = txtChucvu.Text;
+                oND.NOIDUNG = txtTomtatnoidungQuyetdinh.Text;
+                if (pnLyDo.Visible) oND.LYDOID = Convert.ToDecimal(ddlLydo.SelectedValue);
+
+                TK.DONID = DONID;
+                TK.LOAIAN = Convert.ToDecimal(ENUM_LOAIVUVIEC_NUMBER.AN_DANSU);
+                TK.ISVKSTHAMGIA = rdbVKSThamgia_QD.SelectedValue == "" ? 0 : Convert.ToDecimal(rdbVKSThamgia_QD.SelectedValue);
+                TK.APDUNGANLE = ddlCBBA_AnleQD.SelectedValue == "0" ? 0 : 1;
+                TK.SOANLE = ddlCBBA_AnleQD.SelectedValue;
+                TK.YEUTONUOCNGOAI = Convert.ToDecimal(ddlYeutonuocngoai_QD.SelectedValue);
+                TK.ISHOAGIAITHANH = rdqHoaGiaiThanhQD.SelectedValue == "" ? 0 : Convert.ToDecimal(rdqHoaGiaiThanhQD.SelectedValue);
+                TK.TK_SOQDTRAIPLBIHUY = (String.IsNullOrEmpty(txtSoQDTraiPLBiHuy_QD.Text + "")) ? 0 : Convert.ToDecimal(txtSoQDTraiPLBiHuy_QD.Text);
+
+                if (pnDuongSuYC.Visible)
+                {
+                    oND.NGUOIYEUCAUID = Convert.ToDecimal(ddlNguoiYC.SelectedValue);
+                    oND.NGUOIBIYEUCAUID = Convert.ToDecimal(ddlNguoiBiYC.SelectedValue);
+                    oND.GHICHU = txtNoiDungYC.Text.Trim();
+                }
+                else
+                {
+                    oND.NGUOIYEUCAUID = oND.NGUOIBIYEUCAUID = 0;
+                    oND.NGUOIYEUCAUID = oND.NGUOIBIYEUCAUID = 0;
+                    oND.GHICHU = "";
+                }
+
+                decimal rFileID = 0;
+                DM_QD_QUYETDINH oQDT = dt.DM_QD_QUYETDINH.Where(x => x.ID == oND.QUYETDINHID).FirstOrDefault();
+                rFileID = UploadFileIDQD(oDon, FileID, oQDT.MA, STTQD);
+                if (rFileID > 0) oND.FILEID = rFileID;
+                if (hddid.Value == "" || hddid.Value == "0")
+                {
+                    oND.NGAYTAO = DateTime.Now;
+                    oND.NGUOITAO = Session[ENUM_SESSION.SESSION_USERNAME] + "";
+                    //update 14082025
+                    if (oND.TOA_GIAIQUYET_ID == null) oND.TOA_GIAIQUYET_ID = Convert.ToDecimal(Session[ENUM_SESSION.SESSION_DONVIID]);
+                    dt.ADS_SOTHAM_QUYETDINH.Add(oND);
+                    dt.SaveChanges();
+                    TK.NGAYTAO = DateTime.Now;
+                    TK.NGUOITAO = Session[ENUM_SESSION.SESSION_USERNAME] + "";
+                    TK.QUYETDINHID = oND.ID;
+                    DataExtensions.Insert(TK);
+                }
+                else
+                {
+                    oND.NGAYSUA = DateTime.Now;
+                    oND.NGUOISUA = Session[ENUM_SESSION.SESSION_USERNAME] + "";
+                    TK.QUYETDINHID = oND.ID;
+                    TK.NGAYSUA = DateTime.Now;
+                    TK.NGUOISUA = Session[ENUM_SESSION.SESSION_USERNAME] + "";
+                    DataExtensions.Update(TK);
+                }
+
+                if (oQDT.ISCONGBO == 1 && oND.HIEULUCTU != null)
+                {
+                    bool isnew = false;
+                    var list = DataExtensions.GetAllWithClause<BAQD_CONGBO>($"  VUVIECID = {oND.DONID.Value} " +
+                                                                            $"  AND LOAIANID = {Convert.ToDecimal(ENUM_LOAIVUVIEC_NUMBER.AN_DANSU)} " +
+                                                                            $"  AND CAPXETXU = {2} ");
+
+                    BAQD_CONGBO temp_congbo = list?.FirstOrDefault();
+                    if (temp_congbo == null)
+                    {
+                        isnew = true;
+                        temp_congbo = new BAQD_CONGBO();
+                    }
+
+                    temp_congbo.LOAIANID = Convert.ToDecimal(ENUM_LOAIVUVIEC_NUMBER.AN_DANSU);
+                    temp_congbo.CAPXETXU = 2;
+                    temp_congbo.ISBA = 0;
+                    temp_congbo.BAQDID = oND.ID;
+                    temp_congbo.NGAYHIEULUC = oND.HIEULUCTU;
+                    temp_congbo.MAVUAN = oDon.MAVUVIEC;
+                    temp_congbo.VUVIECID = oND.DONID.Value;
+
+                    if (isnew)
+                    {
+                        temp_congbo.NGAYTAO = DateTime.Now;
+                        temp_congbo.NGUOITAO = Session[ENUM_SESSION.SESSION_USERNAME] + "";
+                        DataExtensions.Insert(temp_congbo);
+                    }
+                    else if (temp_congbo != null && temp_congbo.TRANGTHAI != 2 && temp_congbo.TRANGTHAI != 3)
+                    {
+                        temp_congbo.NGAYSUA = DateTime.Now;
+                        temp_congbo.NGUOISUA = Session[ENUM_SESSION.SESSION_USERNAME] + "";
+                        DataExtensions.Update(temp_congbo);
+                    }
+                }
+
+                TamNgungDONKK_USER_DKNHANVB(DONID, ddlQuyetdinh.SelectedItem.Text);
+                dgList.CurrentPageIndex = 0;
+                ResetControl_Quyetdinh();
+                LoadGrid();
+                lbthongbao.Text = "Lưu thành công!";
+                Page.Response.Redirect(Page.Request.Url.ToString(), true);
+            }
+            catch (Exception ex)
+            {
+                lbthongbao.Text = "Lỗi: " + ex.Message;
+            }
+        }
+        protected void cmdUpdate_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                decimal DONID = Convert.ToDecimal(hddDonID.Value);
+                if (!CheckValid() || !CheckCongbo(DONID)) return;
+
+                //GTEL-HUNGQ 22-09-2025 thêm check có bị can chưa xác thực thì không cho Lưu
+                //Decimal soDuongSuChuaXacThuc = dt.ADS_DON_DUONGSU.Count(x => x.DONID == DONID && x.XACTHUC_DLDCQG == 0 && x.QUOCTICHID == 2);
+                //if (soDuongSuChuaXacThuc > 0)
+                //{
+                //    lstErr.Text = lbthongbaoQD.Text = "Có đương sự chưa xác thực thông tin. Đề nghị xác thực tại màn hình Danh sách đương sự.";
+                //    return;
+                //}
+
+                KHOBAQD_BL ads = new KHOBAQD_BL();
+                bool isExist = ads.IsExistKHOBADQ(0, DONID, 2,ENUM_LOAIVUVIEC_TEXT.AN_DANSU);
+                if (isExist)
+                {
+                    lstErr.Text = lbthongbaoQD.Text = "Vụ việc đã được đồng bộ. Phải thu hồi đồng bộ trước khi chỉnh sửa/xóa";
+                    return;
+                }
+                //END
+
+                ADS_SOTHAM_BANAN_FILE oTF = new ADS_SOTHAM_BANAN_FILE();
+                List<ADS_SOTHAM_BANAN> lst = dt.ADS_SOTHAM_BANAN.Where(x => x.DONID == DONID).ToList();
+                ADS_SOTHAM_BANAN oND;
+                if (lst.Count == 0)
+                {
+                    Decimal soDuongSuChuaXacThuc = dt.ALD_DON_DUONGSU.Count(x => x.DONID == DONID && x.XACTHUC_DLDCQG == 0 && x.QUOCTICHID == 2);
+                    if (soDuongSuChuaXacThuc > 0)
+                    {
+                        lstErr.Text = lbthongbaoQD.Text = "Có đương sự chưa xác thực thông tin. Đề nghị xác thực tại màn hình Danh sách đương sự.";
+                        return;
+                    }
+
+                    oND = new ADS_SOTHAM_BANAN();
+                }
+                else
+                {
+                    oND = lst[0];
+                    // khong duoc xoa khi da Tong dat - 27/11/2025 vnpt check
+                    ADS_TONGDAT oTD2 = dt.ADS_TONGDAT.Where(x => x.DONID == oND.DONID && x.MAPID == oND.ID && x.MAP_TABLE == ENUM_MAP_TABLE.ADS_SOTHAM_BANAN).FirstOrDefault();
+                    if (oTD2 != null)
+                    {
+                        if (!string.IsNullOrEmpty(oND.QUANHEPHAPLUAT_NAME))
+                        {
+                            txtQuanhephapluat.Enabled = false;
+                        }
+                        else
+                        {
+                            txtQuanhephapluat.Enabled = true;
+                        }
+                        if (oND.QHPLTKID != null)
+                        {
+                            ddlQHPLTK.Enabled = false;
+                        }
+                        else
+                        {
+                            ddlQHPLTK.Enabled = true;
+                        }
+                        if (!string.IsNullOrEmpty(oND.NGUOIKY))
+                        {
+                            txtNguoiKy.Enabled = false;
+                        }
+                        else
+                        {
+                            txtNguoiKy.Enabled = true;
+                        }
+                        if (!string.IsNullOrEmpty(oND.SOBANAN))
+                        {
+                            txtSobanan.Enabled = false;
+                        }
+                        else
+                        {
+                            txtSobanan.Enabled = true;
+                        }
+                        if (oND.NGAYMOPHIENTOA != null)
+                        {
+                            txtNgaymophientoa.Enabled = false;
+                        }
+                        else
+                        {
+                            txtNgaymophientoa.Enabled = true;
+                        }
+                        if (oND.NGAYTUYENAN != null)
+                        {
+                            txtNgaytuyenan.Enabled = false;
+                        }
+                        else
+                        {
+                            txtNgaytuyenan.Enabled = true;
+                        }
+                        if (oND.NGAYHIEULUC != null)
+                        {
+                            txtNgayhieuluc.Enabled = false;
+                        }
+                        else
+                        {
+                            txtNgayhieuluc.Enabled = true;
+                        }
+                        if (!string.IsNullOrEmpty(oND.NOIDUNG))
+                        {
+                            txtTomtatnoidungBanan.Enabled = false;
+                        }
+                        else
+                        {
+                            txtTomtatnoidungBanan.Enabled = true;
+                        }
+                    }
+                }
+                oND.DONID = DONID;
+                oND.TOAANID = Convert.ToDecimal(Session[ENUM_SESSION.SESSION_DONVIID]);
+                oND.LOAIQUANHE = Convert.ToDecimal(ddlLoaiQuanhe.SelectedValue);
+
+                oND.QUANHEPHAPLUATID = null;
+                oND.QUANHEPHAPLUAT_NAME = txtQuanhephapluat.Text;
+                oND.NGUOIKY = txtNguoiKy.Text;
+                oND.QHPLTKID = Convert.ToDecimal(ddlQHPLTK.SelectedValue);
+                oND.SOBANAN = txtSobanan.Text;
+                oND.NGAYMOPHIENTOA = (String.IsNullOrEmpty(txtNgaymophientoa.Text.Trim())) ? (DateTime?)null : DateTime.Parse(this.txtNgaymophientoa.Text.Trim(), cul, DateTimeStyles.NoCurrentDateDefault);
+                oND.NGAYTUYENAN = (String.IsNullOrEmpty(txtNgaytuyenan.Text.Trim())) ? (DateTime?)null : DateTime.Parse(this.txtNgaytuyenan.Text.Trim(), cul, DateTimeStyles.NoCurrentDateDefault);
+                oND.NGAYHIEULUC = (String.IsNullOrEmpty(txtNgayhieuluc.Text.Trim())) ? (DateTime?)null : DateTime.Parse(this.txtNgayhieuluc.Text.Trim(), cul, DateTimeStyles.NoCurrentDateDefault);
+                oND.NOIDUNG = txtTomtatnoidungBanan.Text;
+
+                oND.ISVKSTHAMGIA = rdbVKSThamgia.SelectedValue == "" ? 0 : Convert.ToDecimal(rdbVKSThamgia.SelectedValue);
+                oND.APDUNGANLE = ddlCBBA_Anle.SelectedValue == "0" ? 0 : 1;
+                oND.SOANLE = ddlCBBA_Anle.SelectedValue;
+                oND.YEUTONUOCNGOAI = Convert.ToDecimal(ddlYeutonuocngoai.SelectedValue);
+
+                //oND.ISCONGBOBA = rdCongboBA.SelectedValue == "" ? 0 : Convert.ToDecimal(rdCongboBA.SelectedValue);
+                oND.TK_ISQUAHAN = rdVuAnQuaHan.SelectedValue == "" ? 0 : Convert.ToDecimal(rdVuAnQuaHan.SelectedValue);
+                oND.TK_QUAHAN_CHUQUAN = rdNNChuQuan.SelectedValue == "" ? 0 : Convert.ToDecimal(rdNNChuQuan.SelectedValue);
+                oND.TK_QUAHAN_KHACHQUAN = rdNNKhachQuan.SelectedValue == "" ? 0 : Convert.ToDecimal(rdNNKhachQuan.SelectedValue);
+                oND.TK_SOQDTRAIPLBIHUY = (String.IsNullOrEmpty(txtSoQDTraiPLBiHuy.Text + "")) ? 0 : Convert.ToDecimal(txtSoQDTraiPLBiHuy.Text);
+                try
+                {
+                    if (hddFilePath.Value != "")
+                    {
+                        string strFilePath = hddFilePath.Value.Replace("/", "\\");
+                        var txtTen = System.IO.Path.GetFileName(strFilePath);
+                        QT_FILE_BL fileHelper = new QT_FILE_BL();
+                        QT_FILE qtFile = fileHelper.InsertFile_Minio_Banan(strFilePath, Convert.ToInt32(ENUM_LOAIVUVIEC_NUMBER.AN_DANSU), "BANANSOTHAM");
+                        if (qtFile == null)
+                        {
+                            lstErr.Text = "Lỗi khi lưu file!";
+                            return;
+                        }
+
+                        oTF.DONID = DONID;
+                        //oTF.NOIDUNG = buff;
+                        oTF.TENFILE = Cls_Comon.ChuyenTenFileUpload(qtFile.FILE_NAME);
+                        oTF.KIEUFILE = qtFile.FILE_TYPE;
+                        oTF.NGAYTAO = DateTime.Now;
+                        oTF.NGUOITAO = Session[ENUM_SESSION.SESSION_USERNAME] + "";
+                        if (qtFile.ID > 0)
+                        {
+                            oTF.QT_FILE_ID = qtFile.ID;
+                        }
+                        else
+                        {
+                            lstErr.Text = "Lỗi khi lưu file!";
+                            return;
+                        }
+                        dt.ADS_SOTHAM_BANAN_FILE.Add(oTF);
+                        dt.SaveChanges();
+                        //File.Delete(strFilePath);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    lstErr.Text = "Lỗi khi lưu file! " + ex.ToString();
+                    return;
+                }
+
+                if (rdVuAnQuaHan.SelectedValue == "1")
+                    pnNguyenNhanQuaHan.Visible = true;
+                else
+                    pnNguyenNhanQuaHan.Visible = false;
+                if (lst.Count == 0)
+                {
+                    oND.NGAYTAO = DateTime.Now;
+                    oND.NGUOITAO = Session[ENUM_SESSION.SESSION_USERNAME] + "";
+                    // update 110825
+                    oND.TOA_GIAIQUYET_ID = Convert.ToDecimal(Session[ENUM_SESSION.SESSION_DONVIID]);
+                    dt.ADS_SOTHAM_BANAN.Add(oND);
+                    dt.SaveChanges();
+                }
+                else
+                {
+                    oND.NGAYSUA = DateTime.Now;
+                    oND.NGUOISUA = Session[ENUM_SESSION.SESSION_USERNAME] + "";
+                    dt.SaveChanges();
+                }
+
+                ADS_DON oDon = dt.ADS_DON.Where(x => x.ID == DONID).FirstOrDefault(); 
+                if(oND.NGAYHIEULUC != null)
+                {
+                    bool isnew = false;
+                    var list = DataExtensions.GetAllWithClause<BAQD_CONGBO>($"  VUVIECID = {oND.DONID.Value} " +
+                                                                            $"  AND LOAIANID = {Convert.ToDecimal(ENUM_LOAIVUVIEC_NUMBER.AN_DANSU)} " +
+                                                                            $"  AND CAPXETXU = {2} ");
+
+                    BAQD_CONGBO temp_congbo = list?.FirstOrDefault();
+                    if (temp_congbo == null)
+                    {
+                        isnew = true;
+                        temp_congbo = new BAQD_CONGBO();
+                    }
+
+                    temp_congbo.LOAIANID = Convert.ToDecimal(ENUM_LOAIVUVIEC_NUMBER.AN_DANSU);
+                    temp_congbo.CAPXETXU = 2;
+                    temp_congbo.ISBA = 1;
+                    temp_congbo.BAQDID = oND.ID;
+                    temp_congbo.NGAYHIEULUC = oND.NGAYHIEULUC;
+                    temp_congbo.MAVUAN = oDon.MAVUVIEC;
+                    temp_congbo.VUVIECID = oND.DONID.Value;
+
+                    if (isnew)
+                    {
+                        temp_congbo.NGAYTAO = DateTime.Now;
+                        temp_congbo.NGUOITAO = Session[ENUM_SESSION.SESSION_USERNAME] + "";
+                        DataExtensions.Insert(temp_congbo);
+                    }
+                    else if (temp_congbo != null && temp_congbo.TRANGTHAI != 2 && temp_congbo.TRANGTHAI != 3)
+                    {
+                        temp_congbo.NGAYSUA = DateTime.Now;
+                        temp_congbo.NGUOISUA = Session[ENUM_SESSION.SESSION_USERNAME] + "";
+                        DataExtensions.Update(temp_congbo);
+                    }
+                }
+
+                /* 25.04.2025 Gọi hàm UploadFileID, lưu vào bảng AHN_FILE là có Bản án
+                 * File bản án nếu đính kèm sẽ lưu vào bảng AHN_SOTHAM_BANAN_FILE
+                 * (Bản án chỉ có 1 nên không cần tạo trường FILEID như Quyết định
+                 * 2022 Đã bỏ hoàn toàn và k tống đạt Bản án 
+                 * Trước đó bắt buộc có file đính kèm mới được Tống đạt */
+                DateTime NgayBA;
+                if (!String.IsNullOrEmpty(txtNgaytuyenan.Text)) { NgayBA = DateTime.Parse(this.txtNgaytuyenan.Text.Trim(), cul, DateTimeStyles.NoCurrentDateDefault); }
+                else
+                {
+                    DateTime? a = null;
+                    NgayBA = Convert.ToDateTime(a);
+                }
+                decimal FileID = 0;
+                decimal STTQD = 0;
+
+                ADS_DON_BL oBL = new ADS_DON_BL();
+
+                if (!String.IsNullOrEmpty(txtNgayQD.Text.Trim()))
+                    STTQD = oBL.GETFILENEWTT(Convert.ToDecimal(Session[ENUM_SESSION.SESSION_DONVIID]), ENUM_GIAIDOANVUAN.SOTHAM, NgayBA.Year, 1);
+                else
+                {
+                    Decimal? a = null;
+                    STTQD = oBL.GETFILENEWTT(Convert.ToDecimal(Session[ENUM_SESSION.SESSION_DONVIID]), ENUM_GIAIDOANVUAN.SOTHAM, Convert.ToDecimal(a), 1);
+                }
+
+                //---------21/11/2025----  vnpt chỉnh lấy thêm cột FILEID
+                if (lst.Count == 0)
+                {
+                    FileID = 0;
+                }
+                else
+                {
+                    FileID = oND.FILEID ?? 0;
+                }
+                var rFileID = UploadFileID(oDon, FileID, "52-DS", STTQD);
+                if (rFileID > 0)
+                {
+                    oND.FILEID = rFileID;
+                    dt.SaveChanges();
+                }
+                TamNgungDONKK_USER_DKNHANVB(DONID);
+
+                lstErr.Text = "Lưu thành công!";
+                ResetControl_Banan();
+                LoadBanAnInfo(DONID);
+                CheckQuyen(Convert.ToDecimal(hddDonID.Value));
+            }
+            catch (System.Data.Entity.Validation.DbEntityValidationException dbEx)
+            {
+                foreach (var validationErrors in dbEx.EntityValidationErrors)
+                {
+                    foreach (var validationError in validationErrors.ValidationErrors)
+                    {
+                        lstErr.Text = "property: " + validationError.PropertyName + " Error: " + validationError.ErrorMessage;
+                    }
+                }
+            }
+        }
+        protected void AsyncFileUpLoad_UploadedCompleteQD(object sender, AjaxControlToolkit.AsyncFileUploadEventArgs e)
+        {
+            try
+            {
+                if (AsyncFileUpLoadQD.HasFile && dgFile.Items.Count < 1)
+                {
+                    string extension = Path.GetExtension(Request.Files[0].FileName).ToLower();
+                    if (extension == ".doc" || extension == ".docx" || extension == ".pdf")
+                    {
+                        string strFileName = AsyncFileUpLoadQD.FileName;
+                        string path = Server.MapPath("~/TempUpload/") + strFileName;
+                        AsyncFileUpLoadQD.SaveAs(path);
+                        path = path.Replace("\\", "/");
+                        ScriptManager.RegisterClientScriptBlock(this, this.GetType(), "filePath", "top.$get(\"" + hddFilePathQD.ClientID + "\").value = '" + path + "';", true);
+
+                        //QT_FILE_BL fileBL = new QT_FILE_BL();
+                        //var file = fileBL.InsertFile(Request.Files[0], 2);
+
+                    }
+                    else lbthongbao.Text = "chỉ lưu file .doc ";
+                }
+                else lbthongbao.Text = "Chỉ được chọn 1 file.";
+            }
+            catch (Exception ex) { lbthongbao.Text = "Lỗi: " + ex.Message; }
+        }
+        protected void AsyncFileUpLoad_UploadedComplete(object sender, AjaxControlToolkit.AsyncFileUploadEventArgs e)
+        {
+            try
+            {
+                if (AsyncFileUpLoad.HasFile && dgFile.Items.Count < 1)
+                {
+                    string extension = Path.GetExtension(Request.Files[0].FileName).ToLower();
+                    if (extension == ".doc" || extension == ".docx" || extension == ".pdf")
+                    {
+                        string strFileName = AsyncFileUpLoad.FileName;
+                        string path = Server.MapPath("~/TempUpload/") + strFileName;
+                        AsyncFileUpLoad.SaveAs(path);
+                        path = path.Replace("\\", "/");
+                        ScriptManager.RegisterClientScriptBlock(this, this.GetType(), "filePath", "top.$get(\"" + hddFilePath.ClientID + "\").value = '" + path + "';", true);
+                    }
+                    else lbthongbao.Text = "chỉ lưu file .doc ";
+                }
+                else lstErr.Text = "Chỉ được chọn 1 file.";
+            }
+            catch (Exception ex) { lstErr.Text = "Lỗi: " + ex.Message; }
+
+            //}
+            //    else lstErr.Text = "Chỉ được chọn 1 file.";
+        }
+        private decimal UploadFileIDQD(ADS_DON oDon, decimal FileID, string strMaBieumau, decimal STT)
+        {
+            ADS_DON_BL oBL = new ADS_DON_BL();
+            decimal IDFIle = 0;
+            decimal IDBM = 0;
+            string strTenBM = "";
+            List<DM_BIEUMAU> lstBM = dt.DM_BIEUMAU.Where(x => x.MABM == strMaBieumau).ToList();
+            if (lstBM.Count > 0)
+            {
+                IDBM = lstBM[0].ID;
+                strTenBM = lstBM[0].TENBM;
+            }
+            ADS_FILE objFile = new ADS_FILE();
+            if (FileID > 0)
+                objFile = dt.ADS_FILE.Where(x => x.ID == FileID).FirstOrDefault();
+            objFile.DONID = oDon.ID;
+            objFile.TOAANID = oDon.TOAANID;
+            objFile.MAGIAIDOAN = oDon.MAGIAIDOAN;
+            objFile.LOAIFILE = 1;
+            objFile.BIEUMAUID = IDBM;
+            objFile.NAM = DateTime.Now.Year;
+            if (hddFilePathQD.Value != "")
+            {
+                try
+                {
+                    string strFilePath = "";
+                    if (chkKySo.Checked)
+                    {
+                        string[] arr = hddFilePathQD.Value.Split('/');
+                        strFilePath = arr[arr.Length - 1];
+                        strFilePath = Server.MapPath("~/TempUpload/") + strFilePath;
+                    }
+                    else
+                        strFilePath = hddFilePathQD.Value.Replace("/", "\\");
+                    //byte[] buff = null;
+                    //using (FileStream fs = File.OpenRead(strFilePath))
+                    //{
+                    //BinaryReader br = new BinaryReader(fs);
+                    FileInfo oF = new FileInfo(strFilePath);
+                    //long numBytes = oF.Length;
+                    //buff = br.ReadBytes((int)numBytes);
+                    //objFile.NOIDUNG = buff;
+                    objFile.TENFILE = Cls_Comon.ChuyenTVKhongDau(strTenBM) + oF.Extension;
+                    objFile.KIEUFILE = oF.Extension;
+                    //}
+                    File.Delete(strFilePath);
+                }
+                catch (Exception ex) { lbthongbao.Text = ex.Message; }
+            }
+            objFile.NGAYTAO = DateTime.Now;
+            objFile.NGUOITAO = Session[ENUM_SESSION.SESSION_USERNAME] + "";
+            if (STT != 0) objFile.STT = Convert.ToDecimal(STT);
+            if (FileID == 0)
+                dt.ADS_FILE.Add(objFile);
+            dt.SaveChanges();
+            IDFIle = objFile.ID;
+            return IDFIle;
+        }
+        private decimal UploadFileID(ADS_DON oDon, decimal FileID, string strMaBieumau, decimal STT)
+        {
+            ADS_DON_BL oBL = new ADS_DON_BL();
+            decimal IDFIle = 0;
+            decimal IDBM = 0;
+            string strTenBM = "";
+            List<DM_BIEUMAU> lstBM = dt.DM_BIEUMAU.Where(x => x.MABM == strMaBieumau).ToList();
+            if (lstBM.Count > 0)
+            {
+                IDBM = lstBM[0].ID;
+                strTenBM = lstBM[0].TENBM;
+            }
+            ADS_FILE objFile = new ADS_FILE();
+            if (FileID > 0)
+                objFile = dt.ADS_FILE.Where(x => x.ID == FileID).FirstOrDefault();
+            objFile.DONID = oDon.ID;
+            objFile.TOAANID = oDon.TOAANID;
+            objFile.MAGIAIDOAN = oDon.MAGIAIDOAN;
+            objFile.LOAIFILE = 1;
+            objFile.BIEUMAUID = IDBM;
+            objFile.NAM = DateTime.Now.Year;
+            if (hddFilePath.Value != "")
+            {
+                try
+                {
+                    string strFilePath = "";
+                    if (chkKySo.Checked)
+                    {
+                        string[] arr = hddFilePath.Value.Split('/');
+                        strFilePath = arr[arr.Length - 1];
+                        strFilePath = Server.MapPath("~/TempUpload/") + strFilePath;
+                    }
+                    else
+                        strFilePath = hddFilePath.Value.Replace("/", "\\");
+                    //không cần update trường NOIDUNG vì Tuấn vna tư vấn không dùng cũng được vì không ảnh hưởng
+                    //byte[] buff = null;
+                    //using (FileStream fs = File.OpenRead(strFilePath))
+                    //{
+                    //    BinaryReader br = new BinaryReader(fs);
+                    FileInfo oF = new FileInfo(strFilePath);
+                    //    long numBytes = oF.Length;
+                    //    buff = br.ReadBytes((int)numBytes);
+                    //    objFile.NOIDUNG = buff;
+                    objFile.TENFILE = Cls_Comon.ChuyenTVKhongDau(strTenBM) + oF.Extension;
+                    objFile.KIEUFILE = oF.Extension;
+                    //}
+                    File.Delete(strFilePath);
+                }
+                catch (Exception ex) { lbthongbao.Text = ex.Message; }
+            }
+            objFile.NGAYTAO = DateTime.Now;
+            objFile.NGUOITAO = Session[ENUM_SESSION.SESSION_USERNAME] + "";
+            if (STT != 0) objFile.STT = Convert.ToDecimal(STT);
+            if (FileID == 0)
+                dt.ADS_FILE.Add(objFile);
+            dt.SaveChanges();
+            IDFIle = objFile.ID;
+            return IDFIle;
+        }
+        private void TamNgungDONKK_USER_DKNHANVB(decimal DONID, string TenQuyetDinh)
+        {
+            ADS_DON oDon = dt.ADS_DON.FirstOrDefault(s => s.ID == DONID);
+            DONKK_USER_DKNHANVB obj = dkk.DONKK_USER_DKNHANVB.FirstOrDefault(s => s.MAVUVIEC == oDon.MAVUVIEC && s.VUVIECID == oDon.ID && s.MALOAIVUVIEC == ENUM_LOAIAN.AN_DANSU && s.TRANGTHAI == 1);
+            if (obj != null)
+            {
+
+                if (TenQuyetDinh.StartsWith("09-HC.") || TenQuyetDinh.StartsWith("45-DS.") || TenQuyetDinh.StartsWith("46-DS.") || TenQuyetDinh.StartsWith("38-DS.") || TenQuyetDinh.StartsWith("39-DS."))
+                {
+                    //chuyển trang trạng thái tạm dừng
+                    obj.TRANGTHAI = 3;
+                    dkk.SaveChanges();
+                }
+                else
+                {
+                    obj.TRANGTHAI = Convert.ToDecimal(ttBanDauDONKK_USER_DKNHANVB.Value);
+                    dkk.SaveChanges();
+                }
+            }
+        }
+        public void loadedit(decimal ID)
+        {
+            SetEnable_data_QD(ID);
+            ddlQuyetdinh.Enabled = false;
+
+            ADS_SOTHAM_QUYETDINH oND = dt.ADS_SOTHAM_QUYETDINH.Where(x => x.ID == ID).FirstOrDefault();
+            TK_SOTHAM_QUYETDINH TK = DataExtensions.GetAllWithClause<TK_SOTHAM_QUYETDINH>($"QUYETDINHID = {ID} AND LOAIAN =  {Convert.ToDecimal(ENUM_LOAIVUVIEC_NUMBER.AN_DANSU)}").FirstOrDefault();
+
+            CheckQuyenSua(Convert.ToDecimal(oND.DONID + ""));
+            hddid.Value = oND.ID.ToString();
+            hddDonID.Value = oND.DONID.ToString();
+            decimal IDQD = Convert.ToDecimal(oND.QUYETDINHID);
+
+            if (oND.LOAIQDID != null) ddlLoaiQD.SelectedValue = oND.LOAIQDID.ToString();
+            ddlLoaiQD_SelectedIndexChanged(new object(), new EventArgs());
+            if (oND.QUYETDINHID != null) ddlQuyetdinh.SelectedValue = oND.QUYETDINHID.ToString();
+            decimal IDLoai = Convert.ToDecimal(ddlLoaiQD.SelectedValue);
+            DM_QD_LOAI oQD = dt.DM_QD_LOAI.Where(x => x.ID == IDLoai).FirstOrDefault();
+            if (oQD != null)
+            {
+                if (/*oQD.MA == "TDC" || */oND.LOAIQDID == 10 || oND.LOAIQDID == 11 || oND.LOAIQDID == 3)
+                {
+                    //ddlQuyetdinh.Enabled = true;
+                    pnCBQD.Visible = true;
+                }
+                else pnCBQD.Visible = false;
+                if (oQD.ISDUONGSUYEUCAU == 1)
+                {
+                    pnDuongSuYC.Visible = true;
+                }
+                else
+                {
+                    pnDuongSuYC.Visible = false;
+                }
+            }
+            else
+            {
+                pnDuongSuYC.Visible = false;
+                pnCBQD.Visible = false;
+
+            }
+
+            ddlQuyetdinh_SelectedIndexChanged(new object(), new EventArgs());
+            if (oND.LYDOID != null && pnLyDo.Visible)
+            {
+                ddlLydo.SelectedValue = oND.LYDOID.ToString();
+            }
+
+
+            if (oND.QHPLTKID != null)
+                ddlQHPLTK.SelectedValue = ddlQHPLQDVV.SelectedValue = oND.QHPLTKID.ToString();
+            // công bố quyết định
+            if (oND.ISCONGBOQD != null)
+                rdCongBoQD.SelectedValue = oND.ISCONGBOQD.ToString();
+            txtSoQD.Text = oND.SOQD;
+            if (oND.NGAYQD != null) txtNgayQD.Text = ((DateTime)oND.NGAYQD).ToString("dd/MM/yyyy", cul);
+
+            txtDiaDiem.Text = oND.DIADIEMMOPT + "";
+            if (oND.NGAYMOPT != null) txtNgayMoPhienToaQD.Text = ((DateTime)oND.NGAYMOPT).ToString("dd/MM/yyyy", cul);
+
+            if (oND.HIEULUCTU != null) txtHieuLucTuNgay.Text = ((DateTime)oND.HIEULUCTU).ToString("dd/MM/yyyy", cul);
+            if (oND.HIEULUCDEN != null) txtHieuLucDenNgay.Text = ((DateTime)oND.HIEULUCDEN).ToString("dd/MM/yyyy", cul);
+
+
+            if (TK.ISVKSTHAMGIA != null) rdbVKSThamgia_QD.SelectedValue = TK.ISVKSTHAMGIA.ToString();
+            if (TK.ISHOAGIAITHANH != null) rdqHoaGiaiThanhQD.SelectedValue = TK.ISHOAGIAITHANH.ToString();
+            ddlYeutonuocngoai_QD.SelectedValue = TK.YEUTONUOCNGOAI.ToString();
+            txtSoQDTraiPLBiHuy_QD.Text = TK.TK_SOQDTRAIPLBIHUY + "";
+
+
+            if (TK != null)
+            {
+                if ((TK.APDUNGANLE == 0 || TK.APDUNGANLE == null || TK.APDUNGANLE == 1) && TK.SOANLE == null)
+                {
+                    ddlCBBA_AnleQD.Items.Insert(ddlCBBA_Anle.Items.Count, new ListItem("Hãy chọn số án lệ", "-1"));
+                    ddlCBBA_AnleQD.SelectedValue = "-1";
+                }
+                else
+                {
+                    if (TK.SOANLE == "khong" || TK.SOANLE == null)
+                    {
+                        ddlCBBA_AnleQD.SelectedValue = "0";
+                    }
+                    else
+                    {
+                        ddlCBBA_AnleQD.SelectedValue = TK.SOANLE;
+                    }
+                }
+                if (TK.ISVKSTHAMGIA != null) rdbVKSThamgia_QD.SelectedValue = TK.ISVKSTHAMGIA.ToString();
+                if (TK.ISHOAGIAITHANH != null) rdqHoaGiaiThanhQD.SelectedValue = TK.ISHOAGIAITHANH.ToString();
+                if (TK.YEUTONUOCNGOAI != null) ddlYeutonuocngoai_QD.SelectedValue = TK.YEUTONUOCNGOAI.ToString();
+                if (TK.TK_SOQDTRAIPLBIHUY != null) txtSoQDTraiPLBiHuy_QD.Text = TK.TK_SOQDTRAIPLBIHUY + "";
+            }
+
+
+            if (pnDuongSuYC.Visible)
+            {
+                ddlNguoiYC.SelectedValue = oND.NGUOIYEUCAUID.ToString();
+                ddlNguoiYC_SelectedIndexChanged(new object(), new EventArgs());
+                ddlNguoiBiYC.SelectedValue = oND.NGUOIBIYEUCAUID.ToString();
+                txtNoiDungYC.Text = oND.GHICHU;
+            }
+
+            txtTomtatnoidungQuyetdinh.Text = oND.NOIDUNG;
+            txtQHPLQDVV.Text = oND.QUANHEPHAPLUAT;
+            var twords = Regex.Matches(txtTomtatnoidungQuyetdinh.Text, @"\w+");
+            decimal words = twords.Count;
+            wordCountdownQuyetdinh.InnerText = "Số từ còn lại: " + (200 - words).ToString();
+        }
+        protected void dgList_ItemCommand(object source, DataGridCommandEventArgs e)
+        {
+            decimal ND_id = Convert.ToDecimal(e.CommandArgument.ToString());
+            decimal ID = Convert.ToDecimal(hddDonID.Value);
+            switch (e.CommandName)
+            {
+                case "Download":
+                    ADS_SOTHAM_QUYETDINH oND = dt.ADS_SOTHAM_QUYETDINH.Where(x => x.DONID == ID && x.FILEID == ND_id).FirstOrDefault();
+                    if (oND.NOIDUNGFILE != null)
+                    {
+                        if (oND.NOIDUNGFILE.Length != 0 && oND.QT_FILE_ID == null)
+                        {
+                            var cacheKey = Guid.NewGuid().ToString("N");
+                            Context.Cache.Insert(key: cacheKey, value: oND.NOIDUNGFILE, dependencies: null, absoluteExpiration: DateTime.Now.AddSeconds(30), slidingExpiration: System.Web.Caching.Cache.NoSlidingExpiration);
+                            ScriptManager.RegisterClientScriptBlock(this, this.GetType(), "Download", "window.location='" + Cls_Comon.GetRootURL_HTTPS() + "/DownloadFile.aspx?cacheKey=" + cacheKey + "&FileName=" + oND.TENFILE + "&Extension=" + oND.KIEUFILE + "';", true);
+                        }
+                    }
+                    else
+                    {
+                        //QT_FILE qT_FILE = new QT_FILE()
+                        //{
+                        //    DATE_CREATED = oND.NGAYTAO,
+                        //    FILE_NAME = oND.TENFILE,
+                        //    ID = oND.QT_FILE_ID.Value,
+                        //    FILE_TYPE = oND.KIEUFILE.ToString()
+                        //};
+                        QT_FILE qT_FILE = DataExtensions.FindById<QT_FILE>(oND.QT_FILE_ID.Value);
+                        // Xây dựng path cho file
+                        string _pathStore = QT_FILE_BL.ToPathFolderStore(qT_FILE.DATE_CREATED.Value, Convert.ToInt32(ENUM_LOAIVUVIEC_NUMBER.AN_DANSU)) + "\\BANANSOTHAM";
+                        string fileNameWithoutExtension = Path.GetFileNameWithoutExtension(qT_FILE.FILE_NAME);
+                        string pathRaw = Path.Combine(_pathStore,
+                            Cls_Comon.ChuyenTVKhongDau(fileNameWithoutExtension) +
+                            qT_FILE.ID +
+                            qT_FILE.FILE_TYPE);
+                        var pathUrlStyle = pathRaw.Replace("\\", "/");
+                        var encodedPath = HttpUtility.UrlEncode(pathUrlStyle);
+
+                        // Đảm bảo HTTPS
+                        var authority = Request.Url.GetLeftPart(UriPartial.Authority).Replace("http://", "https://");
+                        var appPath = Request.ApplicationPath?.TrimEnd('/') ?? "";
+                        string downloadUrl = $"{authority}{appPath}/Quantri/Cauhinh/FileDownload.ashx?p={HttpUtility.UrlEncode(encodedPath)}";
+
+                        // JavaScript redirect
+                        string script = $@"window.location.href = '{downloadUrl}';";
+
+                        ScriptManager.RegisterStartupScript(this, this.GetType(), "downloadScript", script, true);
+                    }
+                    break;
+                case "Sua":
+                    hddFilePathQD.Value = "";
+                    lbthongbao.Text = "";
+                    ADS_SOTHAM_QUYETDINH oND1 = dt.ADS_SOTHAM_QUYETDINH.Where(x => x.ID == ND_id).FirstOrDefault();
+                    // khong duoc xoa khi da Tong dat - 27/11/2025 vnpt check
+                    //ADS_TONGDAT oTD = dt.ADS_TONGDAT.Where(x => x.DONID == oND1.DONID && x.MAPID == oND1.ID && x.MAP_TABLE == ENUM_MAP_TABLE.ADS_SOTHAM_QUYETDINH).FirstOrDefault();
+                    //if (oTD != null)
+                    //{
+                    //    lbthongbao.Text= lbthongbaoQD.Text = "Bạn không thể sửa khi đã tống đạt!";
+                    //    return;
+                    //}
+                    loadedit(ND_id);
+                    hddid.Value = e.CommandArgument.ToString();
+                    break;
+                case "Xoa":
+                    MenuPermission oPer = Cls_Comon.GetMenuPer(Request.FilePath, Convert.ToDecimal(Session[ENUM_SESSION.SESSION_USERID]));
+                    decimal DonID = Convert.ToDecimal(Session[ENUM_LOAIAN.AN_DANSU] + "");
+                    string StrMsg = "Không được sửa đổi thông tin.";
+                    string Result = new ADS_CHUYEN_NHAN_AN_BL().Check_NhanAn(DonID, StrMsg, Convert.ToDecimal(Session[ENUM_SESSION.SESSION_DONVIID]));
+                    if (Result != "")
+                    {
+                        lbthongbao.Text = Result;
+                        return;
+                    }
+                    ADS_SOTHAM_QUYETDINH oND2 = dt.ADS_SOTHAM_QUYETDINH.Where(x => x.ID == ND_id).FirstOrDefault();
+                    // khong duoc xoa khi da Tong dat - 27/11/2025 vnpt check
+                    ADS_TONGDAT oTD1 = dt.ADS_TONGDAT.Where(x => x.DONID == oND2.DONID && x.MAPID == oND2.ID && x.MAP_TABLE == ENUM_MAP_TABLE.ADS_SOTHAM_QUYETDINH).FirstOrDefault();
+                    if (oTD1 != null)
+                    {
+                        lbthongbao.Text= lbthongbaoQD.Text = "Bạn không thể xóa khi đã tống đạt!";
+                        return;
+                    }
+                    //Dữ liệu Quyết định đã được chia sẻ không được xóa
+                    KHOBAQD_BL ads = new KHOBAQD_BL();
+                    bool isExist = ads.IsExistKHOBADQ(1, DonID, 2,ENUM_LOAIVUVIEC_TEXT.AN_DANSU);
+                    if (isExist)
+                    {
+                        lbthongbao.Text = lbthongbaoQD.Text = "Vụ việc đã được đồng bộ. Phải thu hồi đồng bộ trước khi chỉnh sửa/xóa";
+                        return;
+                    }
+                    bool isCongbo = CheckCongbo(ID);
+                    if (!isCongbo)
+                    {
+                        lbthongbao.Text = "Vụ việc đã có thông tin công bố. Không được xóa.";
+                        return;
+                    }
+
+                    xoa(ND_id);
+                    break;
+            }
+        }
+        protected void dgFile_ItemCommand(object source, DataGridCommandEventArgs e)
+        {
+            decimal ND_id = Convert.ToDecimal(e.CommandArgument.ToString());
+            switch (e.CommandName)
+            {
+                case "Xoa":
+                    MenuPermission oPer = Cls_Comon.GetMenuPer(Request.FilePath, Convert.ToDecimal(Session[ENUM_SESSION.SESSION_USERID]));
+                    if (oPer.XOA == false)
+                    {
+                        lstErr.Text = "Bạn không có quyền xóa!";
+                        return;
+                    }
+                    decimal DonID = Convert.ToDecimal(Session[ENUM_LOAIAN.AN_DANSU] + "");
+                    string StrMsg = "Không được sửa đổi thông tin.";
+                    string Result = new ADS_CHUYEN_NHAN_AN_BL().Check_NhanAn(DonID, StrMsg, Convert.ToDecimal(Session[ENUM_SESSION.SESSION_DONVIID]));
+                    if (Result != "")
+                    {
+                        lstErr.Text = Result;
+                        return;
+                    }
+                    ADS_SOTHAM_BANAN_FILE oT = DataExtensions.FindById<ADS_SOTHAM_BANAN_FILE>(ND_id);
+                    if (oT.NOIDUNG == null)
+                    {
+                        QT_FILE qtFileDelete = DataExtensions.FindById<QT_FILE>(oT.QT_FILE_ID.Value);
+                        if (qtFileDelete != null)
+                        {
+                            qtFileDelete.DESCRIPTION = "Tài khoản " + Session[ENUM_SESSION.SESSION_USERNAME] + " đã xóa file tại form BanAnSoTham " + ENUM_LOAIAN.AN_DANSU + ".";
+                            QT_FILE_BL fileH = new QT_FILE_BL();
+                            fileH.DeleteFileLogic(qtFileDelete);
+                        }
+                    }
+                    ADS_FILE oDsF = dt.ADS_FILE.Where(x => x.DONID == oT.DONID && x.TENFILE == oT.TENFILE).FirstOrDefault();
+                    if (oDsF != null)
+                    {
+                        dt.ADS_FILE.Remove(oDsF);
+                        dt.SaveChanges();
+                    }
+                    DataExtensions.Delete(oT);
+                    LoadFile();
+                    break;
+                case "Download":
+                    ADS_SOTHAM_BANAN_FILE oND = DataExtensions.FindById<ADS_SOTHAM_BANAN_FILE>(ND_id);
+                    if (oND.NOIDUNG != null && oND.QT_FILE_ID == null)
+                    {
+                        var cacheKey = Guid.NewGuid().ToString("N");
+                        Context.Cache.Insert(key: cacheKey, value: oND.NOIDUNG, dependencies: null, absoluteExpiration: DateTime.Now.AddSeconds(30), slidingExpiration: System.Web.Caching.Cache.NoSlidingExpiration);
+                        ScriptManager.RegisterClientScriptBlock(this, this.GetType(), "Download", "window.location='" + Cls_Comon.GetRootURL_HTTPS() + "/DownloadFile.aspx?cacheKey=" + cacheKey + "&FileName=" + oND.TENFILE + "&Extension=" + oND.KIEUFILE + "';", true);
+                    }
+                    else
+                    {
+                        QT_FILE qT_FILE = DataExtensions.FindById<QT_FILE>(oND.QT_FILE_ID.Value);
+                        // Xây dựng path cho file
+                        string _pathStore = QT_FILE_BL.ToPathFolderStore(qT_FILE.DATE_CREATED.Value, Convert.ToInt32(ENUM_LOAIVUVIEC_NUMBER.AN_DANSU)) + "\\BANANSOTHAM";
+                        string fileNameWithoutExtension = Path.GetFileNameWithoutExtension(qT_FILE.FILE_NAME);
+                        string pathRaw = Path.Combine(_pathStore,
+                            Cls_Comon.ChuyenTVKhongDau(fileNameWithoutExtension) +
+                            qT_FILE.ID +
+                            qT_FILE.FILE_TYPE);
+                        var pathUrlStyle = pathRaw.Replace("\\", "/");
+                        var encodedPath = HttpUtility.UrlEncode(pathUrlStyle);
+                        // Đảm bảo HTTPS
+                        var authority = Request.Url.GetLeftPart(UriPartial.Authority).Replace("http://", "https://");
+                        var appPath = Request.ApplicationPath?.TrimEnd('/') ?? "";
+                        string downloadUrl = $"{authority}{appPath}/Quantri/Cauhinh/FileDownload.ashx?p={HttpUtility.UrlEncode(encodedPath)}";
+
+                        // JavaScript redirect
+                        string script = $@"window.location.href = '{downloadUrl}';";
+
+                        ScriptManager.RegisterStartupScript(this, this.GetType(), "downloadScript", script, true);
+                    }
+                    break;
+            }
+
+        }
+        protected void dgList_ItemDataBound(object sender, DataGridItemEventArgs e)
+        {
+            MenuPermission oPer = Cls_Comon.GetMenuPer(Request.FilePath, Convert.ToDecimal(Session[ENUM_SESSION.SESSION_USERID]));
+            if (e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem)
+            {
+                DataRowView rowView = (DataRowView)e.Item.DataItem;
+                LinkButton lblSua = (LinkButton)e.Item.FindControl("lblSua");
+                Cls_Comon.SetLinkButton(lblSua, oPer.CAPNHAT);
+                LinkButton lbtXoa = (LinkButton)e.Item.FindControl("lbtXoa");
+                Cls_Comon.SetLinkButton(lbtXoa, oPer.XOA);
+                // string toagiaiquyetIDDL = e.Item.Cells[7].Text.Trim();
+                string toagiaiquyetID = e.Item.Cells[10].Text.Trim();
+                string donviID = Session[ENUM_SESSION.SESSION_DONVIID]?.ToString();
+                //if (toagiaiquyetIDDL != donviID)
+                //{
+                //    lbtXoa.Visible = false;
+                //}
+                if (toagiaiquyetID != donviID)
+                {
+                    lbtXoa.Visible = false;
+                    lblSua.Visible = false;
+                }
+                decimal DONID = Convert.ToDecimal(hddDonID.Value);
+
+                ADS_DON oT = dt.ADS_DON.Where(x => x.ID == DONID).FirstOrDefault();
+                if (oT.MAGIAIDOAN == ENUM_GIAIDOANVUAN.PHUCTHAM || oT.MAGIAIDOAN == ENUM_GIAIDOANVUAN.THULYGDT)
+                {
+                    lblSua.Text = "Chi tiết";
+                    lbtXoa.Visible = false;
+                }
+
+                ADS_SOTHAM_KHANGCAO oTKC = dt.ADS_SOTHAM_KHANGCAO.Where(x => x.DONID == DONID).FirstOrDefault();
+                ADS_SOTHAM_KHANGNGHI oTKN = dt.ADS_SOTHAM_KHANGNGHI.Where(x => x.DONID == DONID).FirstOrDefault();
+                if (oTKC != null || oTKN != null)
+                {
+                    lblSua.Text = "Chi tiết";
+                    lbtXoa.Visible = false;
+                }
+
+                ImageButton lblDownload = (ImageButton)e.Item.FindControl("lblDownload");
+                if (rowView["TENFILE"] + "" == "")
+                {
+                    lblDownload.Visible = false;
+                }
+                else
+                {
+                    lblDownload.Visible = true;
+                }
+
+            }
+        }
+        protected void dgList_ItemDataBound_DL(object sender, DataGridItemEventArgs e)
+        {
+            MenuPermission oPer = Cls_Comon.GetMenuPer(Request.FilePath, Convert.ToDecimal(Session[ENUM_SESSION.SESSION_USERID]));
+            if (e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem)
+            {
+                DataRowView rowView = (DataRowView)e.Item.DataItem;
+                LinkButton lbtXoa = (LinkButton)e.Item.FindControl("lbtXoa");
+                Cls_Comon.SetLinkButton(lbtXoa, oPer.XOA);
+                string toagiaiquyetIDDL = e.Item.Cells[7].Text.Trim();
+                string donviID = Session[ENUM_SESSION.SESSION_DONVIID]?.ToString();
+                if (toagiaiquyetIDDL != donviID)
+                {
+                    lbtXoa.Visible = false;
+                }
+
+            }
+        }
+        protected void ddlQuyetdinh_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            decimal ID = Convert.ToDecimal(ddlQuyetdinh.SelectedValue);
+            DM_QD_QUYETDINH oT = dt.DM_QD_QUYETDINH.Where(x => x.ID == ID).FirstOrDefault();
+
+            //Check quyết định sửa chữa, bổ sung bản án
+            decimal IDD = Convert.ToDecimal(hddDonID.Value);
+
+            CheckQuyenSua(IDD);
+
+            if (btnUpdate.Enabled == true)
+            {
+                //update 080825: hotfix
+                //--Kiểm tra đã phân công thẩm phán chưa
+                ADS_DON_THAMPHAN oTP = dt.ADS_DON_THAMPHAN.Where(x => x.DONID == IDD && x.MAVAITRO == ENUM_VAITROTHAMPHAN.VTTP_GIAIQUYETSOTHAM).FirstOrDefault();
+                if (oTP == null)
+                {
+                    lbthongbaoQD.Text = "Chưa cập nhật thông tin hội đồng xét xử !";
+                    Cls_Comon.SetButton(btnUpdate, false);
+                    return;
+                }
+                else if (oT.LOAIID == 2 /*Chuyển vụ án*/ || oT.TEN.Contains("cho Thẩm phán") ||
+                    oT.ID == 422 /*19-VDS. Quyết định đình chỉ việc xét đơn yêu cầu giải quyết việc dân sự*/ ||
+                    oT.ID == 423 /*20-VDS. Quyết định đình chỉ giải quyết sơ thẩm việc dân sự*/||
+                    oT.ID == 429 /*26-VDS. Quyết định đình chỉ giải quyết phúc thẩm việc dân sự*/)
+                {
+                    lbthongbaoQD.Text = "";
+                    Cls_Comon.SetButton(btnUpdate, true);
+                }
+                else
+                {
+                    //Kiểm tra xem đã có quyết định đưa vụ việc ra xét xử hay không
+                    ADS_SOTHAM_QUYETDINH QDST = dt.ADS_SOTHAM_QUYETDINH.Where(x => x.DONID == IDD && x.LOAIQDID == 5 && x.QUYETDINHID != 147 && x.QUYETDINHID != 148 /*Quyết định chuyển vụ án giải quyết theo thủ tục rút gọn sang giải quyết theo thủ tục thông thường*/).OrderByDescending(x => x.NGAYQD).FirstOrDefault();
+                    if (QDST == null)
+                    {
+                        lbthongbaoQD.Text = "Chưa nhập quyết định đưa vụ án ra xét xử.";
+                        Cls_Comon.SetButton(btnUpdate, false);
+                        return;
+                    }
+                }
+            }
+
+            if (oT != null)
+            {
+                hddThoiHanThang.Value = oT.THOIHAN_THANG == null ? "0" : oT.THOIHAN_THANG.ToString();
+                hddThoiHanNgay.Value = oT.THOIHAN_NGAY == null ? "0" : oT.THOIHAN_NGAY.ToString();
+                ddlLoaiQD.SelectedValue = oT.LOAIID + "";
+                //Load ẩn hiện QHPL
+                decimal IDLoai = Convert.ToDecimal(ddlLoaiQD.SelectedValue);
+                DM_QD_LOAI oQD = dt.DM_QD_LOAI.Where(x => x.ID == IDLoai).FirstOrDefault();
+                if (oQD != null)
+                {
+                    if (/*oQD.MA == "TDC"*/ oT.LOAIID == 10 || oT.LOAIID == 11 || oT.LOAIID == 3)
+                    {
+                        pnCBQD.Visible = true;
+                    }
+                    else pnCBQD.Visible = false;
+
+                    if (oQD.MA == "DC" || oQD.MA == "CNTT")
+                    {
+                        pnCBQD.Visible = false;
+                        pnDuongSuYC.Visible = false;
+                    }
+
+                    if (oQD.MA == "GQDS")
+                    {
+                        pnCBQD.Visible = false;
+                        pnChiTieuThongKe.Visible = true;
+                    }
+                    else
+                    {
+                        pnChiTieuThongKe.Visible = false;
+                        pnHoaGiaiThanh.Visible = false;
+                    }
+                }
+                else
+                {
+                    pnQHPL.Visible = false;
+                    pnDuongSuYC.Visible = false;
+                    pnCBQD.Visible = false;
+                }
+
+                //Load số quyêt định với các loại QD Dan Su sau
+                if (ID == 62 || ID == 63 || ID == 67 || ID == 68 || ID == 41 || ID == 42 || ID == 45 || ID == 147 || ID == 4 || ID == 61)
+                {
+                    // lấy số mới nhất 
+                    Decimal DonViID = Convert.ToDecimal(Session[ENUM_SESSION.SESSION_DONVIID]);
+                    DateTime ngayQD;
+                    if (txtNgayQD.Text != "")
+                        ngayQD = DateTime.Parse(this.txtNgayQD.Text.Trim(), cul, DateTimeStyles.NoCurrentDateDefault);
+                    else
+                        ngayQD = DateTime.Now;
+
+                    ADS_SOTHAM_BL oSTBL = new ADS_SOTHAM_BL();
+                    String STTNew = oSTBL.GET_SQD_NEW(DonViID, "ADS", ngayQD, ID).ToString();
+                    txtSoQD.Text = STTNew;
+                }
+            }
+            LoadLydo();
+
+            if (ddlQuyetdinh.SelectedItem.Text.Contains("20-VDS"))
+            {
+                pnChiTieuThongKe.Visible = true;
+                pnHoaGiaiThanh.Visible = false;
+            }
+            if (ddlQuyetdinh.SelectedItem.Text.Contains("38-DS") || ddlQuyetdinh.SelectedItem.Text.Contains("45-DS"))
+            {
+                pnChiTieuThongKe.Visible = true;
+                pnVKSThamGia.Visible = false;
+                pnHoaGiaiThanh.Visible = true;
+            }
+            if (ddlQuyetdinh.SelectedItem.Text.Contains("46-DS") || ddlQuyetdinh.SelectedItem.Text.Contains("39-DS"))
+            {
+                pnChiTieuThongKe.Visible = true;
+                pnVKSThamGia.Visible = true;
+                pnHoaGiaiThanh.Visible = true;
+            }
+        }
+        protected void ddlNguoiYC_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            ddlNguoiBiYC.Items.Clear();
+            decimal DonID = Convert.ToDecimal(hddDonID.Value),
+                NguoiYC = Convert.ToDecimal(ddlNguoiYC.SelectedValue);
+            List<ADS_DON_DUONGSU> lstDS = dt.ADS_DON_DUONGSU.Where(x => x.DONID == DonID && x.ID != NguoiYC).OrderBy(x => x.TENDUONGSU).ToList<ADS_DON_DUONGSU>();
+            ddlNguoiBiYC.DataSource = lstDS;
+            ddlNguoiBiYC.DataTextField = "TENDUONGSU";
+            ddlNguoiBiYC.DataValueField = "ID";
+            ddlNguoiBiYC.DataBind();
+            ddlNguoiBiYC.Items.Insert(0, new ListItem("-- Chọn --", "0"));
+            Cls_Comon.SetFocus(this, this.GetType(), ddlNguoiBiYC.ClientID);
+        }
+        #endregion
+        private void LoadAnPhi()
+        {
+            decimal DONID = Convert.ToDecimal(hddDonID.Value);
+            ADS_SOTHAM_BL oBL = new ADS_SOTHAM_BL();
+            dgAnPhi.DataSource = oBL.ADS_SOTHAM_BANAN_ANPHI_GET(DONID);
+            dgAnPhi.DataBind();
+            foreach (DataGridItem oItem in dgAnPhi.Items)
+            {
+                CheckBox chkMien = (CheckBox)oItem.FindControl("chkMien");
+                TextBox txtAnphi = (TextBox)oItem.FindControl("txtAnphi");
+                if (chkMien.Checked)
+                {
+                    txtAnphi.Text = "";
+                    txtAnphi.Enabled = false;
+                }
+                else
+                {
+                    txtAnphi.Enabled = true;
+                }
+            }
+        }
+        private void LoadTGTT()
+        {
+            decimal DONID = Convert.ToDecimal(hddDonID.Value);
+            ADS_SOTHAM_BL oBL = new ADS_SOTHAM_BL();
+            DataTable dtTGTT = oBL.ADS_SOTHAM_BANAN_TGTT_GET(DONID);
+            if (dtTGTT != null && dtTGTT.Rows.Count > 0)
+            {
+                hddTGTTRowLastIndex.Value = dtTGTT.Rows.Count + "";
+            }
+            dgTGTT.DataSource = dtTGTT;
+            dgTGTT.DataBind();
+        }
+        protected void dgTGTT_ItemDataBound(object sender, DataGridItemEventArgs e)
+        {
+            if (e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem)
+            {
+                TextBox txtNgayTGTT = (TextBox)e.Item.FindControl("txtNgayTGTT");
+                if (hddTGTTRowLastIndex.Value == (dgTGTT.Items.Count + 1) + "")
+                {
+                    txtNgayTGTT.Attributes.Add("onfocus", "myFunctionFocus();");
+                }
+            }
+        }
+        private void LoadBoLuat()
+        {
+            ddlBoLuat.DataSource = dt.DM_BOLUAT.Where(x => x.LOAI == ENUM_LOAIVUVIEC.AN_DANSU && x.HIEULUC == 1 && x.LOAI != "01").OrderByDescending(y => y.NGAYBANHANH).ToList();
+            ddlBoLuat.DataTextField = "TENBOLUAT";
+            ddlBoLuat.DataValueField = "ID";
+            ddlBoLuat.DataBind();
+            LoadDieuKhoan();
+        }
+        private void LoadDieuKhoan()
+        {
+            //Load điều luật áp dụng gồm cả điều - khoản - điểm: tên tội danh
+            if (ddlBoLuat.Items.Count > 0)
+            {
+                decimal IDBL = Convert.ToDecimal(ddlBoLuat.SelectedValue);
+                ddlDieukhoan.DataSource = dt.DM_BOLUAT_TOIDANH
+                    .Where(x => x.LUATID == IDBL && x.LOAI != 1)
+                    .Select(x => new
+                    {
+                        ID = x.ID,
+                        TENTOIDANH = x.DIEU + " - " + x.KHOAN + " - " + x.DIEM + ": " + x.TENTOIDANH
+                    })
+                    .ToList();
+
+                ddlDieukhoan.DataTextField = "TENTOIDANH";
+                ddlDieukhoan.DataValueField = "ID";
+                ddlDieukhoan.DataBind();
+            }
+        }
+        private void LoadFile()
+        {
+            decimal DONID = Convert.ToDecimal(hddDonID.Value);
+            dgFile.DataSource = dt.ADS_SOTHAM_BANAN_FILE.Where(x => x.DONID == DONID).ToList();
+            dgFile.DataBind();
+            int ma_gd = 0;
+            ADS_DON oT = dt.ADS_DON.Where(x => x.ID == DONID).FirstOrDefault();
+            if (oT != null)
+                ma_gd = (int)oT.MAGIAIDOAN;
+            foreach (DataGridItem item in dgFile.Items)
+            {
+                LinkButton lbtXoa = (LinkButton)item.FindControl("lbtXoa");
+                if (ma_gd == (int)ENUM_GIAIDOANVUAN.PHUCTHAM || ma_gd == (int)ENUM_GIAIDOANVUAN.THULYGDT)
+                {
+                    Cls_Comon.SetLinkButton(lbtXoa, false);
+                }
+                //if (hddShowCommand.Value == "False")//AnhPN - tạm khóa vào để test chức năng upload file
+                //{
+                //    lbtXoa.Visible = false;
+                //}
+            }
+        }
+        private void LoadDieuLuat()
+        {
+            decimal DONID = Convert.ToDecimal(hddDonID.Value);
+            ADS_SOTHAM_BL oBL = new ADS_SOTHAM_BL();
+            dgDieuLuat.DataSource = oBL.ADS_SOTHAM_BANAN_DIEULUAT_GET(DONID);
+            dgDieuLuat.DataBind();
+        }
+        private void LoadBanAnInfo(decimal DonID)
+        {
+            List<ADS_SOTHAM_BANAN> lst = dt.ADS_SOTHAM_BANAN.Where(x => x.DONID == DonID).ToList();
+            if (lst.Count > 0)
+            {
+                // Chọn sẵn giá trị "1" (Bản án)
+                rdbPanelBA.SelectedValue = "1";
+
+                // Khóa không cho người dùng thay đổi
+                rdbPanelBA.Enabled = false;
+                rdbPanelQD.Enabled = false;
+
+                /*pnZonekythuong.Visible = */
+                pnDgFile.Visible = true;
+                ADS_SOTHAM_BANAN oT = lst[0]; hddBanAnID.Value = oT.ID.ToString();
+                txtSobanan.Text = oT.SOBANAN;
+                ddlLoaiQuanhe.SelectedValue = oT.LOAIQUANHE.ToString();
+
+                //txtQuanhephapluat_name(oT);
+                txtQuanhephapluat.Text = oT.QUANHEPHAPLUAT_NAME;
+
+                if (oT.QHPLTKID != null)
+                    ddlQHPLTK.SelectedValue = oT.QHPLTKID.ToString();
+                if (oT.NGAYMOPHIENTOA != null)
+                {
+                    txtNgaymophientoa.Text = ((DateTime)oT.NGAYMOPHIENTOA).ToString("dd/MM/yyyy", cul);
+                }
+                else
+                {
+                    txtNgaymophientoa.Text = DateTime.Now.ToString("dd/MM/yyyy", cul);
+                }
+                if (oT.NGUOIKY != null) txtNguoiKy.Text = oT.NGUOIKY;
+                if (oT.NGAYTUYENAN != null) txtNgaytuyenan.Text = ((DateTime)oT.NGAYTUYENAN).ToString("dd/MM/yyyy", cul);
+                if (oT.NGAYHIEULUC != null) txtNgayhieuluc.Text = ((DateTime)oT.NGAYHIEULUC).ToString("dd/MM/yyyy", cul);
+
+                if (oT.ISVKSTHAMGIA != null)
+                    rdbVKSThamgia.SelectedValue = oT.ISVKSTHAMGIA.ToString();
+
+                if ((oT.APDUNGANLE == null || oT.APDUNGANLE == 1) && oT.SOANLE == null)
+                {
+                    ddlCBBA_Anle.Items.Insert(ddlCBBA_Anle.Items.Count, new ListItem("Hãy chọn số án lệ", "-1"));
+                    ddlCBBA_Anle.SelectedValue = "-1";
+                }
+                else
+                {
+                    ddlCBBA_Anle.SelectedValue = string.IsNullOrEmpty(oT.SOANLE + "") ? "0" : oT.SOANLE;
+                }
+                ddlYeutonuocngoai.SelectedValue = oT.YEUTONUOCNGOAI.ToString();
+                //rdCongboBA.SelectedValue = oT.ISCONGBOBA.ToString();
+
+
+                rdVuAnQuaHan.SelectedValue = (string.IsNullOrEmpty(oT.TK_ISQUAHAN + "")) ? "0" : oT.TK_ISQUAHAN.ToString();
+                rdNNChuQuan.SelectedValue = (string.IsNullOrEmpty(oT.TK_QUAHAN_CHUQUAN + "")) ? "0" : oT.TK_QUAHAN_CHUQUAN.ToString();
+                rdNNKhachQuan.SelectedValue = (string.IsNullOrEmpty(oT.TK_QUAHAN_KHACHQUAN + "")) ? "0" : oT.TK_QUAHAN_KHACHQUAN.ToString();
+                txtSoQDTraiPLBiHuy.Text = oT.TK_SOQDTRAIPLBIHUY + "";
+                if (rdVuAnQuaHan.SelectedValue == "1")
+                    pnNguyenNhanQuaHan.Visible = true;
+                else
+                    pnNguyenNhanQuaHan.Visible = false;
+
+                txtTomtatnoidungBanan.Text = oT.NOIDUNG;
+                var twords = Regex.Matches(txtTomtatnoidungBanan.Text, @"\w+");
+                decimal words = twords.Count;
+                wordCountdownBanan.InnerText = "Số từ còn lại: " + (200 - words).ToString();
+                LoadFile();
+            }
+            else
+            {
+                /*pnZonekythuong.Visible = */
+                pnDgFile.Visible = false;
+                ADS_DON oDon = dt.ADS_DON.Where(x => x.ID == DonID).FirstOrDefault();
+                if (oDon != null)
+                {
+                    if (oDon.LOAIQUANHE != null)
+                        ddlLoaiQuanhe.SelectedValue = oDon.LOAIQUANHE.ToString();
+                    if (oDon.YEUTONUOCNGOAI != null)
+                        ddlYeutonuocngoai.SelectedValue = oDon.YEUTONUOCNGOAI.ToString();
+                }
+
+                // QHPL Thống kê mặc định selected theo thụ lý
+                ADS_SOTHAM_THULY tl = dt.ADS_SOTHAM_THULY.Where(x => x.DONID == DonID).OrderByDescending(x => x.NGAYTHULY).FirstOrDefault();
+                if (tl != null)
+                {
+                    if (tl.QHPLTKID != null)
+                    {
+                        ddlQHPLTK.SelectedValue = tl.QHPLTKID.ToString();
+                        txtQuanhephapluat.Text = tl.QUANHEPHAPLUAT_NAME;
+                    }
+                    //txtQuanhephapluat_name(tl);
+                }
+                txtNgaymophientoa.Text = DateTime.Now.ToString("dd/MM/yyyy", cul);
+            }
+
+        }
+        private bool CheckValidQDVV(decimal IDQD)
+        {
+            if (ddlQuyetdinh.SelectedValue == "0")
+            {
+                lbthongbao.Text = "Bạn chưa chọn tên quyết định. Hãy chọn lại!";
+                ddlQuyetdinh.Focus();
+                return false;
+            }
+
+            if (pnCBQD.Visible)
+            {
+                if (rdCongBoQD.SelectedValue == "")
+                {
+                    lbthongbao.Text = "Bạn chưa chọn có công bố quyết định. Hãy chọn lại!";
+                    rdCongBoQD.Focus();
+                    return false;
+                }
+            }
+
+            if (ddlQHPLQDVV.SelectedValue == "0")
+            {
+                lbthongbao.Text = "Bạn chưa chọn quan hệ pháp luật. Hãy chọn lại!";
+                ddlQHPLQDVV.Focus();
+                return false;
+            }
+
+            int lengthSQD = txtSoQD.Text.Trim().Length;
+            if (lengthSQD == 0)
+            {
+                lbthongbaoQD.Text = "Bạn chưa nhập số quyết định!";
+                txtSoQD.Focus();
+                return false;
+            }
+            if (lengthSQD > 20)
+            {
+                lbthongbaoQD.Text = "Số quyết định không quá 20 ký tự. Hãy nhập lại!";
+                txtSoQD.Focus();
+                return false;
+            }
+
+            if (String.IsNullOrEmpty(txtNgayQD.Text))
+            {
+                lbthongbaoQD.Text = "Bạn chưa nhập ngày quyết định !";
+                txtNgayQD.Focus();
+                return false;
+            }
+            else
+            {
+                if (Cls_Comon.IsValidDate(txtNgayQD.Text) == false)
+                {
+                    lbthongbaoQD.Text = "Bạn chưa nhập ngày quyết định theo định dạng (dd/MM/yyyy) !";
+                    txtNgayQD.Focus();
+                    return false;
+                }
+
+                DateTime NgayQD = DateTime.Parse(txtNgayQD.Text, cul, DateTimeStyles.NoCurrentDateDefault);
+
+                if (NgayQD > DateTime.Now)
+                {
+                    lbthongbaoQD.Text = "Ngày quyết định phải nhỏ hơn ngày hiện tại !";
+                    txtNgayQD.Focus();
+                    return false;
+                }
+            }
+
+            if (String.IsNullOrEmpty(txtNgayMoPhienToaQD.Text))
+            {
+                lbthongbaoQD.Text = "Bạn chưa nhập ngày mở quyết định !";
+                txtNgayMoPhienToaQD.Focus();
+                return false;
+            }
+            else
+            {
+                if (Cls_Comon.IsValidDate(txtNgayMoPhienToaQD.Text) == false)
+                {
+                    lbthongbaoQD.Text = "Bạn chưa nhập ngày mở phiên toà theo định dạng (dd/MM/yyyy) !";
+                    txtNgayMoPhienToaQD.Focus();
+                    return false;
+                }
+
+                DateTime NgayQD = DateTime.Parse(txtNgayMoPhienToaQD.Text, cul, DateTimeStyles.NoCurrentDateDefault);
+
+                if (NgayQD > DateTime.Now)
+                {
+                    lbthongbaoQD.Text = "ngày mở phiên toà phải nhỏ hơn ngày hiện tại !";
+                    txtNgayMoPhienToaQD.Focus();
+                    return false;
+                }
+                if (hddNgayNhanPhanCong.Value != "")
+                {
+                    DateTime NgayNhanPC = DateTime.Parse(hddNgayNhanPhanCong.Value, cul, DateTimeStyles.NoCurrentDateDefault);
+                    if (NgayQD < NgayNhanPC)
+                    {
+                        lbthongbaoQD.Text = "ngày mở phiên toà phải lớn hơn ngày phân công thẩm phán giải quyết " + hddNgayNhanPhanCong.Value + " !";
+                        txtNgayMoPhienToaQD.Focus();
+                        return false;
+                    }
+                }
+            }
+
+            if (!String.IsNullOrEmpty(txtHieuLucTuNgay.Text))
+            {
+                if (Cls_Comon.IsValidDate(txtHieuLucTuNgay.Text) == false)
+                {
+                    lbthongbaoQD.Text = "Bạn chưa nhập hiệu lực từ ngày theo định dạng (dd/MM/yyyy) !";
+                    txtHieuLucTuNgay.Focus();
+                    return false;
+                }
+            }
+            if (!String.IsNullOrEmpty(txtNgayQD.Text) && !String.IsNullOrEmpty(txtHieuLucTuNgay.Text))
+            {
+                DateTime tuNgay = DateTime.Parse(txtHieuLucTuNgay.Text, cul, DateTimeStyles.NoCurrentDateDefault);
+
+                DateTime NgayQD = DateTime.Parse(txtNgayQD.Text, cul, DateTimeStyles.NoCurrentDateDefault);
+                if (tuNgay < NgayQD)
+                {
+                    lbthongbaoQD.Text = "Hiệu lực từ ngày phải nhỏ hơn ngày quyết định !";
+                    txtHieuLucTuNgay.Focus();
+                    return false;
+                }
+            }
+            if (!String.IsNullOrEmpty(txtHieuLucTuNgay.Text) && !String.IsNullOrEmpty(txtHieuLucDenNgay.Text))
+            {
+                if (txtHieuLucDenNgay.Text != "")
+                {
+                    DateTime tuNgay = DateTime.Parse(txtHieuLucTuNgay.Text, cul, DateTimeStyles.NoCurrentDateDefault);
+
+                    DateTime denNgay = DateTime.Parse(txtHieuLucDenNgay.Text, cul, DateTimeStyles.NoCurrentDateDefault);
+                    if (tuNgay > denNgay)
+                    {
+                        lbthongbaoQD.Text = "Hiệu lực từ ngày phải nhỏ hơn hiệu lực đến ngày !";
+                        txtHieuLucDenNgay.Focus();
+                        return false;
+                    }
+                }
+            }
+
+            if (ddlQuyetdinh.SelectedItem.Text.ToLower().Contains("đình chỉ"))
+            {
+                if (pnLyDo.Visible)
+                {
+                    if (ddlLydo.SelectedValue == "0")
+                    {
+                        lbthongbaoQD.Text = "Bạn chưa chọn Lý do!";
+                        return false;
+                    }
+                }
+            }
+
+            if (!String.IsNullOrEmpty(txtNgayQD.Text) && !String.IsNullOrEmpty(txtSoQD.Text) && IDQD == 0)
+            {
+                string so = txtSoQD.Text;
+
+                DateTime ngay = DateTime.Parse(this.txtNgayQD.Text.Trim(), cul, DateTimeStyles.NoCurrentDateDefault);
+                Decimal DonViID = Convert.ToDecimal(Session[ENUM_SESSION.SESSION_DONVIID]);
+                ADS_SOTHAM_BL oSTBL = new ADS_SOTHAM_BL();
+                Decimal LoaiQD = Convert.ToDecimal(ddlQuyetdinh.SelectedValue);
+                Decimal CheckID = oSTBL.CHECK_SQDTheoLoaiAn(DonViID, "ADS", so, ngay, LoaiQD);
+                if (CheckID > 0)
+                {
+                    String strMsg = "";
+                    String STTNew = oSTBL.GET_SQD_NEW(DonViID, "ADS", ngay, LoaiQD).ToString();
+                    Decimal CurrID = (string.IsNullOrEmpty(hddDonID.Value)) ? 0 : Convert.ToDecimal(hddDonID.Value);
+                    if (CheckID != CurrID)
+                    {
+                        strMsg = "Số Quyết định " + txtSoQD.Text + " đã có trong hệ thống. Bạn có thể dùng số " + STTNew;
+                        txtSoQD.Text = STTNew;
+                        ScriptManager.RegisterClientScriptBlock(this, this.GetType(), "alertMessage", "alert('" + strMsg + "')", true);
+                        txtSoQD.Focus();
+                        return false;
+                    }
+                }
+            }
+
+            if (ddlCBBA_AnleQD.SelectedValue == "-1")
+            {
+                ScriptManager.RegisterClientScriptBlock(this, this.GetType(), "alertMessage", "alert('" + " Chưa chọn số án lệ áp dụng. Hãy kiểm tra lại. " + "')", true);
+                lbthongbaoQD.Text = "Lỗi: Dữ liệu thống kê lưu không thành công!";
+                return false;
+            }
+            decimal DONID = Convert.ToDecimal(hddDonID.Value);
+            decimal ID = Convert.ToDecimal(hddid.Value);
+            DM_QUYETDINH_VUAN_KETTHUC oBL = new DM_QUYETDINH_VUAN_KETTHUC();
+            DataTable oDT = oBL.DGLIST_BAQD_QUYETDINH_KETTHUC_ST(ENUM_LOAIVUVIEC_NUMBER.AN_DANSU, DONID);
+            if (oDT.Rows.Count > 0 && oDT.Rows[0]["ID"].ToString() != ID.ToString())
+            {
+                ScriptManager.RegisterClientScriptBlock(this, this.GetType(), "alertMessage", "alert('" + " Vụ án đã có quyết định. Hãy kiểm tra lại! " + "')", true);
+                lbthongbaoQD.Text = "Lỗi: Vụ án đã có quyết định. Hãy kiểm tra lại.!";
+                return false;
+            }
+            ADS_SOTHAM_QUYETDINH QD = dt.ADS_SOTHAM_QUYETDINH.Where(x => x.ID == ID).FirstOrDefault();
+            // khong duoc xoa khi da Tong dat - 27/11/2025 vnpt check
+            if (QD != null)
+            {
+                ADS_TONGDAT oTD = dt.ADS_TONGDAT.Where(x => x.DONID == QD.DONID && x.MAPID == QD.ID && x.MAP_TABLE == ENUM_MAP_TABLE.ADS_SOTHAM_QUYETDINH).FirstOrDefault();
+                if (oTD != null)
+                {
+                    if (!string.IsNullOrEmpty(QD.QUANHEPHAPLUAT))
+                    {
+                        txtQHPLQDVV.Enabled = false;
+                    }
+                    else
+                    {
+                        txtQHPLQDVV.Enabled = true;
+                    }
+                    if (QD.QHPLTKID != null)
+                    {
+                        ddlQHPLQDVV.Enabled = false;
+                    }
+                    else
+                    {
+                        ddlQHPLQDVV.Enabled = true;
+                    }
+                    if (QD.QUYETDINHID != null)
+                    {
+                        ddlQuyetdinh.Enabled = false;
+                    }
+                    else
+                    {
+                        ddlQuyetdinh.Enabled = true;
+                    }
+                    if (QD.NGAYMOPT != null)
+                    {
+                        txtNgayMoPhienToaQD.Enabled = false;
+                    }
+                    else
+                    {
+                        txtNgayMoPhienToaQD.Enabled = true;
+                    }
+                    if (!string.IsNullOrEmpty(QD.DIADIEMMOPT))
+                    {
+                        txtDiaDiem.Enabled = false;
+                    }
+                    else
+                    {
+                        txtDiaDiem.Enabled = true;
+                    }
+                    if (QD.LYDOID != null)
+                    {
+                        ddlLydo.Enabled = false;
+                    }
+                    else
+                    {
+                        ddlLydo.Enabled = true;
+                    }
+                    if (!string.IsNullOrEmpty(QD.SOQD))
+                    {
+                        txtSoQD.Enabled = false;
+                    }
+                    else
+                    {
+                        txtSoQD.Enabled = true;
+                    }
+                    if (QD.NGAYQD != null)
+                    {
+                        txtNgayQD.Enabled = false;
+                    }
+                    else
+                    {
+                        txtNgayQD.Enabled = true;
+                    }
+                    if (QD.HIEULUCTU != null)
+                    {
+                        txtHieuLucTuNgay.Enabled = false;
+                    }
+                    else
+                    {
+                        txtHieuLucTuNgay.Enabled = true;
+                    }
+                    if (QD.HIEULUCDEN != null)
+                    {
+                        txtHieuLucDenNgay.Enabled = false;
+                    }
+                    else
+                    {
+                        txtHieuLucDenNgay.Enabled = true;
+                    }
+                    if (!string.IsNullOrEmpty(QD.NOIDUNG))
+                    {
+                        txtTomtatnoidungQuyetdinh.Enabled = false;
+                    }
+                    else
+                    {
+                        txtTomtatnoidungQuyetdinh.Enabled = true;
+                    }
+                }
+            }
+
+            return true;
+        }
+        private bool CheckValid()
+        {
+            if (txtQuanhephapluat.Text.Trim().Length >= 500)
+            {
+                lstErr.Text = "Quan hệ pháp luật nhập quá dài.";
+                txtQuanhephapluat.Focus();
+                return false;
+            }
+            if (txtQuanhephapluat.Text == null || txtQuanhephapluat.Text == "")
+            {
+                lstErr.Text = "Chưa nhập quan hệ pháp luật.";
+                txtQuanhephapluat.Focus();
+                return false;
+            }
+            if (txtNguoiKy.Text == null || txtNguoiKy.Text == "")
+            {
+                lstErr.Text = "Chưa nhập người ký.";
+                txtNguoiKy.Focus();
+                return false;
+            }
+            if (ddlQHPLTK.SelectedValue == "0")
+            {
+                lstErr.Text = "Chưa chọn quan hệ pháp luật dùng cho thống kê!";
+                return false;
+            }
+            decimal IDChitieuTK = Convert.ToDecimal(ddlQHPLTK.SelectedValue);
+            if (dt.DM_QHPL_TK.Where(x => x.PARENT_ID == IDChitieuTK).ToList().Count > 0)
+            {
+                lstErr.Text = "Quan hệ pháp luật dùng cho thống kê chỉ được chọn mã con, bạn hãy chọn lại !";
+                return false;
+            }
+            if (txtSobanan.Text == "")
+            {
+                lstErr.Text = "Chưa nhập số bản án";
+                txtSobanan.Focus();
+                return false;
+            }
+            if (Cls_Comon.IsValidDate(txtNgaymophientoa.Text) == false)
+            {
+                lstErr.Text = "Chưa nhập ngày mở phiên tòa hoặc không hợp lệ !";
+                txtNgaymophientoa.Focus();
+                return false;
+            }
+            DateTime dNgayMoPhienToa = (String.IsNullOrEmpty(txtNgaymophientoa.Text.Trim())) ? DateTime.MinValue : DateTime.Parse(this.txtNgaymophientoa.Text.Trim(), cul, DateTimeStyles.NoCurrentDateDefault);
+            if (dNgayMoPhienToa > DateTime.Now)
+            {
+                lstErr.Text = "Ngày mở phiên tòa không được lớn hơn ngày hiện tại !";
+                txtNgaymophientoa.Focus();
+                return false;
+            }
+            DateTime NgayQDXX = hddNgayQDXX.Value == "" ? DateTime.MinValue : DateTime.Parse(hddNgayQDXX.Value, cul, DateTimeStyles.NoCurrentDateDefault);
+            if (dNgayMoPhienToa < NgayQDXX)
+            {
+                lstErr.Text = "Ngày mở phiên tòa không được nhỏ hơn ngày thụ lý " + hddNgayQDXX.Value;
+                txtNgaymophientoa.Focus();
+                return false;
+            }
+            if (Cls_Comon.IsValidDate(txtNgaytuyenan.Text) == false)
+            {
+                lstErr.Text = "Chưa nhập ngày tuyên án hoặc không hợp lệ !";
+                return false;
+            }
+            DateTime dNgayTA = (String.IsNullOrEmpty(txtNgaytuyenan.Text.Trim())) ? DateTime.MinValue : DateTime.Parse(this.txtNgaytuyenan.Text.Trim(), cul, DateTimeStyles.NoCurrentDateDefault);
+            if (dNgayTA > DateTime.Now)
+            {
+                lstErr.Text = "Ngày tuyên án không được lớn hơn ngày hiện tại !";
+                txtNgaytuyenan.Focus();
+                return false;
+            }
+            if (dNgayTA < dNgayMoPhienToa)
+            {
+                lstErr.Text = "Ngày tuyên án phải lớn hơn ngày mở phiên tòa !";
+                txtNgaytuyenan.Focus();
+                return false;
+            }
+            if (txtNgayhieuluc.Text.Trim() != "")
+            {
+                if (Cls_Comon.IsValidDate(txtNgayhieuluc.Text) == false)
+                {
+                    lstErr.Text = "Chưa nhập ngày hiệu lực hoặc không hợp lệ !";
+                    return false;
+                }
+                DateTime dNgayHieuLuc = (String.IsNullOrEmpty(txtNgayhieuluc.Text.Trim())) ? DateTime.MinValue : DateTime.Parse(this.txtNgayhieuluc.Text.Trim(), cul, DateTimeStyles.NoCurrentDateDefault);
+                if (dNgayHieuLuc < dNgayTA)
+                {
+                    lstErr.Text = "Ngày hiệu lực phải lớn hơn ngày tuyên án !";
+                    txtNgayhieuluc.Focus();
+                    return false;
+                }
+            }
+            //if (rdCongboBA.SelectedValue == "")
+            //{
+            //    lstErr.Text = "Bạn chưa chọn \"Có công bố bản án ?\"";
+            //    return false;
+            //}
+            if (ddlCBBA_Anle.SelectedValue == "-1")
+            {
+                ScriptManager.RegisterClientScriptBlock(this, this.GetType(), "alertMessage", "alert('" + " Chưa chọn số án lệ áp dụng. Hãy kiểm tra lại. " + "')", true);
+                lstErr.Text = "Lỗi: Dữ liệu thống kê lưu không thành công!";
+                return false;
+            }
+            if (rdbVKSThamgia.SelectedValue == "")
+            {
+                lstErr.Text = "Bạn chưa chọn \"Có VKS tham gia ?\"";
+                return false;
+            }
+            if (rdVuAnQuaHan.SelectedValue == "")
+            {
+                lstErr.Text = "Bạn chưa chọn \"Vụ án quá hạn luật định ?\"";
+                return false;
+            }
+            if (rdVuAnQuaHan.SelectedValue == "1")
+            {
+                if (rdNNChuQuan.SelectedValue == "")
+                {
+                    lstErr.Text = "Bạn chưa chọn \"Nguyên nhân chủ quan ?\"";
+                    return false;
+                }
+                if (rdNNKhachQuan.SelectedValue == "")
+                {
+                    lstErr.Text = "Bạn chưa chọn \"Nguyên nhân khách quan ?\"";
+                    return false;
+                }
+            }
+
+
+            //----------------------------
+            string so = txtSobanan.Text;
+            if (!String.IsNullOrEmpty(txtNgaytuyenan.Text))
+            {
+                DateTime ngayBA = DateTime.Parse(this.txtNgaytuyenan.Text.Trim(), cul, DateTimeStyles.NoCurrentDateDefault);
+                Decimal DonViID = Convert.ToDecimal(Session[ENUM_SESSION.SESSION_DONVIID]);
+                ADS_SOTHAM_BL oSTBL = new ADS_SOTHAM_BL();
+                Decimal CheckID = oSTBL.CheckSoBATheoLoaiAn(DonViID, "ADS", so, ngayBA);
+                if (CheckID > 0)
+                {
+                    Decimal CurrBanAnId = (string.IsNullOrEmpty(hddBanAnID.Value)) ? 0 : Convert.ToDecimal(hddBanAnID.Value);
+                    String strMsg = "";
+                    String STTNew = oSTBL.GETSoBANEWTheoLoaiAn(DonViID, "ADS", ngayBA).ToString();
+                    if (CheckID != CurrBanAnId)
+                    {
+                        strMsg = "Số bản án " + txtSobanan.Text + " đã có trong hệ thống. Bạn có thể dùng số " + STTNew;
+                        txtSobanan.Text = STTNew;
+                        ScriptManager.RegisterClientScriptBlock(this, this.GetType(), "alertMessage", "alert('" + strMsg + "')", true);
+                        txtSobanan.Focus();
+                        return false;
+                    }
+                }
+            }
+            return true;
+        }
+        private void LoadCombobox()
+        {
+            //Load Quan hệ pháp luật
+            DM_DATAITEM_BL oBL = new DM_DATAITEM_BL();
+            ddlQuanhephapluat.DataSource = oBL.DM_DATAITEM_GETBY2GROUPNAME(ENUM_DANHMUC.QUANHEPL_YEUCAU, ENUM_DANHMUC.QUANHEPL_TRANHCHAP);
+            ddlQuanhephapluat.DataTextField = "TEN";
+            ddlQuanhephapluat.DataValueField = "ID";
+            ddlQuanhephapluat.DataBind();
+            //Load QHPL Thống kê BA.
+            ddlQHPLTK.DataSource = dt.DM_QHPL_TK.Where(x => x.STYLES == ENUM_QHPLTK.DANSU && x.ENABLE == 1).OrderBy(y => y.ARRTHUTU).ToList();
+            ddlQHPLTK.DataTextField = "CASE_NAME";
+            ddlQHPLTK.DataValueField = "ID";
+            ddlQHPLTK.DataBind();
+            ddlQHPLTK.Items.Insert(0, new ListItem("--Chọn QHPL dùng thống kê--", "0"));
+            //Load QHPL Thống kê QD.
+            ddlQHPLQDVV.DataSource = dt.DM_QHPL_TK.Where(x => x.STYLES == ENUM_QHPLTK.DANSU && x.ENABLE == 1).OrderBy(y => y.ARRTHUTU).ToList();
+            ddlQHPLQDVV.DataTextField = "CASE_NAME";
+            ddlQHPLQDVV.DataValueField = "ID";
+            ddlQHPLQDVV.DataBind();
+            ddlQHPLQDVV.Items.Insert(0, new ListItem("--Chọn QHPL dùng thống kê--", "0"));
+            //decimal ID = Convert.ToDecimal(ddlQuyetdinh.SelectedValue);
+            ddlLoaiQD.DataSource = dt.DM_QD_LOAI.Where(x => x.HIEULUC == 1 && x.ISDANSU == 1).OrderBy(y => y.THUTU).ToList();
+            ddlLoaiQD.DataTextField = "TEN";
+            ddlLoaiQD.DataValueField = "ID";
+            ddlLoaiQD.DataBind();
+            ddlLoaiQD.Items.Insert(0, new ListItem("--- Tất cả ---", "0"));
+            //QHPL QDVV
+
+            // QHPL Thống kê mặc định selected theo thụ lý
+            decimal DonID = Convert.ToDecimal(hddDonID.Value);
+            ADS_SOTHAM_THULY tl = dt.ADS_SOTHAM_THULY.Where(x => x.DONID == DonID).OrderByDescending(x => x.NGAYTHULY).FirstOrDefault();
+            if (tl != null)
+            {
+                try
+                {
+                    ddlQHPLTK.SelectedValue = tl.QHPLTKID + "";
+                    ddlQHPLQDVV.SelectedValue = tl.QHPLTKID + "";
+                    txtQuanhephapluat.Text = tl.QUANHEPHAPLUAT_NAME + "";
+                    txtQHPLQDVV.Text = tl.QUANHEPHAPLUAT_NAME + "";
+                }
+                catch { }
+            }
+            //load người kí - mặc định chủ tọa
+            string current_id = Session[ENUM_LOAIAN.AN_DANSU] + "";
+            decimal DONID = Convert.ToDecimal(current_id);
+            ADS_SOTHAM_HDXX oHD = dt.ADS_SOTHAM_HDXX.Where(x => x.MAVAITRO == ENUM_NGUOITIENHANHTOTUNG.THAMPHAN && x.DONID == DONID).OrderByDescending(x => x.NGAYPHANCONG).FirstOrDefault();
+            if (oHD != null)
+            {
+                DM_CANBO oTPCT = dt.DM_CANBO.Where(x => x.ID == oHD.CANBOID).FirstOrDefault();
+                //ddlNguoiKy.Items.Add(new ListItem(oTPCT.HOTEN + " - Thẩm phán Chủ Tọa", oTPCT.ID.ToString()));
+                txtNguoiKy.Text = txtNguoiKyTTVV.Text = oTPCT.HOTEN + " - Thẩm phán Chủ Tọa";
+                if (oTPCT.CHUCVUID != null && oTPCT.CHUCVUID != 0)
+                {
+                    DM_DATAITEM cv = dt.DM_DATAITEM.Where(x => x.ID == oTPCT.CHUCVUID).FirstOrDefault();
+                    txtChucvu.Text = cv.TEN;
+                }
+            }
+            else
+            { /*ddlNguoiKy.Items.Add(new ListItem("--Bạn cập nhật thông tin người ký--", "0"));*/
+                txtNguoiKy.Text = "";
+            }
+            LoadQD();
+            // Load Người yêu cầu và bị yêu cầuGET_SQD_NEW
+            LoadDuongSuYC();
+        }
+        protected void ddlQuanhephapluat_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            decimal IDQHPL = Convert.ToDecimal(ddlQuanhephapluat.SelectedValue);
+            DM_DATAITEM obj = dt.DM_DATAITEM.Where(x => x.ID == IDQHPL).FirstOrDefault();
+            DM_DATAGROUP oGroup = dt.DM_DATAGROUP.Where(x => x.ID == obj.GROUPID).FirstOrDefault();
+            if (oGroup.MA == ENUM_DANHMUC.QUANHEPL_TRANHCHAP)
+                ddlLoaiQuanhe.SelectedValue = "1";
+            else
+                ddlLoaiQuanhe.SelectedValue = "2";
+            Cls_Comon.SetFocus(this, this.GetType(), ddlQHPLTK.ClientID);
+        }
+        private void GetTrangThaiBanDauDONKK_USER_DKNHANVB(decimal DONID)
+        {
+            ADS_DON oDon = dt.ADS_DON.FirstOrDefault(s => s.ID == DONID);
+            DONKK_USER_DKNHANVB obj = dkk.DONKK_USER_DKNHANVB.FirstOrDefault(s => s.MAVUVIEC == oDon.MAVUVIEC && s.VUVIECID == oDon.ID && s.MALOAIVUVIEC == ENUM_LOAIAN.AN_DANSU && s.TRANGTHAI == 1);
+            if (obj != null)
+            {
+
+                ttBanDauDONKK_USER_DKNHANVB.Value = obj.TRANGTHAI.Value.ToString();
+            }
+        }
+        private void SetTrangThaibanDauDONKK_USER_DKNHANVB(decimal DONID)
+        {
+            ADS_DON oDon = dt.ADS_DON.FirstOrDefault(s => s.ID == DONID);
+            DONKK_USER_DKNHANVB obj = dkk.DONKK_USER_DKNHANVB.FirstOrDefault(s => s.MAVUVIEC == oDon.MAVUVIEC && s.VUVIECID == oDon.ID && s.MALOAIVUVIEC == ENUM_LOAIAN.AN_DANSU && s.TRANGTHAI == 3);
+            if (obj != null)
+            {
+
+                obj.TRANGTHAI = Convert.ToDecimal(ttBanDauDONKK_USER_DKNHANVB.Value);
+                dkk.SaveChanges();
+            }
+        }
+        private void TamNgungDONKK_USER_DKNHANVB(decimal DONID)
+        {
+            ADS_DON oDon = dt.ADS_DON.FirstOrDefault(s => s.ID == DONID);
+            DONKK_USER_DKNHANVB obj = dkk.DONKK_USER_DKNHANVB.FirstOrDefault(s => s.MAVUVIEC == oDon.MAVUVIEC && s.VUVIECID == oDon.ID && s.MALOAIVUVIEC == ENUM_LOAIAN.AN_DANSU && s.TRANGTHAI == 1);
+            if (obj != null)
+            {
+
+                obj.TRANGTHAI = 3;
+                dkk.SaveChanges();
+            }
+        }
+        protected void cmdHuyBanAn_Click(object sender, EventArgs e)
+        {
+            // Xóa thông tin bản án
+            decimal DonID = Convert.ToDecimal(hddDonID.Value);
+            //reset_TENVUVIEC(DonID);
+            List<ADS_SOTHAM_BANAN> banans = dt.ADS_SOTHAM_BANAN.Where(x => x.DONID == DonID).ToList();
+            if (banans.Count > 0)
+            {
+                foreach (var oND in banans)
+                {
+                    // khong duoc xoa khi da Tong dat - 27/11/2025 vnpt check
+                    ADS_TONGDAT oTD2 = dt.ADS_TONGDAT.Where(x => x.DONID == oND.DONID && x.MAPID == oND.ID && x.MAP_TABLE == ENUM_MAP_TABLE.ADS_SOTHAM_BANAN).FirstOrDefault();
+                    if (oTD2 != null)
+                    {
+                        lbthongbao.Text = "Bạn không thể xóa khi đã tống đạt!";
+                        return;
+                    }
+                }
+                //GTEL-HUNGQ 07-10-2025 Dữ liệu Bản án đã được chia sẻ không được xóa
+                KHOBAQD_BL ads = new KHOBAQD_BL();
+                bool isExist = ads.IsExistKHOBADQ(0, DonID, 2,ENUM_LOAIVUVIEC_TEXT.AN_DANSU);
+                if (isExist)
+                {
+                    lstErr.Text = "Vụ việc đã được đồng bộ. Phải thu hồi đồng bộ trước khi chỉnh sửa/xóa";
+                    return;
+                }
+                //END GTEL-HUNGQ 07-10-2025
+                //Luu thong tin truoc khi xoa Ban an So tham
+                string strUserName = Session[ENUM_SESSION.SESSION_USERNAME] + "";
+                var json = new JavaScriptSerializer().Serialize(banans);
+                ADS_DON_BL oBL = new ADS_DON_BL();
+                if (oBL.HISTORY_ALLDATA_BY_VUANID(Convert.ToDecimal(DonID), 2, Session[ENUM_SESSION.SESSION_USERID] + "", strUserName, "Ban an Dan sư Sơ thẩm", "Xóa", json) == false)
+                {
+                    lbthongbao.Text = "Xóa Ban an không thành công!";
+                    return;
+                }//Ket thuc 
+
+                //Xoa Ban an so tham
+                dt.ADS_SOTHAM_BANAN.RemoveRange(banans);
+            }
+            // Xóa thông tin file đính kèm
+            List<ADS_SOTHAM_BANAN_FILE> files = dt.ADS_SOTHAM_BANAN_FILE.Where(x => x.DONID == DonID).ToList();
+            if (files.Count > 0)
+            {
+                foreach (var oND in files)
+                {
+                    if (oND.NOIDUNG == null && oND.QT_FILE_ID != null)
+                    {
+                        QT_FILE qtFileDelete = DataExtensions.FindById<QT_FILE>(oND.QT_FILE_ID.Value);
+                        if (qtFileDelete != null)
+                        {
+                            qtFileDelete.DESCRIPTION = "Tài khoản " + Session[ENUM_SESSION.SESSION_USERNAME] + " đã xóa file tại form BanAnSoTham " + ENUM_LOAIAN.AN_DANSU + ".";
+                            QT_FILE_BL fileH = new QT_FILE_BL();
+                            fileH.DeleteFileLogic(qtFileDelete);
+                        }
+                    }
+                }
+                dt.ADS_SOTHAM_BANAN_FILE.RemoveRange(files);
+            }
+            // Xóa điều luật áp dụng, tội danh
+            List<ADS_SOTHAM_BANAN_DIEULUAT> dieuLuats = dt.ADS_SOTHAM_BANAN_DIEULUAT.Where(x => x.DONID == DonID).ToList();
+            if (dieuLuats.Count > 0)
+            {
+                dt.ADS_SOTHAM_BANAN_DIEULUAT.RemoveRange(dieuLuats);
+            }
+            // Xóa thông tin án phí
+            List<ADS_SOTHAM_BANAN_ANPHI> anPhis = dt.ADS_SOTHAM_BANAN_ANPHI.Where(x => x.DONID == DonID).ToList();
+            if (anPhis.Count > 0)
+            {
+                dt.ADS_SOTHAM_BANAN_ANPHI.RemoveRange(anPhis);
+            }
+            // Xóa thông tin người tham gia tố tụng
+            List<ADS_SOTHAM_BANAN_TGTT> tGTTs = dt.ADS_SOTHAM_BANAN_TGTT.Where(x => x.DONID == DonID).ToList();
+            if (tGTTs.Count > 0)
+            {
+                dt.ADS_SOTHAM_BANAN_TGTT.RemoveRange(tGTTs);
+            }
+            // Xóa file tống đạt bản án
+            decimal BieuMauID = 0;
+            DM_BIEUMAU bm = dt.DM_BIEUMAU.Where(x => x.MABM == "52-DS").FirstOrDefault();
+            if (bm != null)
+            {
+                BieuMauID = bm.ID;
+            }
+
+            ADS_FILE file = dt.ADS_FILE.Where(x => x.DONID == DonID && x.BIEUMAUID == BieuMauID && x.MAGIAIDOAN == ENUM_GIAIDOANVUAN.SOTHAM).FirstOrDefault();
+            if (file != null)
+            {
+                dt.ADS_FILE.Remove(file);
+            }
+
+            var list = DataExtensions.GetAllWithClause<BAQD_CONGBO>($"  VUVIECID = {DonID} " +
+                                                                    $"  AND LOAIANID = {Convert.ToDecimal(ENUM_LOAIVUVIEC_NUMBER.AN_DANSU)} " +
+                                                                    $"  AND CAPXETXU = {2} ");
+
+            BAQD_CONGBO temp_congbo = list?.FirstOrDefault();
+            if (temp_congbo != null)
+            {
+                temp_congbo.BAQDID = 0;
+                temp_congbo.NGAYHIEULUC = null;
+                temp_congbo.NGAYSUA = DateTime.Now;
+                temp_congbo.NGUOISUA = Session[ENUM_SESSION.SESSION_USERNAME] + "";
+                DataExtensions.Update(temp_congbo);
+            }
+
+            LoadBanAnInfo(DonID);
+            SetTrangThaibanDauDONKK_USER_DKNHANVB(DonID);
+            dt.SaveChanges();
+            ResetControl_Banan();
+            lstErr.Text = "Xóa bản án thành công!";
+            Page.Response.Redirect(Page.Request.Url.ToString(), true);
+        }
+        protected void cmdXoaAnphi_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                // Xóa thông tin án phí
+                decimal DONID = Convert.ToDecimal(hddDonID.Value);
+                List<ADS_SOTHAM_BANAN_ANPHI> anPhis = dt.ADS_SOTHAM_BANAN_ANPHI.Where(x => x.DONID == DONID).ToList();
+                if (anPhis.Count > 0)
+                {
+                    dt.ADS_SOTHAM_BANAN_ANPHI.RemoveRange(anPhis);
+                }
+                dt.SaveChanges();
+                lstMsgAnphi.Text = "Xóa thành công !";
+                LoadAnPhi();
+            }
+            catch
+            {
+                lstMsgAnphi.Text = "Lỗi: Xóa không thành công !";
+            }
+        }
+        protected void cmdXoaTGTT_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                // Xóa thông tin người tham gia tố tụng
+                decimal DONID = Convert.ToDecimal(hddDonID.Value);
+                List<ADS_SOTHAM_BANAN_TGTT> tGTTs = dt.ADS_SOTHAM_BANAN_TGTT.Where(x => x.DONID == DONID).ToList();
+                if (tGTTs.Count > 0)
+                {
+                    dt.ADS_SOTHAM_BANAN_TGTT.RemoveRange(tGTTs);
+                }
+                dt.SaveChanges();
+                lblMsgTGTT.Text = "Xóa thành công !";
+                LoadTGTT();
+            }
+            catch
+            {
+                lblMsgTGTT.Text = "Lỗi: Xóa không thành công !";
+            }
+        }
+        private void ResetControl_Banan()
+        {
+            decimal DonID = Convert.ToDecimal(hddDonID.Value);
+            txtQuanhephapluat.Text = getQHPL_NAME_THULY();
+            LoadBanAnInfo(DonID);
+            lbthongbaoA.Text = "";
+            txtSobanan.Text = "";
+            txtNgaymophientoa.Text = DateTime.Now.ToString("dd/MM/yyyy", cul);
+            txtNgaytuyenan.Text = "";
+            txtNgayhieuluc.Text = "";
+            ddlCBBA_Anle.SelectedValue = "0";
+            //rdCongboBA.ClearSelection();
+            rdbVKSThamgia.ClearSelection();
+            txtSoQDTraiPLBiHuy.Text = "";
+            rdVuAnQuaHan.ClearSelection();
+            rdNNChuQuan.ClearSelection();
+            rdNNKhachQuan.ClearSelection();
+            LoadFile();
+            ddlBoLuat.SelectedIndex = 0;
+            ddlDieukhoan.SelectedIndex = 0;
+            LoadDieuLuat();
+            LoadAnPhi();
+            LoadTGTT();
+        }
+        protected void lbtDownload_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                decimal DONID = Convert.ToDecimal(hddDonID.Value);
+                ADS_FILE oND = dt.ADS_FILE.Where(x => x.DONID == DONID).FirstOrDefault();
+                if (oND.TENFILE != "")
+                {
+                    var cacheKey = Guid.NewGuid().ToString("N");
+                    Context.Cache.Insert(key: cacheKey, value: oND.URL, dependencies: null, absoluteExpiration: DateTime.Now.AddSeconds(30), slidingExpiration: System.Web.Caching.Cache.NoSlidingExpiration);
+                    ScriptManager.RegisterClientScriptBlock(this, this.GetType(), "Download", "window.location='" + Cls_Comon.GetRootURL_HTTPS() + "/DownloadFile.aspx?cacheKey=" + cacheKey + "&FileName=" + oND.TENFILE + "&Extension=" + oND.KIEUFILE + "';", true);
+                }
+            }
+            catch (Exception ex) { lbthongbao.Text = ex.Message; }
+        }
+        protected void cmdThemFileTL_Click(object sender, EventArgs e)
+        {
+            SaveFile_KySo();
+            LoadFile();
+        }
+        void SaveFile_KySo()
+        {
+            string folder_upload = "/TempUpload/";
+            string file_kyso = hddFilePath.Value;
+            if (!String.IsNullOrEmpty(hddFilePath.Value))
+            {
+                String[] arr = file_kyso.Split('/');
+                string file_name = arr[arr.Length - 1] + "";
+
+                String file_path = Path.Combine(Server.MapPath(folder_upload), file_name);
+                decimal DONID = Convert.ToDecimal(hddDonID.Value);
+                ADS_SOTHAM_BANAN_FILE oTF = new ADS_SOTHAM_BANAN_FILE();
+
+                byte[] buff = null;
+                using (FileStream fs = File.OpenRead(file_path))
+                {
+                    BinaryReader br = new BinaryReader(fs);
+                    FileInfo oF = new FileInfo(file_path);
+                    long numBytes = oF.Length;
+                    buff = br.ReadBytes((int)numBytes);
+                    oTF.DONID = DONID;
+                    oTF.NOIDUNG = buff;
+                    oTF.TENFILE = Cls_Comon.ChuyenTenFileUpload(oF.Name);
+                    oTF.KIEUFILE = oF.Extension;
+                    oTF.NGAYTAO = DateTime.Now;
+                    oTF.NGUOITAO = Session[ENUM_SESSION.SESSION_USERNAME] + "";
+                    dt.ADS_SOTHAM_BANAN_FILE.Add(oTF);
+                    dt.SaveChanges();
+                }
+                //xoa file
+                File.Delete(file_path);
+            }
+        }
+        protected void cmdLuatUpdate_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                decimal DONID = Convert.ToDecimal(Session[ENUM_LOAIAN.AN_DANSU] + "");
+                decimal toidanhid = Convert.ToDecimal(ddlDieukhoan.SelectedValue);
+
+                String[] arrToiDanh = null;
+                DM_BOLUAT_TOIDANH objTD = dt.DM_BOLUAT_TOIDANH.Where(x => x.ID == toidanhid).Single();
+                arrToiDanh = objTD.ARRSAPXEP.Split('/');
+                if (arrToiDanh != null && arrToiDanh.Length > 0)
+                {
+                    decimal ChuongID = Convert.ToDecimal(arrToiDanh[0] + "");
+                    foreach (String strToiDanhID in arrToiDanh)
+                    {
+                        if (strToiDanhID.Length > 0 && strToiDanhID != ChuongID.ToString())
+                        {
+                            toidanhid = Convert.ToDecimal(strToiDanhID);
+                            InsertToiDanh(DONID, toidanhid);
+                        }
+                    }
+                    dt.SaveChanges();
+                    LoadDieuLuat();
+                    lstMsgDieuluat.Text = "Lưu thành công!";
+                }
+            }
+            catch (Exception ex)
+            {
+                lstMsgDieuluat.Text = "Lỗi: " + ex.Message;
+            }
+        }
+        //thêm mới điều khoản
+        void InsertToiDanh(Decimal DonID, Decimal toidanhid)
+        {
+            bool isupdate = false;
+            DM_BOLUAT_TOIDANH objTD = null;
+            ADS_SOTHAM_BANAN_DIEULUAT obj = new ADS_SOTHAM_BANAN_DIEULUAT();
+            try
+            {
+                obj = dt.ADS_SOTHAM_BANAN_DIEULUAT.Where(x => x.DONID == DonID && x.DIEULUATID == toidanhid)
+                        .Single<ADS_SOTHAM_BANAN_DIEULUAT>();
+                if (obj != null)
+                    isupdate = true;
+                else
+                    obj = new ADS_SOTHAM_BANAN_DIEULUAT();
+            }
+            catch (Exception ex) { obj = new ADS_SOTHAM_BANAN_DIEULUAT(); }
+            if (!isupdate)
+            {
+                obj.DONID = DonID;
+                //obj.DIEULUATID = Convert.ToDecimal(dropBoLuat.SelectedValue);
+                obj.DIEULUATID = Convert.ToDecimal(toidanhid);
+
+                obj.NGAYTAO = DateTime.Now;
+                obj.NGUOITAO = Session[ENUM_SESSION.SESSION_USERNAME] + "";
+                if (obj.TOA_GIAIQUYET_ID == null) obj.TOA_GIAIQUYET_ID = Convert.ToDecimal(Session[ENUM_SESSION.SESSION_DONVIID]);
+
+                objTD = dt.DM_BOLUAT_TOIDANH.Where(x => x.ID == toidanhid).Single();
+
+                dt.ADS_SOTHAM_BANAN_DIEULUAT.Add(obj);
+            }
+        }
+        void SaveToiDanh(DataRow rowToiDanh)
+        {
+            decimal boluatid = Convert.ToDecimal(ddlBoLuat.SelectedValue);
+            //decimal toidanhid = Convert.ToDecimal(rowToiDanh["ID"] + "");
+            decimal toidanhid = Convert.ToDecimal(ddlDieukhoan.SelectedValue);
+            decimal DONID = Convert.ToDecimal(hddDonID.Value);
+
+            Boolean isupdate = false;
+
+            //kiem tra toi danh vua tim duoc da co trong DB chua
+            if (dt.ADS_SOTHAM_BANAN_DIEULUAT.Where(x => x.DONID == DONID && x.DIEULUATID == toidanhid).ToList().Count > 0)
+            {
+                Cls_Comon.ShowMessage(this, this.GetType(), "Thông báo", "Đã tồn tại điều luật này trong danh sách !");
+                return;
+            }
+
+            ADS_SOTHAM_BANAN_DIEULUAT obj = new ADS_SOTHAM_BANAN_DIEULUAT();
+            if (!isupdate)
+            {
+                obj.DONID = DONID;
+                obj.DIEULUATID = toidanhid;
+                obj.NGAYTAO = DateTime.Now;
+                obj.NGUOITAO = Session[ENUM_SESSION.SESSION_USERNAME] + "";
+                //update 14082025
+                if (obj.TOA_GIAIQUYET_ID == null) obj.TOA_GIAIQUYET_ID = Convert.ToDecimal(Session[ENUM_SESSION.SESSION_DONVIID]);
+                dt.ADS_SOTHAM_BANAN_DIEULUAT.Add(obj);
+                dt.SaveChanges();
+            }
+            LoadDieuLuat();
+            lstMsgDieuluat.Text = "Lưu thành công!";
+        }
+        protected void ddlBoLuat_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            LoadDieuKhoan();
+            Cls_Comon.SetFocus(this, this.GetType(), ddlDieukhoan.ClientID);
+        }
+        protected void dgDieuLuat_ItemCommand(object source, DataGridCommandEventArgs e)
+        {
+            decimal ND_id = Convert.ToDecimal(e.CommandArgument.ToString());
+            switch (e.CommandName)
+            {
+                case "Xoa":
+                    MenuPermission oPer = Cls_Comon.GetMenuPer(Request.FilePath, Convert.ToDecimal(Session[ENUM_SESSION.SESSION_USERID]));
+                    if (oPer.XOA == false)
+                    {
+                        lstErr.Text = "Bạn không có quyền xóa!";
+                        return;
+                    }
+                    decimal DonID = Convert.ToDecimal(Session[ENUM_LOAIAN.AN_DANSU] + "");
+                    string StrMsg = "Không được sửa đổi thông tin.";
+                    string Result = new ADS_CHUYEN_NHAN_AN_BL().Check_NhanAn(DonID, StrMsg, Convert.ToDecimal(Session[ENUM_SESSION.SESSION_DONVIID]));
+                    if (Result != "")
+                    {
+                        lstErr.Text = Result;
+                        return;
+                    }
+                    ADS_SOTHAM_BANAN_DIEULUAT oT = dt.ADS_SOTHAM_BANAN_DIEULUAT.Where(x => x.ID == ND_id).FirstOrDefault();
+                    dt.ADS_SOTHAM_BANAN_DIEULUAT.Remove(oT);
+                    dt.SaveChanges();
+                    LoadDieuLuat();
+                    break;
+
+            }
+
+        }
+        protected void cmdAnphi_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                decimal DONID = Convert.ToDecimal(hddDonID.Value);
+                if (dgAnPhi.Items.Count > 0)
+                {
+                    foreach (DataGridItem oItem in dgAnPhi.Items)
+                    {
+                        TextBox txtNgaynhanbanan = (TextBox)oItem.FindControl("txtNgaynhanbanan");
+                        if (txtNgaynhanbanan.Text != "")
+                        {
+                            if (!ValidateNgayNhanBanAn(txtNgaynhanbanan, false))
+                            {
+                                return;
+                            }
+                        }
+                    }
+                }
+                // Lưu thông tin
+                foreach (DataGridItem oItem in dgAnPhi.Items)
+                {
+                    string strID = oItem.Cells[0].Text;
+                    decimal DSID = Convert.ToDecimal(strID);
+                    CheckBox chkMien = (CheckBox)oItem.FindControl("chkMien");
+                    TextBox txtAnphi = (TextBox)oItem.FindControl("txtAnphi");
+                    CheckBox chkThamgia = (CheckBox)oItem.FindControl("chkThamgia");
+                    TextBox txtNgaynhanbanan = (TextBox)oItem.FindControl("txtNgaynhanbanan");
+                    #region Lưu thông tin án phí
+                    List<ADS_SOTHAM_BANAN_ANPHI> lst = dt.ADS_SOTHAM_BANAN_ANPHI.Where(x => x.DONID == DONID && x.DUONGSU == DSID).ToList();
+                    if (lst.Count == 0)
+                    {
+                        ADS_SOTHAM_BANAN_ANPHI oT = new ADS_SOTHAM_BANAN_ANPHI();
+                        oT.DONID = DONID;
+                        oT.DUONGSU = DSID;
+                        oT.MIENANPHI = chkMien.Checked == true ? 1 : 0;
+                        oT.ANPHI = txtAnphi.Text == "" ? 0 : Convert.ToDecimal(txtAnphi.Text.Replace(".", ""));
+                        oT.ISTHAMGIA = chkThamgia.Checked == true ? 1 : 0;
+                        oT.NGAYNHANAN = (String.IsNullOrEmpty(txtNgaynhanbanan.Text.Trim())) ? (DateTime?)null : DateTime.Parse(txtNgaynhanbanan.Text.Trim(), cul, DateTimeStyles.NoCurrentDateDefault);
+                        oT.NGAYTAO = DateTime.Now;
+                        oT.NGUOITAO = Session[ENUM_SESSION.SESSION_USERNAME] + "";
+                        //update 14082025
+                        if (oT.TOA_GIAIQUYET_ID == null) oT.TOA_GIAIQUYET_ID = Convert.ToDecimal(Session[ENUM_SESSION.SESSION_DONVIID]);
+                        dt.ADS_SOTHAM_BANAN_ANPHI.Add(oT);
+                    }
+                    else
+                    {
+                        ADS_SOTHAM_BANAN_ANPHI oT = lst[0];
+                        oT.DONID = DONID;
+                        oT.DUONGSU = DSID;
+                        oT.MIENANPHI = chkMien.Checked == true ? 1 : 0;
+                        oT.ANPHI = txtAnphi.Text == "" ? 0 : Convert.ToDecimal(txtAnphi.Text.Replace(".", ""));
+                        oT.NGAYNHANAN = (String.IsNullOrEmpty(txtNgaynhanbanan.Text.Trim())) ? (DateTime?)null : DateTime.Parse(txtNgaynhanbanan.Text.Trim(), cul, DateTimeStyles.NoCurrentDateDefault);
+                        oT.ISTHAMGIA = chkThamgia.Checked == true ? 1 : 0;
+                        oT.NGAYSUA = DateTime.Now;
+                        oT.NGUOISUA = Session[ENUM_SESSION.SESSION_USERNAME] + "";
+                    }
+                    dt.SaveChanges();
+                    #endregion
+
+                }
+                lstMsgAnphi.Text = "Lưu thành công !";
+            }
+            catch (Exception ex)
+            {
+                lstMsgAnphi.Text = "Lỗi: " + ex.Message;
+            }
+        }
+        protected void chkThamgia_CheckChange(object sender, EventArgs e)
+        {
+            CheckBox chk = (CheckBox)sender;
+
+            foreach (DataGridItem Item in dgAnPhi.Items)
+            {
+                CheckBox chkThamgia = (CheckBox)Item.FindControl("chkThamgia");
+                TextBox txtNgaynhanbanan = (TextBox)Item.FindControl("txtNgaynhanbanan");
+                if (Item.Cells[0].Text.Equals(chk.ToolTip))
+                {
+                    if (chk.Checked)
+                    {
+                        txtNgaynhanbanan.Text = txtNgaytuyenan.Text;
+                    }
+                }
+            }
+        }
+        protected void chkMien_CheckChange(object sender, EventArgs e)
+        {
+            CheckBox chk = (CheckBox)sender;
+
+            foreach (DataGridItem Item in dgAnPhi.Items)
+            {
+                CheckBox chkMien = (CheckBox)Item.FindControl("chkMien");
+                TextBox txtAnphi = (TextBox)Item.FindControl("txtAnphi");
+                if (Item.Cells[0].Text.Equals(chk.ToolTip))
+                {
+                    if (chk.Checked)
+                    {
+                        txtAnphi.Text = "";
+                        txtAnphi.Enabled = false;
+                    }
+                    else
+                    {
+                        txtAnphi.Enabled = true;
+                    }
+                }
+            }
+        }
+        protected void cmdTGTT_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                decimal DONID = Convert.ToDecimal(hddDonID.Value);
+                if (dgTGTT.Items.Count > 0)
+                {
+                    foreach (DataGridItem oItem in dgTGTT.Items)
+                    {
+                        TextBox txtNgaynhanbanan = (TextBox)oItem.FindControl("txtNgayTGTT");
+                        if (txtNgaynhanbanan.Text != "")
+                        {
+                            if (!ValidateNgayNhanBanAn(txtNgaynhanbanan, true))
+                            {
+                                return;
+                            }
+                        }
+                    }
+                }
+                bool IsNew = false;
+                foreach (DataGridItem oItem in dgTGTT.Items)
+                {
+                    string strID = oItem.Cells[0].Text;
+                    decimal DSID = Convert.ToDecimal(strID);
+                    IsNew = false;
+                    CheckBox chkThamgiaTGTT = (CheckBox)oItem.FindControl("chkThamgiaTGTT");
+                    TextBox txtNgayTGTT = (TextBox)oItem.FindControl("txtNgayTGTT");
+                    ADS_SOTHAM_BANAN_TGTT oT = dt.ADS_SOTHAM_BANAN_TGTT.Where(x => x.DONID == DONID && x.THAMGIATOTUNGID == DSID).FirstOrDefault();
+                    if (oT == null)
+                    {
+                        oT = new ADS_SOTHAM_BANAN_TGTT();
+                        IsNew = true;
+                    }
+                    oT.DONID = DONID;
+                    oT.THAMGIATOTUNGID = DSID;
+                    oT.ISTHAMGIA = chkThamgiaTGTT.Checked == true ? 1 : 0;
+                    oT.NGAYNHANBANAN = (String.IsNullOrEmpty(txtNgayTGTT.Text.Trim())) ? (DateTime?)null : DateTime.Parse(txtNgayTGTT.Text.Trim(), cul, DateTimeStyles.NoCurrentDateDefault);
+                    if (IsNew)
+                    {
+                        dt.ADS_SOTHAM_BANAN_TGTT.Add(oT);
+                    }
+                    dt.SaveChanges();
+                }
+                lblMsgTGTT.Text = "Lưu thành công !";
+                cmdTGTT.Style.Add("margin-bottom", "0px");
+            }
+            catch (Exception ex)
+            {
+                lblMsgTGTT.Text = "Lỗi: " + ex.Message;
+            }
+        }
+        protected void chkThamgiaTGTT_CheckChange(object sender, EventArgs e)
+        {
+            CheckBox chk = (CheckBox)sender;
+            foreach (DataGridItem Item in dgTGTT.Items)
+            {
+                CheckBox chkThamgiaTGTT = (CheckBox)Item.FindControl("chkThamgiaTGTT");
+                TextBox txtNgayTGTT = (TextBox)Item.FindControl("txtNgayTGTT");
+                if (Item.Cells[0].Text.Equals(chk.ToolTip))
+                {
+                    if (chk.Checked)
+                    {
+                        txtNgayTGTT.Text = txtNgaytuyenan.Text;
+                    }
+                }
+            }
+        }
+        protected void rdVuAnQuaHan_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (rdVuAnQuaHan.SelectedValue == "1")
+            {
+                pnNguyenNhanQuaHan.Visible = true;
+
+            }
+
+            else
+            {
+                pnNguyenNhanQuaHan.Visible = false;
+
+            }
+
+        }
+        protected void txtNgaymophientoa_TextChanged(object sender, EventArgs e)
+        {
+            if (!String.IsNullOrEmpty(txtNgaymophientoa.Text))
+            {
+                if (String.IsNullOrEmpty(txtNgaytuyenan.Text))
+                {
+                    txtNgaytuyenan.Text = txtNgaymophientoa.Text;
+                }
+                if (String.IsNullOrEmpty(txtNgayhieuluc.Text))
+                {
+                    txtNgayhieuluc.Text = txtNgaymophientoa.Text;
+                }
+            }
+        }
+        private void TongDatDoiTuong(decimal TongDatID, decimal DuongSuID, decimal HinhThucGui, string NgayNhanBanAn)
+        {
+            string tucachtotung = "";
+            ADS_DON_DUONGSU duongsu = dt.ADS_DON_DUONGSU.Where(x => x.ID == DuongSuID).FirstOrDefault();
+            if (duongsu != null)
+            {
+                tucachtotung = duongsu.TUCACHTOTUNG_MA + "";
+            }
+            bool IsNew = false;
+            ADS_TONGDAT_DOITUONG tdDt = dt.ADS_TONGDAT_DOITUONG.Where(x => x.TONGDATID == TongDatID && x.DUONGSUID == DuongSuID).FirstOrDefault();
+            if (tdDt == null)
+            {
+                IsNew = true;
+                tdDt = new ADS_TONGDAT_DOITUONG();
+            }
+            tdDt.TONGDATID = TongDatID;
+            tdDt.DUONGSUID = DuongSuID;
+            tdDt.NGAYNHANTONGDAT = NgayNhanBanAn == "" ? (DateTime?)null : DateTime.Parse(NgayNhanBanAn, cul, DateTimeStyles.NoCurrentDateDefault);
+            tdDt.TRANGTHAI = 1;
+            tdDt.HINHTHUCGUI = HinhThucGui;
+            if (HinhThucGui == 1)// gửi trực tuyến
+                tdDt.NGAYGUI = tdDt.NGAYNHANTONGDAT;
+            else
+                tdDt.NGAYGUI = (DateTime?)null;
+            tdDt.MATUCACH = tucachtotung;
+            if (IsNew)
+            {
+                //update 14082025
+                if (tdDt.TOA_GIAIQUYET_ID == null) tdDt.TOA_GIAIQUYET_ID = Convert.ToDecimal(Session[ENUM_SESSION.SESSION_DONVIID]);
+                dt.ADS_TONGDAT_DOITUONG.Add(tdDt);
+            }
+            dt.SaveChanges();
+        }
+        private bool ValidateNgayNhanBanAn(TextBox txtNgaynhanbanan, bool IsThamGiaToTung)
+        {
+            DateTime NgayNhanBA;
+            if (DateTime.TryParse(txtNgaynhanbanan.Text, cul, DateTimeStyles.NoCurrentDateDefault, out NgayNhanBA))
+            {
+                if (DateTime.Compare(NgayNhanBA, DateTime.Now) > 0)
+                {
+                    if (IsThamGiaToTung)
+                        lblMsgTGTT.Text = "Ngày nhận bản án không được lớn hơn ngày hiện tại.";
+                    else
+                        lstMsgAnphi.Text = "Ngày nhận bản án không được lớn hơn ngày hiện tại.";
+                    txtNgaynhanbanan.Focus();
+                    return false;
+                }
+            }
+            else
+            {
+                if (IsThamGiaToTung)
+                    lblMsgTGTT.Text = "Ngày nhận bản án không đúng kiểu ngày / tháng / năm.";
+                else
+                    lstMsgAnphi.Text = "Ngày nhận bản án không đúng kiểu ngày / tháng / năm.";
+                txtNgaynhanbanan.Focus();
+                return false;
+            }
+            return true;
+        }
+        private bool CheckIsHaveBanAnFile(decimal DONID, bool IsThamGiaToTung)
+        {
+            // phải có file đính kèm và tên file phải có mã 52-ds
+            bool IsBanAnFile = false;
+            List<ADS_SOTHAM_BANAN_FILE> lstBAfile = dt.ADS_SOTHAM_BANAN_FILE.Where(x => x.DONID == DONID).ToList();
+            if (lstBAfile == null || lstBAfile.Count == 0)
+            {
+                if (IsThamGiaToTung)
+                    lblMsgTGTT.Text = "Hãy tải lên tệp Bản án dân sự sơ thẩm với tên tệp tin bao gồm mã biểu mẫu \" 52-DS \". Ví dụ: 52-DS. Bản án dân sự sơ thẩm.docx.";
+                else
+                    lstMsgAnphi.Text = "Hãy tải lên tệp Bản án dân sự sơ thẩm với tên tệp tin bao gồm mã biểu mẫu \" 52-DS \". Ví dụ: 52-DS. Bản án dân sự sơ thẩm.docx.";
+                return false;
+            }
+            else
+            {
+                foreach (ADS_SOTHAM_BANAN_FILE obj in lstBAfile)
+                {
+                    if (obj.TENFILE.ToLower().Contains("52-ds"))
+                    {
+                        IsBanAnFile = true;
+                    }
+                }
+            }
+            if (!IsBanAnFile)
+            {
+                if (IsThamGiaToTung)
+                    lblMsgTGTT.Text = "Hãy tải lên tệp Bản án dân sự sơ thẩm với tên tệp tin bao gồm mã biểu mẫu \" 52-DS \". Ví dụ: 52-DS. Bản án dân sự sơ thẩm.docx.";
+                else
+                    lstMsgAnphi.Text = "Hãy tải lên tệp Bản án dân sự sơ thẩm với tên tệp tin bao gồm mã biểu mẫu \" 52-DS \". Ví dụ: 52-DS. Bản án dân sự sơ thẩm.docx.";
+                return false;
+            }
+            return true;
+        }
+        private string getQHPL_NAME_THULY()
+        {
+            decimal ID = Session[ENUM_LOAIAN.AN_DANSU] + "" == "" ? 0 : Convert.ToDecimal(Session[ENUM_LOAIAN.AN_DANSU]);
+            ADS_SOTHAM_THULY oT = dt.ADS_SOTHAM_THULY.Where(x => x.DONID == ID).FirstOrDefault();
+            if (oT.QUANHEPHAPLUAT_NAME != null && oT.QUANHEPHAPLUAT_NAME != "")
+            {
+                return oT.QUANHEPHAPLUAT_NAME.ToString();
+            }
+            else if (oT.QUANHEPHAPLUATID != null && oT.QUANHEPHAPLUATID != 0)
+            {
+                decimal IDQHPL = Convert.ToDecimal(oT.QUANHEPHAPLUATID.ToString());
+                DM_DATAITEM obj = dt.DM_DATAITEM.Where(x => x.ID == IDQHPL).FirstOrDefault();
+                if (obj != null) return obj.TEN.ToString();
+                else return "";
+            }
+            else
+            {
+                return "";
+            }
+        }
+
+        //hiển thị popup thêm điều luật
+        protected void lkChoiceDieuLuat_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                Cls_Comon.CallFunctionJS(this, this.GetType(), "popupChonDieuKhoan()");
+            }
+            catch (Exception ex) { lstErr.Text = ex.Message; }
+        }
+
+        //load danh sách điều khoản mỗi khi tắt popup điều luật
+        protected void cmdLoadDsToiDanh_Click(object sender, EventArgs e)
+        {
+            LoadDieuLuat();
+        }
+
+        private void SetEnable_data_BA()
+        {
+            decimal vDonID = Convert.ToDecimal(hddDonID.Value);
+            ADS_SOTHAM_BANAN ba = dt.ADS_SOTHAM_BANAN.Where(x => x.DONID == vDonID).FirstOrDefault();
+            if (ba != null)
+            {
+                txtQuanhephapluat.Enabled = false;
+                txtSobanan.Enabled = false;
+                txtNgaymophientoa.Enabled = false;
+                txtNgaytuyenan.Enabled = false;
+                if (ba.NGAYHIEULUC != null)
+                {
+                    txtNgayhieuluc.Enabled = false;
+                }
+                else
+                    txtNgayhieuluc.Enabled = true;
+
+                if (ba.NOIDUNG != null)
+                    txtTomtatnoidungBanan.Enabled = false;
+                else
+                    txtTomtatnoidungBanan.Enabled = true;
+
+                //rdCongboBA.Enabled = false;
+                ddlCBBA_Anle.Enabled = false;
+                rdbVKSThamgia.Enabled = false;
+
+                ddlYeutonuocngoai.Enabled = false;
+                txtSoQDTraiPLBiHuy.Enabled = false;
+                rdVuAnQuaHan.Enabled = false;
+
+                cmdUpdate.Text = "Cập nhật Bản án";
+            }
+            else
+                cmdUpdate.Text = "Lưu thông tin bản án";
+
+        }
+        private void SetEnable_data_QD(decimal ID)
+        {
+            decimal vDonID = Convert.ToDecimal(hddDonID.Value);
+            ADS_SOTHAM_QUYETDINH QD = dt.ADS_SOTHAM_QUYETDINH.Where(x => x.DONID == vDonID && x.ID == ID).FirstOrDefault();
+            if (QD != null)
+            {
+                txtQuanhephapluat.Enabled = false;
+                ddlQHPLTK.Enabled = false;
+                ddlQuyetdinh.Enabled = false;
+                if (QD.DIADIEMMOPT != null)
+                    txtDiaDiem.Enabled = false;
+                else
+                    txtDiaDiem.Enabled = true;
+
+                txtSoQD.Enabled = false;
+                txtNgayQD.Enabled = false;
+                if (QD.HIEULUCTU != null)
+                    txtHieuLucTuNgay.Enabled = false;
+                else
+                    txtHieuLucTuNgay.Enabled = true;
+
+                if (QD.HIEULUCDEN != null)
+                    txtHieuLucDenNgay.Enabled = false;
+                else
+                    txtHieuLucDenNgay.Enabled = true;
+
+                if (QD.NOIDUNG != null)
+                    txtTomtatnoidungQuyetdinh.Enabled = false;
+                else
+                    txtTomtatnoidungQuyetdinh.Enabled = true;
+
+                TK_SOTHAM_QUYETDINH tk = DataExtensions.GetAllWithClause<TK_SOTHAM_QUYETDINH>($"QUYETDINHID = {QD.ID} AND LOAIAN =  {Convert.ToDecimal(ENUM_LOAIVUVIEC_NUMBER.AN_DANSU)}").FirstOrDefault();
+                if (tk != null)
+                {
+                    ddlCBBA_AnleQD.Enabled = false;
+
+                    if (tk.ISHOAGIAITHANH != null)
+                        rdqHoaGiaiThanhQD.Enabled = false;
+                    else
+                        rdqHoaGiaiThanhQD.Enabled = true;
+
+
+                    ddlYeutonuocngoai_QD.Enabled = false;
+
+
+                    if (tk.TK_SOQDTRAIPLBIHUY != null)
+                        txtSoQDTraiPLBiHuy_QD.Enabled = false;
+                    else
+                        txtSoQDTraiPLBiHuy_QD.Enabled = true;
+                }
+
+                // khong duoc sửa khi da Tong dat nhưng cho phép nhập thêm những trường trống -27 / 11 / 2025 vnpt check
+                ADS_TONGDAT oTD = dt.ADS_TONGDAT.Where(x => x.DONID == QD.DONID && x.MAPID == QD.ID && x.MAP_TABLE == ENUM_MAP_TABLE.ADS_SOTHAM_QUYETDINH).FirstOrDefault();
+                if (oTD != null)
+                {
+                    if (!string.IsNullOrEmpty(QD.QUANHEPHAPLUAT))
+                    {
+                        txtQHPLQDVV.Enabled = false;
+                    }
+                    else
+                    {
+                        txtQHPLQDVV.Enabled = true;
+                    }
+                    if (QD.QHPLTKID != null)
+                    {
+                        ddlQHPLQDVV.Enabled = false;
+                    }
+                    else
+                    {
+                        ddlQHPLQDVV.Enabled = true;
+                    }
+                    if (QD.QUYETDINHID != null)
+                    {
+                        ddlQuyetdinh.Enabled = false;
+                    }
+                    else
+                    {
+                        ddlQuyetdinh.Enabled = true;
+                    }
+                    if (QD.NGAYMOPT != null)
+                    {
+                        txtNgayMoPhienToaQD.Enabled = false;
+                    }
+                    else
+                    {
+                        txtNgayMoPhienToaQD.Enabled = true;
+                    }
+                    if (!string.IsNullOrEmpty(QD.DIADIEMMOPT))
+                    {
+                        txtDiaDiem.Enabled = false;
+                    }
+                    else
+                    {
+                        txtDiaDiem.Enabled = true;
+                    }
+                    if (QD.LYDOID != null)
+                    {
+                        ddlLydo.Enabled = false;
+                    }
+                    else
+                    {
+                        ddlLydo.Enabled = true;
+                    }
+                    if (!string.IsNullOrEmpty(QD.SOQD))
+                    {
+                        txtSoQD.Enabled = false;
+                    }
+                    else
+                    {
+                        txtSoQD.Enabled = true;
+                    }
+                    if (QD.NGAYQD != null)
+                    {
+                        txtNgayQD.Enabled = false;
+                    }
+                    else
+                    {
+                        txtNgayQD.Enabled = true;
+                    }
+                    if (QD.HIEULUCTU != null)
+                    {
+                        txtHieuLucTuNgay.Enabled = false;
+                    }
+                    else
+                    {
+                        txtHieuLucTuNgay.Enabled = true;
+                    }
+                    if (QD.HIEULUCDEN != null)
+                    {
+                        txtHieuLucDenNgay.Enabled = false;
+                    }
+                    else
+                    {
+                        txtHieuLucDenNgay.Enabled = true;
+                    }
+                    if (!string.IsNullOrEmpty(QD.NOIDUNG))
+                    {
+                        txtTomtatnoidungQuyetdinh.Enabled = false;
+                    }
+                    else
+                    {
+                        txtTomtatnoidungQuyetdinh.Enabled = true;
+                    }
+                }
+
+                btnUpdate.Text = "Cập nhật Quyết định";
+            }
+            else
+                btnUpdate.Text = "Lưu Quyết định";
+        }
+
+        #region "Phân trang"
+        protected void lbTBack_Click(object sender, EventArgs e)
+        {
+            dgList.CurrentPageIndex = Convert.ToInt32(hddPageIndex.Value) - 2;
+            hddPageIndex.Value = (Convert.ToInt32(hddPageIndex.Value) - 1).ToString();
+            LoadGrid();
+        }
+        protected void lbTFirst_Click(object sender, EventArgs e)
+        {
+            dgList.CurrentPageIndex = 0;
+            hddPageIndex.Value = "1";
+            LoadGrid();
+        }
+        protected void lbTLast_Click(object sender, EventArgs e)
+        {
+            dgList.CurrentPageIndex = Convert.ToInt32(hddTotalPage.Value) - 1;
+            hddPageIndex.Value = Convert.ToInt32(hddTotalPage.Value).ToString();
+            LoadGrid();
+        }
+        protected void lbTNext_Click(object sender, EventArgs e)
+        {
+            dgList.CurrentPageIndex = Convert.ToInt32(hddPageIndex.Value);
+            hddPageIndex.Value = (Convert.ToInt32(hddPageIndex.Value) + 1).ToString();
+            LoadGrid();
+        }
+        protected void lbTStep_Click(object sender, EventArgs e)
+        {
+            LinkButton lbCurrent = (LinkButton)sender;
+            dgList.CurrentPageIndex = Convert.ToInt32(lbCurrent.Text) - 1;
+            hddPageIndex.Value = lbCurrent.Text;
+            LoadGrid();
+        }
+        #endregion
+    }
+}

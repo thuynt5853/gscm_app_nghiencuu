@@ -1,0 +1,164 @@
+﻿using System;
+using System.Drawing;
+using System.Collections;
+using System.ComponentModel;
+using DevExpress.XtraReports.UI;
+
+namespace WEB.GSTP.QLAN.GDTTT.In
+{
+    public partial class rptToaKhacPhieuchuyen : DevExpress.XtraReports.UI.XtraReport
+    {
+        public rptToaKhacPhieuchuyen()
+        {
+            InitializeComponent();
+        }
+        private string getTenToa(string strTenToa)
+        {
+            try
+            {
+                if (strTenToa.Contains("CẤP CAO"))
+                {
+                    strTenToa = strTenToa.Replace("CẤP CAO", "CẤP CAO\n");
+                }
+
+                return strTenToa;
+            }
+            catch { return ""; }
+        }
+        private void xrTableCell12_BeforePrint(object sender, System.Drawing.Printing.PrintEventArgs e)
+        {
+            xrTableCell12.Text = getTenToa( xrTableCell12.Text.ToUpper());
+        }
+
+        private void xrTableCell1_BeforePrint(object sender, System.Drawing.Printing.PrintEventArgs e)
+        {
+            string strLoaiAN = GetCurrentColumnValue("CHIDAO_COKHONG") + "";
+            if (strLoaiAN == "1")
+            {
+                string strLanhdao= GetCurrentColumnValue("LANHDAO") + "";
+                string strChucvu= GetCurrentColumnValue("CHUCVULANHDAO") + "";
+                string strDonvi= GetCurrentColumnValue("TENDONVI") + "";
+                if (strLanhdao == "")
+                    xrTableCell1.Text = "V/v thông báo ý kiến chỉ đạo\n của đồng chí Chánh án TANDTC";
+                else
+                {
+                    xrTableCell1.Text = "V/v thông báo ý kiến chỉ đạo\n của đồng chí" + strLanhdao + ",\n" + strChucvu + " " + strDonvi;
+                }
+            }
+            else
+            {
+                //xrTableCell1.Text = "V/v chuyển đơn thư khiếu nại, tố cáo đến cơ quan có thẩm quyền giải quyết";
+                xrTableCell1.Text = "";
+            }
+        }
+
+        private void Detail_BeforePrint(object sender, System.Drawing.Printing.PrintEventArgs e)
+        {
+            string strLoaiAN = GetCurrentColumnValue("CHIDAO_COKHONG") + "";
+            if (strLoaiAN == "1")
+            {
+                xrTableRow5.Visible = true;
+                xrTableRow6.Visible = true;
+                xrTableRow2.Visible = true;
+                xrLabel4.Visible = true;
+                xrLabel1.Visible = false;
+                xrTableRow7.Visible = false;
+                string strNoidung = GetCurrentColumnValue("NOIDUNGCHIDAO") + "";
+                if (strNoidung != "")
+                {
+                    xrTableRow6.Visible = true;
+                    xrTableRow2.Visible = true;
+                    xrTableRow5.Visible = false;
+                }
+                else
+                {
+                    xrTableRow5.Visible = true;
+                    xrTableRow6.Visible = false;
+                    xrTableRow2.Visible = false;
+                }
+               
+            }
+            else
+            {
+                xrTableRow5.Visible = false;
+                xrTableRow6.Visible = false;
+                xrTableRow2.Visible = false;
+                xrLabel4.Visible = false;
+                xrLabel1.Visible = true;
+
+                xrTableRow7.Visible = true;
+            }
+           
+        }
+
+        private void xrTable3_BeforePrint(object sender, System.Drawing.Printing.PrintEventArgs e)
+        {
+
+        }
+
+        private void xrLabel4_BeforePrint(object sender, System.Drawing.Printing.PrintEventArgs e)
+        {
+            string strChucvuLD = GetCurrentColumnValue("CHUCVULANHDAO") + "";
+            string strLD = GetCurrentColumnValue("LANHDAO") + "";
+            string strGTH = GetCurrentColumnValue("GIOITINHHOA") + "";
+            string strNG = GetCurrentColumnValue("NGUOIGUI") + "";
+            string strNoinhan = "- Như kính gửi;";
+            string so = GetCurrentColumnValue("SO") + "";
+            if (so.Contains("/TANDTC-VP"))
+            {
+                if (strChucvuLD.ToLower().Contains("phó"))
+                    strNoinhan += "\n- Đ/c Chánh án TANDTC(để b/c);";
+                else
+                    strNoinhan += "";
+                if (strLD == "")
+                    strNoinhan += "\n- Đ/c Chánh án TANDTC(để b/c);";
+                else
+                    strNoinhan += "\n- Đ/c " + strLD + ", " + strChucvuLD + " TANDTC(để b/c);";
+                strNoinhan += "\n- Đ/c Chánh Văn phòng TANDTC(để b/c);";
+
+                strNoinhan += "\n- " + char.ToUpper(strNG[0]) + strNG.Substring(1) + " (để biết);";
+                strNoinhan += "\n- Lưu: TMTH, HCTP, VPTANDTC.";
+                xrTableCell10.Visible = false;
+            }
+            else
+            {
+                strNoinhan += "\n- Chánh án TANDCC (để báo cáo);";
+                strNoinhan += "\n- " + char.ToUpper(strNG[0]) + strNG.Substring(1) + " (để biết);";
+                strNoinhan += "\n- Lưu: VT, HCTP.";
+            }
+            xrLabel4.Text = strNoinhan;
+        }
+
+        private void xrLabel1_BeforePrint(object sender, System.Drawing.Printing.PrintEventArgs e)
+        {
+            string strChucvuLD = GetCurrentColumnValue("CHUCVULANHDAO") + "";
+            string strLD = GetCurrentColumnValue("LANHDAO") + "";
+            string strGTH = GetCurrentColumnValue("GIOITINHHOA") + "";
+            string strNG = GetCurrentColumnValue("NGUOIGUI") + "";
+            string strNoinhan = "- Như kính gửi;";
+            string so = GetCurrentColumnValue("SO") + "";
+            if (so.Contains("/TANDTC-VP"))
+            {
+                if (strChucvuLD.ToLower().Contains("phó"))
+                    strNoinhan += "\n- Đ/c Chánh án TANDTC(để b/c);";
+                else
+                    strNoinhan += "";
+                if (strLD == "")
+                    strNoinhan += "\n- Đ/c Chánh án TANDTC(để b/c);";
+                else
+                    strNoinhan += "\n- Đ/c " + strLD + ", " + strChucvuLD + " TANDTC(để b/c);";
+
+                strNoinhan += "\n- " + char.ToUpper(strNG[0]) + strNG.Substring(1) + " (để biết);";
+                strNoinhan += "\n- Lưu: VPTANDTC.";
+                xrTableCell10.Visible = false;
+            }
+            else
+            {
+                strNoinhan += "\n- Chánh án TANDCC (để báo cáo);";
+                strNoinhan += "\n- " + char.ToUpper(strNG[0]) + strNG.Substring(1) + " (để biết);";
+                strNoinhan += "\n- Lưu: VT, HCTP.";
+            }
+            xrLabel1.Text = strNoinhan;
+        }
+    }
+}

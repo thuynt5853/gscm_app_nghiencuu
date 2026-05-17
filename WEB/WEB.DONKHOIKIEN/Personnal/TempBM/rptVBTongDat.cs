@@ -1,0 +1,200 @@
+﻿using System;
+using System.Drawing;
+using System.Collections;
+using System.ComponentModel;
+using DevExpress.XtraReports.UI;
+
+namespace WEB.DONKHOIKIEN.Personnal.TempBM
+{
+    public partial class rptVBTongDat : DevExpress.XtraReports.UI.XtraReport
+    {
+        public rptVBTongDat()
+        {
+            InitializeComponent();
+        }
+        private void xrTableCell_TenDuongSu_BeforePrint(object sender, CancelEventArgs e)
+        {
+            //System.Data.DataRowView r = (System.Data.DataRowView)DetailReport_NguoiYC.GetCurrentRow();
+            //if (r == null || r.DataView.Count == 0)
+            //{
+            //    xrTableCell_TenDuongSu.Visible = false;
+            //}
+            //else
+            //{
+            //    xrTableCell_TenDuongSu.Visible = true;
+            //    if (string.IsNullOrEmpty(r["TenDuongSu"] + ""))
+            //    {
+            //        xrTableCell_TenDuongSu.Visible = false;
+            //    }
+            //}
+        }
+        private void xrTableCell_NgaySinh_BeforePrint(object sender, CancelEventArgs e)
+        {
+            //System.Data.DataRowView r = (System.Data.DataRowView)DetailReport_NguoiYC.GetCurrentRow();
+            //if (r == null || r.DataView.Count == 0)
+            //{
+            //    xrTableCell_NgaySinh.TextAlignment = DevExpress.XtraPrinting.TextAlignment.MiddleLeft;
+            //}
+            //else
+            //{
+            //    xrTableCell_NgaySinh.TextAlignment = DevExpress.XtraPrinting.TextAlignment.MiddleRight;
+            //    if (string.IsNullOrEmpty(r["NgaySinh"] + ""))
+            //    {
+            //        xrTableCell_NgaySinh.TextAlignment = DevExpress.XtraPrinting.TextAlignment.MiddleLeft;
+            //    }
+            //}
+        }
+        private void xrTableCell_DienThoai_BeforePrint(object sender, CancelEventArgs e)
+        {
+            //System.Data.DataRowView r = (System.Data.DataRowView)DetailReport_NguoiYC.GetCurrentRow();
+            //if (r == null || r.DataView.Count == 0)
+            //{
+            //    xrTableCell_DienThoai.Visible = false;
+            //}
+            //else
+            //{
+            //    xrTableCell_DienThoai.Visible = true;
+            //    if (string.IsNullOrEmpty(r["DienThoai"] + ""))
+            //    {
+            //        xrTableCell_DienThoai.Visible = false;
+            //    }
+            //}
+        }
+        private void xrTableCell_Email_BeforePrint(object sender, CancelEventArgs e)
+        {
+            //System.Data.DataRowView r = (System.Data.DataRowView)DetailReport_NguoiYC.GetCurrentRow();
+            //if (r == null || r.DataView.Count == 0)
+            //{
+            //    xrTableCell_Email.TextAlignment = DevExpress.XtraPrinting.TextAlignment.MiddleLeft;
+            //}
+            //else
+            //{
+            //    xrTableCell_Email.TextAlignment = DevExpress.XtraPrinting.TextAlignment.MiddleRight;
+            //    if (string.IsNullOrEmpty(r["Email"] + ""))
+            //    {
+            //        xrTableCell_Email.TextAlignment = DevExpress.XtraPrinting.TextAlignment.MiddleLeft;
+            //    }
+            //}
+        }
+        private void SubBand_CMND_BeforePrint(object sender, CancelEventArgs e)
+        {
+            //System.Data.DataRowView r = (System.Data.DataRowView)DetailReport_NguoiYC.GetCurrentRow();
+            //if (r == null || r.DataView.Count == 0)
+            //{
+            //    SubBand_CMND.Visible = false;
+            //}
+            //else
+            //{
+            //    SubBand_CMND.Visible = true;
+            //    if (string.IsNullOrEmpty(r["CMND"] + ""))
+            //    {
+            //        SubBand_CMND.Visible = false;
+            //    }
+            //}
+        }
+        private void SubBand_HKTamTru_BeforePrint(object sender, CancelEventArgs e)
+        {
+            //System.Data.DataRowView r = (System.Data.DataRowView)DetailReport_NguoiYC.GetCurrentRow();
+            //if (r == null || r.DataView.Count == 0)
+            //{
+            //    SubBand_HKTamTru.Visible = false;
+            //}
+            //else
+            //{
+            //    SubBand_HKTamTru.Visible = true;
+            //    if (string.IsNullOrEmpty(r["HKTamTru"] + ""))
+            //    {
+            //        SubBand_HKTamTru.Visible = false;
+            //    }
+            //}
+        }
+        private void SubBand_NgayDK_BeforePrint(object sender, CancelEventArgs e)
+        {
+            //System.Data.DataRowView r = (System.Data.DataRowView)DetailReport_NguoiYC.GetCurrentRow();
+            //if (r == null || r.DataView.Count == 0)
+            //{
+            //    SubBand_NgayDK.Visible = false;
+            //}
+            //else
+            //{
+            //    SubBand_NgayDK.Visible = true;
+            //    if (string.IsNullOrEmpty(r["NgayDangKy"] + ""))
+            //    {
+            //        SubBand_NgayDK.Visible = false;
+            //    }
+            //}
+        }
+        private void SubBand_DTEmail_BeforePrint(object sender, CancelEventArgs e)
+        {
+            //System.Data.DataRowView r = (System.Data.DataRowView)DetailReport_NguoiYC.GetCurrentRow();
+            //if (r == null || r.DataView.Count == 0)
+            //{
+            //    SubBand_DTEmail.Visible = false;
+            //}
+            //else
+            //{
+            //    SubBand_DTEmail.Visible = true;
+            //    if (string.IsNullOrEmpty(r["DienThoai"] + "") && string.IsNullOrEmpty(r["Email"] + ""))
+            //    {
+            //        SubBand_DTEmail.Visible = false;
+            //    }
+            //}
+        }
+        private void Detail_TenNgaySinh_BeforePrint(object sender, CancelEventArgs e)
+        {
+            //System.Data.DataRowView r = (System.Data.DataRowView)DetailReport_NguoiYC.GetCurrentRow();
+            //if (r == null || r.DataView.Count == 0)
+            //{
+            //    Detail_TenNgaySinh.Visible = false;
+            //}
+            //else
+            //{
+            //    Detail_TenNgaySinh.Visible = true;
+            //    if (string.IsNullOrEmpty(r["TenDuongSu"] + "") && string.IsNullOrEmpty(r["NgaySinh"] + ""))
+            //    {
+            //        Detail_TenNgaySinh.Visible = false;
+            //    }
+            //}
+        }
+        private void xrTableCell_DateNow_BeforePrint(object sender, CancelEventArgs e)
+        {
+            DateTime dNow = DateTime.Now;
+            string Ngay = String.Format("{0:dd}", dNow);
+            string Thang = String.Format("{0:MM}", dNow);
+            string Nam = String.Format("{0:yyyy}", dNow);
+            xrTableCell_DateNow.Text = "Ngày " + Ngay + " tháng " + Thang + " năm " + Nam;
+        }
+        private void xrTableCell_NgayDK_BeforePrint(object sender, CancelEventArgs e)
+        {
+            //System.Data.DataRowView r = (System.Data.DataRowView)DetailReport_NguoiYC.GetCurrentRow();
+            //if (r == null || r.DataView.Count == 0)
+            //{
+            //    xrTableCell_NgayDK.Visible = false;
+            //}
+            //else
+            //{
+            //    xrTableCell_NgayDK.Visible = true;
+            //    if (string.IsNullOrEmpty(r["NgayDangKy"] + ""))
+            //    {
+            //        xrTableCell_NgayDK.Visible = false;
+            //    }
+            //}
+        }
+        private void xrTableCell_MaDK_BeforePrint(object sender, CancelEventArgs e)
+        {
+            //System.Data.DataRowView r = (System.Data.DataRowView)DetailReport_NguoiYC.GetCurrentRow();
+            //if (r == null || r.DataView.Count == 0)
+            //{
+            //    xrTableCell_MaDK.TextAlignment = DevExpress.XtraPrinting.TextAlignment.MiddleLeft;
+            //}
+            //else
+            //{
+            //    xrTableCell_MaDK.TextAlignment = DevExpress.XtraPrinting.TextAlignment.MiddleRight;
+            //    if (string.IsNullOrEmpty(r["MaDangKy"] + ""))
+            //    {
+            //        xrTableCell_MaDK.TextAlignment = DevExpress.XtraPrinting.TextAlignment.MiddleLeft;
+            //    }
+            //}
+        }
+    }
+}

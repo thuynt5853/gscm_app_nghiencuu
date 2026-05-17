@@ -1,0 +1,95 @@
+﻿using System;
+using System.Drawing;
+using System.Collections;
+using System.ComponentModel;
+using DevExpress.XtraReports.UI;
+
+namespace WEB.GSTP.BaoCao.ADS
+{
+    public partial class rpt66DS : DevExpress.XtraReports.UI.XtraReport
+    {
+        public rpt66DS()
+        {
+            InitializeComponent();
+        }
+
+        private void xrTableCell36_BeforePrint(object sender, System.Drawing.Printing.PrintEventArgs e)
+        {
+            xrTableCell36.Text = xrTableCell36.Text.Replace("Ông", "").Replace("Bà", "");
+        }
+
+        private void xrLabel4_BeforePrint(object sender, System.Drawing.Printing.PrintEventArgs e)
+        {
+            xrLabel4.Text = xrLabel4.Text.ToUpper();
+        }
+
+        private void DetailReport2_BeforePrint(object sender, System.Drawing.Printing.PrintEventArgs e)
+        {
+            System.Data.DataRowView r = (System.Data.DataRowView)DetailReport2.GetCurrentRow();
+            if (r == null || r.DataView.Count == 0)
+            {
+                xrTable5.Visible = false;
+                xrTable7.Visible = false;
+            }
+        }
+
+        private void DetailReport4_BeforePrint(object sender, System.Drawing.Printing.PrintEventArgs e)
+        {
+            System.Data.DataRowView r = (System.Data.DataRowView)DetailReport4.GetCurrentRow();
+            if (r == null || r.DataView.Count == 0)
+            {
+                xrTable13.Visible = false;
+                xrTable9.Visible = false;
+            }
+        }
+
+        private void xrTableCell4_BeforePrint(object sender, System.Drawing.Printing.PrintEventArgs e)
+        {
+            xrTableCell4.Text = xrTableCell4.Text.ToUpper();
+        }
+
+        private void GroupHeader_ThamPhanDK_BeforePrint(object sender, System.Drawing.Printing.PrintEventArgs e)
+        {
+            if (string.IsNullOrEmpty(GetCurrentColumnValue("THAMPHANDUKHUYET")+""))
+            {
+                GroupHeader_ThamPhanDK.Visible = false;
+            }
+        }
+
+        private void Detail_ThuKy_BeforePrint(object sender, System.Drawing.Printing.PrintEventArgs e)
+        {
+            if (string.IsNullOrEmpty(GetCurrentColumnValue("THUKY") + ""))
+            {
+                Detail_ThuKy.Visible = false;
+            }
+        }
+
+        private void DetailReport_TGTT_BeforePrint(object sender, System.Drawing.Printing.PrintEventArgs e)
+        {
+            System.Data.DataRowView r = (System.Data.DataRowView)DetailReport_TGTT.GetCurrentRow();
+            if (r == null || r.DataView.Count == 0)
+            {
+                GroupHeader_TGTT.Visible = false;
+                Detail_TGTT.Visible = false;
+            }
+        }
+
+        private void DetailReport_KSV_BeforePrint(object sender, System.Drawing.Printing.PrintEventArgs e)
+        {
+            System.Data.DataRowView r = (System.Data.DataRowView)DetailReport_KSV.GetCurrentRow();
+            if (r == null || r.DataView.Count == 0)
+            {
+                GroupHeader_KSV.Visible = false;
+                Detail_KSV.Visible = false;
+            }
+        }
+
+        private void DetailReport_KSVDK_BeforePrint(object sender, System.Drawing.Printing.PrintEventArgs e)
+        {
+            if (string.IsNullOrEmpty(GetCurrentColumnValue("KSVDUKHUYET") + ""))
+            {
+                DetailReport_KSVDK.Visible = false;
+            }
+        }
+    }
+}

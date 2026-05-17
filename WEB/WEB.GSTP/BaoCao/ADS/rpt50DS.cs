@@ -1,0 +1,51 @@
+﻿using System;
+using System.Drawing;
+using System.Collections;
+using System.ComponentModel;
+using DevExpress.XtraReports.UI;
+
+namespace WEB.GSTP.BaoCao.ADS
+{
+    public partial class rpt50DS : DevExpress.XtraReports.UI.XtraReport
+    {
+        public rpt50DS()
+        {
+            InitializeComponent();
+        }
+
+        private void xrLabel4_BeforePrint(object sender, CancelEventArgs e)
+        {
+            xrLabel4.Text = xrLabel4.Text.ToUpper();
+        }
+
+        private void xrTableCell36_BeforePrint(object sender, CancelEventArgs e)
+        {
+            xrTableCell36.Text = xrTableCell36.Text.Replace("Ông", "").Replace("Bà", "");
+        }
+
+        private void DetailReport_BeforePrint(object sender, CancelEventArgs e)
+        {
+            System.Data.DataRowView r = (System.Data.DataRowView)DetailReport.GetCurrentRow();
+            if (r == null || r.DataView.Count == 0)
+            {
+                xrTable2.Visible = false;
+                xrTable9.Visible = false;
+            }
+        }
+
+        private void DetailReport_HoiTham_BeforePrint(object sender, CancelEventArgs e)
+        {
+            System.Data.DataRowView r = (System.Data.DataRowView)DetailReport_HoiTham.GetCurrentRow();
+            if (r == null || r.DataView.Count == 0)
+            {
+                GroupHeader_HoiTham.Visible = false;
+                Detail_HoiTham.Visible = false;
+            }
+        }
+
+        private void xrTableCell1_BeforePrint(object sender, CancelEventArgs e)
+        {
+            xrTableCell1.Text = xrTableCell1.Text.ToUpper();
+        }
+    }
+}

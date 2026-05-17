@@ -1,0 +1,21 @@
+﻿using System;
+using System.Drawing;
+using System.Collections;
+using System.ComponentModel;
+using DevExpress.XtraReports.UI;
+
+namespace WEB.GSTP.QLAN.GDTTT.In
+{
+    public partial class rptNoiBoDSTrung : DevExpress.XtraReports.UI.XtraReport
+    {
+        public rptNoiBoDSTrung()
+        {
+            InitializeComponent();
+        }
+
+        private void xrTableCell68_BeforePrint(object sender, System.Drawing.Printing.PrintEventArgs e)
+        {
+            xrTableCell68.Text = System.Web.HttpUtility.HtmlDecode(xrTableCell68.Text);
+        }
+    }
+}

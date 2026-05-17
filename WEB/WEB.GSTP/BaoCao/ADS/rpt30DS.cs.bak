@@ -1,0 +1,144 @@
+﻿using System;
+using System.Drawing;
+using System.Collections;
+using System.ComponentModel;
+using DevExpress.XtraReports.UI;
+
+namespace WEB.GSTP.BaoCao.ADS
+{
+    public partial class rpt30DS : DevExpress.XtraReports.UI.XtraReport
+    {
+        public rpt30DS()
+        {
+            InitializeComponent();
+        }
+        private void xrTableCell5_BeforePrint(object sender, System.Drawing.Printing.PrintEventArgs e)
+        {
+            xrTableCell5.Text = xrTableCell5.Text.ToUpper();
+        }
+        private void DetailReport_ND_BeforePrint(object sender, System.Drawing.Printing.PrintEventArgs e)
+        {
+            System.Data.DataRowView r = (System.Data.DataRowView)DetailReport_ND.GetCurrentRow();
+            if (r == null || r.DataView.Count == 0)
+            {
+                DetailReport_ND.Visible = false;
+            }
+        }
+        private void SubBand_ND_SDT_BeforePrint(object sender, System.Drawing.Printing.PrintEventArgs e)
+        {
+            System.Data.DataRowView r = (System.Data.DataRowView)DetailReport_ND.GetCurrentRow();
+            if (r.Row["DIENTHOAI"] + "" == "" && r.Row["FAX"] + "" == "")
+            {
+                SubBand_ND_SDT.Visible = false;
+            }
+        }
+        private void SubBand_ND_Email_BeforePrint(object sender, System.Drawing.Printing.PrintEventArgs e)
+        {
+            System.Data.DataRowView r = (System.Data.DataRowView)DetailReport_ND.GetCurrentRow();
+            if (r.Row["EMAIL"] + "" == "")
+            {
+                SubBand_ND_Email.Visible = false;
+            }
+        }
+
+        private void DetailReport_BD_BeforePrint(object sender, System.Drawing.Printing.PrintEventArgs e)
+        {
+            System.Data.DataRowView r = (System.Data.DataRowView)DetailReport_BD.GetCurrentRow();
+            if (r == null || r.DataView.Count == 0)
+            {
+                DetailReport_BD.Visible = false;
+            }
+        }
+        private void SubBand_BD_SDT_BeforePrint(object sender, System.Drawing.Printing.PrintEventArgs e)
+        {
+            System.Data.DataRowView r = (System.Data.DataRowView)DetailReport_BD.GetCurrentRow();
+            if (r.Row["DIENTHOAI"] + "" == "" && r.Row["FAX"] + "" == "")
+            {
+                SubBand_BD_SDT.Visible = false;
+            }
+        }
+        private void SubBand_BD_Email_BeforePrint(object sender, System.Drawing.Printing.PrintEventArgs e)
+        {
+            System.Data.DataRowView r = (System.Data.DataRowView)DetailReport_BD.GetCurrentRow();
+            if (r.Row["EMAIL"] + "" == "")
+            {
+                SubBand_BD_Email.Visible = false;
+            }
+        }
+
+        private void DetailReport_NVLQ_BeforePrint(object sender, System.Drawing.Printing.PrintEventArgs e)
+        {
+            System.Data.DataRowView r = (System.Data.DataRowView)DetailReport_NVLQ.GetCurrentRow();
+            if (r == null || r.DataView.Count == 0)
+            {
+                GroupHeader_NVLQ.Visible = false;
+                Detail_NVLQ.Visible = false;
+            }
+        }
+        private void SubBand_NVLQ_SDT_BeforePrint(object sender, System.Drawing.Printing.PrintEventArgs e)
+        {
+            System.Data.DataRowView r = (System.Data.DataRowView)DetailReport_NVLQ.GetCurrentRow();
+            if (r.Row["DIENTHOAI"] + "" == "" && r.Row["FAX"] + "" == "")
+            {
+                SubBand_NVLQ_SDT.Visible = false;
+            }
+        }
+        private void SubBand_NVLQ_Email_BeforePrint(object sender, System.Drawing.Printing.PrintEventArgs e)
+        {
+            System.Data.DataRowView r = (System.Data.DataRowView)DetailReport_NVLQ.GetCurrentRow();
+            if (r.Row["EMAIL"] + "" == "")
+            {
+                SubBand_NVLQ_Email.Visible = false;
+            }
+        }
+
+        private void Detail_sodienthoai_BeforePrint(object sender, System.Drawing.Printing.PrintEventArgs e)
+        {
+            if (string.IsNullOrEmpty(GetCurrentColumnValue("SODIENTHOAI") + "") && string.IsNullOrEmpty(GetCurrentColumnValue("FAX") + ""))
+            {
+                Detail_sodienthoai.Visible = false;
+            }
+        }
+        private void GroupHeader_Email_BeforePrint(object sender, System.Drawing.Printing.PrintEventArgs e)
+        {
+            if (string.IsNullOrEmpty(GetCurrentColumnValue("EMAIL") + ""))
+            {
+                GroupHeader_Email.Visible = false;
+            }
+        }
+
+        private void DetailReport_TaiLieu_BeforePrint(object sender, System.Drawing.Printing.PrintEventArgs e)
+        {
+            System.Data.DataRowView r = (System.Data.DataRowView)DetailReport_TaiLieu.GetCurrentRow();
+            if (r == null || r.DataView.Count == 0)
+            {
+                GroupHeader_TaiLieu.Visible = false;
+                Detail_TaiLieu.Visible = false;
+            }
+        }
+
+        private void xrTable3_BeforePrint(object sender, System.Drawing.Printing.PrintEventArgs e)
+        {
+            if (string.IsNullOrEmpty(GetCurrentColumnValue("NOILAMVIEC") + ""))
+            {
+                xrTable3.Rows[1].Visible = false;
+            }
+        }
+
+        private void xrTable4_BeforePrint(object sender, System.Drawing.Printing.PrintEventArgs e)
+        {
+            if (string.IsNullOrEmpty(GetCurrentColumnValue("NOILAMVIEC") + ""))
+            {
+                xrTable4.Rows[1].Visible = false;
+            }
+        }
+
+        private void xrTable5_BeforePrint(object sender, System.Drawing.Printing.PrintEventArgs e)
+        {
+            if (string.IsNullOrEmpty(GetCurrentColumnValue("NOILAMVIEC") + ""))
+            {
+                xrTable5.Rows[1].Visible = false;
+            }
+        }
+    }
+}

@@ -1,0 +1,477 @@
+﻿<%@ Page Title="" Language="C#" MasterPageFile="~/MasterPages/GSTP.Master" AutoEventWireup="true" CodeBehind="ThuLy.aspx.cs" Inherits="WEB.GSTP.QLAN.ALD.PhucthamQDK.ThuLy" %>
+
+<%@ Register Assembly="AjaxControlToolkit" Namespace="AjaxControlToolkit" TagPrefix="cc1" %>
+<asp:Content ID="Content1" ContentPlaceHolderID="head" runat="server">
+</asp:Content>
+<asp:Content ID="Content2" ContentPlaceHolderID="ContentPlaceHolder1" runat="server">
+    <script src="../../../UI/js/Common.js"></script>      <script type="text/javascript" src="/UI/js/base64.js"></script>
+    <script type="text/javascript" src="/UI/js/vgcaplugin.js"></script>
+    <asp:HiddenField ID="hddFileid" Value="0" runat="server" />
+    <asp:HiddenField ID="hddTotalPage" Value="1" runat="server" />
+    <asp:HiddenField ID="hddPageIndex" Value="1" runat="server" />
+    <asp:HiddenField ID="hddIsShowCommand" Value="True" runat="server" />
+    <asp:HiddenField ID="hddShowDetail" Value="True" runat="server" />
+
+       <%-- toancau thêm file--%>
+    <asp:Panel Visible="false" runat="server">
+        <div class="boxchung">
+
+            <div class="boder" style="padding: 10px;">
+ 
+                <table class="table1">
+          
+                    <tr>
+                        <asp:Panel ID="pnDgFile" runat="server">
+                            <td></td>
+                            <td colspan="3">
+                                <asp:DataGrid ID="dgFile" runat="server" AutoGenerateColumns="False" CellPadding="4"
+                                    PageSize="20" AllowPaging="false" GridLines="None" PagerStyle-Mode="NumericPages"
+                                    CssClass="table2" HeaderStyle-CssClass="header" AlternatingItemStyle-CssClass="le"
+                                    ItemStyle-CssClass="chan" Width="100%" >
+                                    <Columns>
+                                        <asp:TemplateColumn HeaderStyle-Width="20px" ItemStyle-Width="20px" HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center">
+                                            <HeaderTemplate>
+                                                TT
+                                            </HeaderTemplate>
+                                            <ItemTemplate>
+                                                <%# Container.DataSetIndex + 1 %>
+                                            </ItemTemplate>
+                                        </asp:TemplateColumn>
+                                        <asp:TemplateColumn HeaderStyle-HorizontalAlign="Center">
+                                            <HeaderTemplate>
+                                                Tên file
+                                            </HeaderTemplate>
+                                            <ItemTemplate>
+                                                <%#Eval("TENFILE") %>
+                                            </ItemTemplate>
+                                        </asp:TemplateColumn>
+                                        <asp:TemplateColumn HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center" HeaderStyle-Width="80px">
+                                            <HeaderTemplate>
+                                                Tệp đính kèm
+                                            </HeaderTemplate>
+                                            <ItemTemplate>
+                                                <asp:LinkButton ID="lblDownload" runat="server" Text="Xem" CausesValidation="false" CommandName="Download" ForeColor="#0e7eee"
+                                                    CommandArgument='<%#Eval("ID") %>'></asp:LinkButton>
+                                            </ItemTemplate>
+                                        </asp:TemplateColumn>
+                                        <asp:TemplateColumn HeaderStyle-Width="120px" HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center">
+                                            <HeaderTemplate>
+                                                Thao tác
+                                            </HeaderTemplate>
+                                            <ItemTemplate>
+                                                <asp:LinkButton ID="lbtXoa" runat="server" CausesValidation="false" Text="Xóa file" ForeColor="#0e7eee"
+                                                    CommandName="Xoa" CommandArgument='<%#Eval("ID") %>' ToolTip="Xóa" OnClientClick="return confirm('Bạn thực sự muốn xóa file này? ');"></asp:LinkButton>
+                                            </ItemTemplate>
+                                        </asp:TemplateColumn>
+                                        <asp:BoundColumn DataField="TOA_GIAIQUYET_ID" Visible="false"></asp:BoundColumn>
+                                    </Columns>
+                                    <HeaderStyle CssClass="header"></HeaderStyle>
+                                    <ItemStyle CssClass="chan"></ItemStyle>
+                                    <PagerStyle Visible="false"></PagerStyle>
+                                </asp:DataGrid>
+                            </td>
+                        </asp:Panel>
+                    </tr>
+            
+                </table>
+            </div>
+        </div>
+    </asp:Panel>
+
+
+    <div class="box">
+        <div class="box_nd">
+            <div class="boxchung">
+                <h4 class="tleboxchung">Thông tin thụ lý</h4>
+                <div class="boder" style="padding: 10px;">
+                    <table class="table1">
+                        <tr>
+                            <td style="width: 125px;">Trường hợp thụ lý</td>
+                            <td style="width: 265px;">
+                                <asp:DropDownList ID="ddlLoaiThuLy"  Enabled = "false" CssClass="chosen-select" runat="server" Width="250px">                                    
+                                </asp:DropDownList>
+                            </td>
+                            <td style="width: 160px;"></td>
+                            <td><asp:CheckBox ID="cbUTTP" Checked="false" runat="server" Text="Ủy thác tư pháp đi" /></td>
+                        </tr>
+                         <tr>
+                            <td style="width: 115px;">Quyết định<span class="batbuoc">(*)</span></td>
+                            <td >
+                                 <asp:TextBox ID="txtQDST" CssClass="user" runat="server"
+                                    AutoPostBack="True" Enabled="false"
+                                    Width="242px" MaxLength="250"></asp:TextBox>
+                            </td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td>Quan hệ pháp luật<span class="batbuoc">(*)</span></td>
+                            <td>
+                                <asp:DropDownList ID="ddlQuanhephapluat" Visible="false" CssClass="chosen-select" runat="server" Width="250px" AutoPostBack="True" OnSelectedIndexChanged="ddlQuanhephapluat_SelectedIndexChanged"></asp:DropDownList>
+                                <asp:TextBox ID="txtQuanhephapluat"  Enabled ="false" CssClass="user" placeholder="" runat="server" Width="240px" MaxLength="500" TextMode="MultiLine"></asp:TextBox>
+
+                                <asp:DropDownList ID="ddlLoaiQuanhe" Visible="false" CssClass="chosen-select" runat="server" Width="300px">
+                                    <asp:ListItem Value="1" Text="Tranh chấp"></asp:ListItem>
+                                    <asp:ListItem Value="2" Text="Yêu cầu"></asp:ListItem>
+                                </asp:DropDownList>
+                            </td>
+                            <td>QHPL dùng cho thống kê<span class="batbuoc">(*)</span></td>
+                            <td>
+                                <asp:DropDownList ID="ddlQHPLTK" Enabled ="false" CssClass="chosen-select" runat="server" Width="250px"></asp:DropDownList>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Ngày thụ lý<span class="batbuoc">(*)</span></td>
+                            <td>
+                                <asp:TextBox ID="txtNgaythuly" runat="server" CssClass="user" Width="242px" MaxLength="10"
+                                    AutoPostBack="True" OnTextChanged="txtNgayThuLy_TextChanged"></asp:TextBox>
+                                <cc1:CalendarExtender ID="CalendarExtender2" runat="server" TargetControlID="txtNgaythuly" Format="dd/MM/yyyy" Enabled="true" />
+                                <cc1:MaskedEditExtender ID="MaskedEditExtender3" runat="server" TargetControlID="txtNgaythuly" Mask="99/99/9999" MaskType="Date" CultureName="vi-VN" ErrorTooltipEnabled="true" />
+                            </td>
+                            <td>Số thụ lý<span class="batbuoc">(*)</span></td>
+                            <td>
+                                <asp:TextBox ID="txtSoThuly" CssClass="user" runat="server"
+                                    AutoPostBack="True" OnTextChanged="txtSoThuly_TextChanged"
+                                    Width="242px" MaxLength="250"></asp:TextBox>
+                            </td>
+
+                        </tr>
+                       <tr style="display:none;">
+                            <td>Từ ngày</td>
+                            <td>
+                                <asp:TextBox ID="txtTuNgay" runat="server" CssClass="user" Width="90px" MaxLength="10"></asp:TextBox>
+                                <cc1:CalendarExtender ID="CalendarExtender1" runat="server" TargetControlID="txtTuNgay" Format="dd/MM/yyyy" Enabled="true" />
+                                <cc1:MaskedEditExtender ID="MaskedEditExtender1" runat="server" TargetControlID="txtTuNgay" Mask="99/99/9999" MaskType="Date" CultureName="vi-VN" ErrorTooltipEnabled="true" />
+                            </td>
+                            <td>Đến ngày</td>
+                            <td>
+                                <asp:TextBox ID="txtDenNgay" runat="server" CssClass="user" Width="90px" MaxLength="10"></asp:TextBox>
+                                <cc1:CalendarExtender ID="CalendarExtender3" runat="server" TargetControlID="txtDenNgay" Format="dd/MM/yyyy" Enabled="true" />
+                                <cc1:MaskedEditExtender ID="MaskedEditExtender2" runat="server" TargetControlID="txtDenNgay" Mask="99/99/9999" MaskType="Date" CultureName="vi-VN" ErrorTooltipEnabled="true" />
+                            </td>
+                        </tr>
+                        <%--<tr>
+                            <td>Ghi chú</td>
+                            <td colspan="3">
+                                <asp:TextBox ID="txtGhichu" CssClass="user" runat="server" Width="98%" MaxLength="250"></asp:TextBox>
+                            </td>
+                        </tr>--%>
+                    </table>
+                </div>
+            </div>
+             <div class="boxchung">
+                <h4 class="tleboxchung"></h4>
+                <div class="boder" style="padding: 10px;">
+                    <table class="table1">
+                        <tr>
+                            <td style="width: 125px;">Số thông báo<span class="batbuoc">(*)</span></td>
+                            <td style="width: 262px;">
+                                <asp:TextBox ID="txtSothongbao"  runat="server" CssClass="user" Width="242px" onkeypress="return isNumber(event);"></asp:TextBox>
+                            </td>
+                            <td style="width: 162px;">Ngày thông báo<span class="batbuoc">(*)</span></td>
+                            <td>
+                                <asp:TextBox ID="txtNgaythongbao" runat="server" CssClass="user" Width="242px" MaxLength="10"
+                                    AutoPostBack="True" OnTextChanged="txtNgaythongbao_TextChanged"></asp:TextBox>
+                                <cc1:CalendarExtender ID="CalendarExtender4" runat="server" TargetControlID="txtNgaythongbao" Format="dd/MM/yyyy" Enabled="true" />
+                                <cc1:MaskedEditExtender ID="MaskedEditExtender4" runat="server" TargetControlID="txtNgaythongbao" Mask="99/99/9999" MaskType="Date" CultureName="vi-VN" ErrorTooltipEnabled="true" />
+                            </td>
+                            <td style="width: 162px;">Người ký<span class="batbuoc">(*)</span></td>
+                            <td style="width: 242px;">
+                                <asp:DropDownList ID="ddlNguoiky" CssClass="chosen-select" runat="server" Width="242px"></asp:DropDownList>
+                            </td>
+
+                            <td style="width: 125px;"></td>
+                            <td style="width: 242px;"></td>
+                              <%--toancau them file dinh kem--%>
+                            <tr>
+                                <td>Tệp đính kèm</td>
+                                <td>
+                                    <asp:HiddenField ID="hddFilePathTL" runat="server" />
+                                    <cc1:AsyncFileUpload ID="AsyncFileUpLoadTL" CssClass="floatF" runat="server" CompleteBackColor="Lime" UploaderStyle="Modern" OnUploadedComplete="AsyncFileUpLoad_UploadedCompleteTL"
+                                        ErrorBackColor="Red" ThrobberID="Throbber" UploadingBackColor="#66CCFF" />
+                                    <%--<asp:Image ID="Image1" runat="server" ImageUrl="~/UI/img/loading-gear.gif" />--%>
+                                    <asp:LinkButton ID="lbtAddFile" CssClass="linkAddFile" Visible="false" runat="server" Text="Thêm tệp đính kèm"></asp:LinkButton>
+                                </td>
+                            </tr>
+                        </tr>
+                        <asp:Panel runat="server" ID="pnDownload" Visible="false">
+
+                          
+                        <tr>
+                            <td>Tệp đính kèm</td>
+                            <td colspan =" 3">
+                             <div runat="server" id="trThemFile" visible="false">
+                                <asp:HiddenField ID="hddFilePath" runat="server" />
+                                <asp:CheckBox ID="chkKySo" Checked="true" runat="server" onclick="CheckKyso();" Text="Sử dụng ký số file đính kèm" />
+                                <br />
+                                <asp:HiddenField ID="hddFileKySo" runat="server" Value="" />
+                                <asp:HiddenField ID="hddSessionID" runat="server" />
+                                <asp:HiddenField ID="hddURLKS" runat="server" />
+                                <div id="zonekyso" style="margin-bottom: 5px; margin-top: 10px;">
+                                    <button type="button" class="buttonkyso" id="TruongPhongKyNhay" onclick="exc_sign_file1();">Chọn file đính kèm và ký số</button>
+                                    <button type="button" class="buttonkyso" style="display:none;" id="_Config" onclick="vgca_show_config();"></button>
+                                    <ul id="file_name" style="list-style: none; margin: 0px 0px 0px 0px; padding: 0px 0px 0px 0px; line-height: 18px;">
+                                    </ul>
+                                </div>
+                                <div id="zonekythuong" style="display: none; margin-top: 10px; width: 80%;">
+                                    <cc1:AsyncFileUpload ID="AsyncFileUpLoad" runat="server" CompleteBackColor="Lime" UploaderStyle="Modern" OnUploadedComplete="AsyncFileUpLoad_UploadedComplete"
+                                        ErrorBackColor="Red" ThrobberID="Throbber" UploadingBackColor="#66CCFF" />
+                                    <asp:Image ID="Throbber" runat="server" ImageUrl="~/UI/img/loading-gear.gif" />
+                                </div>
+                             </div>
+                            <%--</td>
+                        </tr>
+                        <tr>
+                            <td></td>
+                            <td>--%>
+                                <asp:LinkButton ID="lbtDownload" Visible="false" runat="server" Text="Tải file đính kèm" OnClick="lbtDownload_Click"></asp:LinkButton></td>
+                        </tr>
+                        </asp:Panel>
+                    </table>
+                </div>
+            </div>
+            <div class="truong">
+                <table class="table1">
+                    <tr>
+                        <td colspan="2" style="text-align: center;">
+                            <asp:Button ID="cmdUpdate" runat="server" CssClass="buttoninput"
+                                Text="Lưu" OnClientClick="return ValidInputData();" OnClick="btnUpdate_Click" />
+                            <asp:Button ID="cmdLammoi" runat="server" CssClass="buttoninput" Text="Làm mới" OnClick="btnLammoi_Click" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="2">
+                            <div>
+                                <asp:HiddenField ID="hddid" runat="server" Value="0" />
+                                <asp:Label runat="server" ID="lbthongbao" ForeColor="Red"></asp:Label>
+                            </div>
+                            <asp:Panel runat="server" ID="pndata" Visible="false">
+                                <div class="phantrang">
+                                    <div class="sobanghi">
+                                        <asp:Literal ID="lstSobanghiT" runat="server"></asp:Literal>
+                                    </div>
+                                    <div class="sotrang">
+                                        <asp:LinkButton ID="lbTBack" runat="server" CausesValidation="false" CssClass="back"
+                                            OnClick="lbTBack_Click"></asp:LinkButton>
+                                        <asp:LinkButton ID="lbTFirst" runat="server" CausesValidation="false" CssClass="active"
+                                            Text="1" OnClick="lbTFirst_Click"></asp:LinkButton>
+                                        <asp:Label ID="lbTStep1" runat="server" Text="..."></asp:Label>
+                                        <asp:LinkButton ID="lbTStep2" runat="server" CausesValidation="false" CssClass="so"
+                                            Text="2" OnClick="lbTStep_Click"></asp:LinkButton>
+                                        <asp:LinkButton ID="lbTStep3" runat="server" CausesValidation="false" CssClass="so"
+                                            Text="3" OnClick="lbTStep_Click"></asp:LinkButton>
+                                        <asp:LinkButton ID="lbTStep4" runat="server" CausesValidation="false" CssClass="so"
+                                            Text="4" OnClick="lbTStep_Click"></asp:LinkButton>
+                                        <asp:LinkButton ID="lbTStep5" runat="server" CausesValidation="false" CssClass="so"
+                                            Text="5" OnClick="lbTStep_Click"></asp:LinkButton>
+                                        <asp:Label ID="lbTStep6" runat="server" Text="..."></asp:Label>
+                                        <asp:LinkButton ID="lbTLast" runat="server" CausesValidation="false" CssClass="so"
+                                            Text="100" OnClick="lbTLast_Click"></asp:LinkButton>
+                                        <asp:LinkButton ID="lbTNext" runat="server" CausesValidation="false" CssClass="next"
+                                            OnClick="lbTNext_Click"></asp:LinkButton>
+                                    </div>
+                                </div>
+                                <asp:DataGrid ID="dgList" runat="server" AutoGenerateColumns="False" CellPadding="4"
+                                    PageSize="20" AllowPaging="True" GridLines="None" PagerStyle-Mode="NumericPages"
+                                    CssClass="table2" HeaderStyle-CssClass="header" AlternatingItemStyle-CssClass="le"
+                                    ItemStyle-CssClass="chan" Width="100%"
+                                    OnItemCommand="dgList_ItemCommand"   OnItemDataBound="dgList_ItemDataBound">
+                                    <Columns>
+                                        <asp:TemplateColumn HeaderStyle-Width="45px" HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center">
+                                            <HeaderTemplate>
+                                                TT
+                                            </HeaderTemplate>
+                                            <ItemTemplate>
+                                                <%# Container.DataSetIndex + 1 %>
+                                            </ItemTemplate>
+                                        </asp:TemplateColumn>
+                                        <asp:TemplateColumn HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center">
+                                            <HeaderTemplate>
+                                                Số thụ lý
+                                            </HeaderTemplate>
+                                            <ItemTemplate>
+                                                <%#Eval("SOTHULY") %>
+                                            </ItemTemplate>
+                                        </asp:TemplateColumn>
+                                        <asp:BoundColumn DataField="NGAYTHULY" HeaderText="Ngày thụ lý" HeaderStyle-Width="100px" HeaderStyle-HorizontalAlign="Center" DataFormatString="{0:dd/MM/yyyy}"></asp:BoundColumn>
+                                      <asp:BoundColumn DataField="NGUOITAO" HeaderText="Người tạo" HeaderStyle-Width="200px" HeaderStyle-HorizontalAlign="Center"></asp:BoundColumn>
+                                        <asp:BoundColumn DataField="NGAYTAO" HeaderText="Ngày tạo" HeaderStyle-Width="150px" HeaderStyle-HorizontalAlign="Center" DataFormatString="{0:dd/MM/yyyy HH:mm}"></asp:BoundColumn>
+                                        <%--<asp:TemplateColumn HeaderStyle-HorizontalAlign="Center" HeaderStyle-Width="65px">
+                                    <HeaderTemplate>Tệp đính kèm</HeaderTemplate>
+                                    <ItemTemplate>
+                                        <asp:LinkButton ID="lblDownload" runat="server" Text='<%#Eval("TENFILE") %>' CausesValidation="false" CommandName="Download"
+                                            CommandArgument='<%#Eval("FILEID") %>' CssClass="TenFile_css"></asp:LinkButton>
+                                    </ItemTemplate>
+                                </asp:TemplateColumn>--%>
+                                        <asp:TemplateColumn HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center" HeaderStyle-Width="65px">
+                                    <HeaderTemplate>Tệp đính kèm</HeaderTemplate>
+                                    <ItemTemplate >
+                                        <asp:ImageButton ID="lblDownload" ImageUrl="~/UI/img/ghim.png" runat="server" CausesValidation="false" CommandName="Download"
+                                            CommandArgument='<%#Eval("ID") %>' ToolTip='<%#Eval("TENFILE")%>' />
+                                        <%--<asp:LinkButton ID="lblDownload" runat="server" Text='<%#Eval("TENFILE") %>'  CssClass="TenFile_css"></asp:LinkButton>--%>
+                                    </ItemTemplate>
+                                </asp:TemplateColumn>
+                                        <asp:TemplateColumn HeaderStyle-Width="90px" HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center">
+                                            <HeaderTemplate>
+                                                Thao tác
+                                            </HeaderTemplate>
+                                            <ItemTemplate>
+                                                <asp:LinkButton ID="lblSua" runat="server" Text="Sửa" CausesValidation="false" CommandName="Sua" ForeColor="#0e7eee"
+                                                    CommandArgument='<%#Eval("ID") %>'></asp:LinkButton>
+                                                &nbsp;&nbsp;<asp:LinkButton ID="lbtXoa" runat="server" CausesValidation="false" Text="Xóa" ForeColor="#0e7eee"
+                                                    CommandName="Xoa" CommandArgument='<%#Eval("ID") %>' ToolTip="Xóa" OnClientClick="return confirm('Bạn thực sự muốn xóa bản ghi này? ');"></asp:LinkButton>
+                                            </ItemTemplate>
+                                        </asp:TemplateColumn>
+                                    </Columns>
+                                    <HeaderStyle CssClass="header"></HeaderStyle>
+                                    <ItemStyle CssClass="chan"></ItemStyle>
+                                    <PagerStyle Visible="false"></PagerStyle>
+                                </asp:DataGrid>
+                                <div class="phantrang">
+                                    <div class="sobanghi">
+                                        <asp:HiddenField ID="hdicha" runat="server" />
+                                        <asp:Literal ID="lstSobanghiB" runat="server"></asp:Literal>
+                                    </div>
+                                    <div class="sotrang">
+                                        <asp:LinkButton ID="lbBBack" runat="server" CausesValidation="false" CssClass="back"
+                                            OnClick="lbTBack_Click"></asp:LinkButton>
+                                        <asp:LinkButton ID="lbBFirst" runat="server" CausesValidation="false" CssClass="active"
+                                            Text="1" OnClick="lbTFirst_Click"></asp:LinkButton>
+                                        <asp:Label ID="lbBStep1" runat="server" Text="..."></asp:Label>
+                                        <asp:LinkButton ID="lbBStep2" runat="server" CausesValidation="false" CssClass="so"
+                                            Text="2" OnClick="lbTStep_Click"></asp:LinkButton>
+                                        <asp:LinkButton ID="lbBStep3" runat="server" CausesValidation="false" CssClass="so"
+                                            Text="3" OnClick="lbTStep_Click"></asp:LinkButton>
+                                        <asp:LinkButton ID="lbBStep4" runat="server" CausesValidation="false" CssClass="so"
+                                            Text="4" OnClick="lbTStep_Click"></asp:LinkButton>
+                                        <asp:LinkButton ID="lbBStep5" runat="server" CausesValidation="false" CssClass="so"
+                                            Text="5" OnClick="lbTStep_Click"></asp:LinkButton>
+                                        <asp:Label ID="lbBStep6" runat="server" Text="..."></asp:Label>
+                                        <asp:LinkButton ID="lbBLast" runat="server" CausesValidation="false" CssClass="so"
+                                            Text="100" OnClick="lbTLast_Click"></asp:LinkButton>
+                                        <asp:LinkButton ID="lbBNext" runat="server" CausesValidation="false" CssClass="next"
+                                            OnClick="lbTNext_Click"></asp:LinkButton>
+                                    </div>
+                                </div>
+                            </asp:Panel>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+    <script type="text/javascript">
+
+
+        function ValidInputData() {
+            var txtSoThuly = document.getElementById('<%=txtSoThuly.ClientID%>');
+            if(!Common_CheckTextBox(txtSoThuly, "Số thụ lý")){
+                return false;
+            }
+            var length_string = txtSoThuly.value.trim().length;
+            if (length_string > 50) {
+                alert('Số thụ lý không được quá 50 ký tự. Hãy nhập lại!');
+                txtSoThuly.focus();
+                return false;
+            }
+
+            var txtNgaythuly = document.getElementById('<%=txtNgaythuly.ClientID%>');
+            if (!CheckDateTimeControl_KoSoSanhNgayHienTai(txtNgaythuly, 'ngày thụ lý'))
+                return false;
+
+            var txtSothongbao = document.getElementById('<%=txtSothongbao.ClientID %>');
+             if(!Common_CheckTextBox(txtSothongbao, "Số thông báo")){
+                 return false;
+             }
+             var length_string = txtSothongbao.value.trim().length;
+             if (length_string > 50) {
+                 alert('Số thông báo không được quá 50 ký tự. Hãy nhập lại!');
+                 txtSothongbao.focus();
+                 return false;
+             }
+            return true;
+        }
+        function pageLoad(sender, args) {
+            var config = { '.chosen-select': {}, '.chosen-select-deselect': { allow_single_deselect: true }, '.chosen-select-no-single': { disable_search_threshold: 10 }, '.chosen-select-no-results': { no_results_text: 'Oops, nothing found!' }, '.chosen-select-rtl': { rtl: true }, '.chosen-select-width': { width: '95%' } }
+            for (var selector in config) { $(selector).chosen(config[selector]); }
+
+        }
+        function isNumber(evt) {
+            evt = (evt) ? evt : window.event;
+            var charCode = (evt.which) ? evt.which : evt.keyCode;
+            if (charCode > 31 && (charCode < 48 || charCode > 57)) {
+                return false;
+            }
+            return true;
+        }
+        var count_file = 0;
+        function CheckKyso() {
+            var chkKySo = document.getElementById('<%=chkKySo.ClientID%>');
+            if (chkKySo.checked) {
+                document.getElementById("zonekyso").style.display = "";
+                document.getElementById("zonekythuong").style.display = "none";
+            }
+            else {
+                document.getElementById("zonekyso").style.display = "none";
+                document.getElementById("zonekythuong").style.display = "";
+            }
+        }
+        function VerifyPDFCallBack(rv) {
+
+        }
+        function exc_verify_pdf1() {
+            var prms = {};
+            var hddSession = document.getElementById('<%=hddSessionID.ClientID%>');
+                    prms["SessionId"] = "";
+                    prms["FileName"] = document.getElementById("file1").value;
+                    var json_prms = JSON.stringify(prms);
+                    vgca_verify_pdf(json_prms, VerifyPDFCallBack);
+                }
+                function SignFileCallBack1(rv) {
+                    var received_msg = JSON.parse(rv);
+                    if (received_msg.Status == 0) {
+                        var hddFilePath = document.getElementById('<%=hddFilePath.ClientID%>');
+                var new_item = document.createElement("li");
+                new_item.innerHTML = received_msg.FileName;
+                hddFilePath.value = received_msg.FileServer;
+                //-------------Them icon xoa file------------------
+                var del_item = document.createElement("img");
+                del_item.src = '/UI/img/xoa.gif';
+                del_item.style.width = "15px";
+                del_item.style.margin = "5px 0 0 5px";
+                del_item.onclick = function () {
+                    if (!confirm('Bạn muốn xóa file này?')) return false;
+                    document.getElementById("file_name").removeChild(new_item);
+                }
+                del_item.style.cursor = 'pointer';
+                new_item.appendChild(del_item);
+
+                document.getElementById("file_name").appendChild(new_item);
+            } else {
+                document.getElementById("_signature").value = received_msg.Message;
+            }
+                }
+                //metadata có kiểu List<KeyValue> 
+                //KeyValue là class { string Key; string Value; }
+                function exc_sign_file1() {
+                    var prms = {};
+                    var scv = [{ "Key": "abc", "Value": "abc" }];
+                    var hddURLKS = document.getElementById('<%=hddURLKS.ClientID%>');
+            prms["FileUploadHandler"] = hddURLKS.value.replace(/^http:\/\//i, window.location.protocol + '//');
+            prms["SessionId"] = "";
+            prms["FileName"] = "";
+            prms["MetaData"] = scv;
+            var json_prms = JSON.stringify(prms);
+            vgca_sign_file(json_prms, SignFileCallBack1);
+        }
+        function RequestLicenseCallBack(rv) {
+            var received_msg = JSON.parse(rv);
+            if (received_msg.Status == 0) {
+                document.getElementById("_signature").value = received_msg.LicenseRequest;
+            } else {
+                alert("Ký số không thành công:" + received_msg.Status + ":" + received_msg.Error);
+            }
+        }
+
+    </script>
+</asp:Content>

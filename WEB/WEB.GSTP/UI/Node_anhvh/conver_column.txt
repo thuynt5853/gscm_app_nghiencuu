@@ -1,0 +1,158 @@
+	--create table GDTTT_VUAN_DUONGSU_BAK as select * from GSCM.GDTTT_VUAN_DUONGSU;
+	--alter table GDTTT_VUAN_DUONGSU add TENDUONGSU_TMP varchar2(250 CHAR);
+	--update GDTTT_VUAN_DUONGSU set TENDUONGSU_TMP=substr(TO_CHAR(TENDUONGSU),1,250);
+	--commit;	
+	--alter table GSCM.GDTTT_VUAN_DUONGSU drop column TENDUONGSU;
+	--alter table GSCM.GDTTT_VUAN_DUONGSU RENAME COLUMN  TENDUONGSU_TMP to TENDUONGSU; 
+	-----------------------
+	--alter table GDTTT_VUAN_DUONGSU add DIACHI_TMP varchar2(250 CHAR);
+	--update GDTTT_VUAN_DUONGSU set DIACHI_TMP=substr(TO_CHAR(DIACHI),1,250);
+	-- commit;	
+	--alter table GSCM.GDTTT_VUAN_DUONGSU drop column DIACHI;
+	--alter table GSCM.GDTTT_VUAN_DUONGSU RENAME COLUMN  DIACHI_TMP to DIACHI; 
+	-----------------------
+	--alter table GDTTT_VUAN_DUONGSU add DIACHI_TMP varchar2(250 CHAR);
+	--update GDTTT_VUAN_DUONGSU set DIACHI_TMP=substr(TO_CHAR(DIACHI),1,250);
+	-- commit;	
+	--alter table GSCM.GDTTT_VUAN_DUONGSU drop column DIACHI;
+	--alter table GSCM.GDTTT_VUAN_DUONGSU RENAME COLUMN  DIACHI_TMP to DIACHI;
+	-------------------------------------------------------------------------------
+    create table AHC_SOTHAM_KHANGCAO_BAK as select * from GSCM.AHC_SOTHAM_KHANGCAO;
+	alter table AHC_SOTHAM_KHANGCAO add NOIDUNGKHANGCAO_TMP varchar2(2000);
+	update AHC_SOTHAM_KHANGCAO set NOIDUNGKHANGCAO_TMP=substr(TO_CHAR(NOIDUNGKHANGCAO),1,2000);
+    commit;	
+	alter table GSCM.AHC_SOTHAM_KHANGCAO drop column NOIDUNGKHANGCAO;
+	alter table GSCM.AHC_SOTHAM_KHANGCAO RENAME COLUMN  NOIDUNGKHANGCAO_TMP to NOIDUNGKHANGCAO;
+    --------------------
+    create table AHC_SOTHAM_KHANGNGHI_BAK as select * from GSCM.AHC_SOTHAM_KHANGNGHI;
+	alter table AHC_SOTHAM_KHANGNGHI add NOIDUNGKN_TMP varchar2(1000);
+    update AHC_SOTHAM_KHANGNGHI set NOIDUNGKN_TMP=substr(TO_CHAR(NOIDUNGKN),1,1000);
+    commit;	
+	alter table GSCM.AHC_SOTHAM_KHANGNGHI drop column NOIDUNGKN;
+	alter table GSCM.AHC_SOTHAM_KHANGNGHI RENAME COLUMN  NOIDUNGKN_TMP to NOIDUNGKN;
+------------------------------------------------------------------------
+--B1. Stop ứng dụng (tránh mất mát dữ liệu và ảnh hưởng đến người dùng)
+--B2. Backup table
+    create table AHS_SOTHAM_KHANGCAO_BAK as select * from GSCM.AHS_SOTHAM_KHANGCAO;
+--B3. Kiểm tra độ dài của column (NOIDUNGKHANGCAO NCLOB) cần convert
+-- SELECT *
+--  FROM (  SELECT id, MAX (LENGTH (NOIDUNGKHANGCAO)) max_len
+--            FROM GSCM.AHS_SOTHAM_KHANGCAO  where NOIDUNGKHANGCAO is not null
+--        GROUP BY id
+--        ORDER BY 2 DESC)
+-- WHERE ROWNUM = 1; 
+ --id=603; max_lneght=626 sử dụng cho bước tạo column mới và kiểm tra sau khi update
+--B4. Thêm trường mới NOIDUNGKHANGCAO_TMP có length tối thiểu >=626
+	alter table AHS_SOTHAM_KHANGCAO add NOIDUNGKHANGCAO_TMP varchar2(2000);
+--B5. Chuyển đổi dữ liệu convert từ trường cũ sang trường mới
+	update AHS_SOTHAM_KHANGCAO set NOIDUNGKHANGCAO_TMP=substr(TO_CHAR(NOIDUNGKHANGCAO),1,2000);
+--	select NOIDUNGKHANGCAO_TMP from AHS_SOTHAM_KHANGCAO where id=603; --Kiểm tra dữ liệu
+    commit;	
+--B6. Xóa column dữ liệu cũ NOIDUNGKHANGCAO ở dạng NCLOB	
+	alter table GSCM.AHS_SOTHAM_KHANGCAO drop column NOIDUNGKHANGCAO;
+--B7. Rename column NOIDUNGKHANGCAO_TMP
+	alter table GSCM.AHS_SOTHAM_KHANGCAO RENAME COLUMN  NOIDUNGKHANGCAO_TMP to NOIDUNGKHANGCAO;
+--B8. Start ứng dụng và kiểm tra.
+--B9. Xóa table backup (nên để một thời gian sau)
+--	drop table AHS_SOTHAM_KHANGCAO_BAK;
+--select * from AHS_SOTHAM_KHANGCAO where id=603; --
+--select * from ADS_DON WHERE ID=1162;--02149032
+--SELECT * FROM DM_TOAAN WHERE ID=238;
+--------------------
+--B1. Stop ứng dụng (tránh mất mát dữ liệu và ảnh hưởng đến người dùng)
+--B2. Backup table
+    create table AHS_SOTHAM_KHANGNGHI_BAK as select * from GSCM.AHS_SOTHAM_KHANGNGHI;
+--B3. Kiểm tra độ dài của column (NOIDUNGKN nvarchar2) cần convert
+-- SELECT *
+--  FROM (  SELECT id, MAX (LENGTH (NOIDUNGKN)) max_len
+--            FROM GSCM.AHS_SOTHAM_KHANGNGHI  where NOIDUNGKN is not null
+--        GROUP BY id
+--        ORDER BY 2 DESC)
+-- WHERE ROWNUM = 1; 
+ --id=603; max_lneght=626 sử dụng cho bước tạo column mới và kiểm tra sau khi update
+--B4. Thêm trường mới NOIDUNGKN_TMP có length tối thiểu >=626
+	alter table AHS_SOTHAM_KHANGNGHI add NOIDUNGKN_TMP varchar2(1000);
+--B5. Chuyển đổi dữ liệu convert từ trường cũ sang trường mới
+	update AHS_SOTHAM_KHANGNGHI set NOIDUNGKN_TMP=substr(TO_CHAR(NOIDUNGKN),1,1000);
+--	select NOIDUNGKN_TMP from AHS_SOTHAM_KHANGNGHI where id=603; --Kiểm tra dữ liệu
+    commit;	
+--B6. Xóa column dữ liệu cũ NOIDUNGKN ở dạng NCLOB	
+	alter table GSCM.AHS_SOTHAM_KHANGNGHI drop column NOIDUNGKN;
+--B7. Rename column NOIDUNGKN_TMP
+	alter table GSCM.AHS_SOTHAM_KHANGNGHI RENAME COLUMN  NOIDUNGKN_TMP to NOIDUNGKN;
+--B8. Start ứng dụng và kiểm tra.
+--B9. Xóa table backup (nên để một thời gian sau)
+--	drop table AHS_SOTHAM_KHANGNGHI_BAK;
+--select * from AHS_SOTHAM_KHANGNGHI where id=603; --
+--select * from ADS_DON WHERE ID=1162;--02149032
+--SELECT * FROM DM_TOAAN WHERE ID=238;
+---------------------------------------------------
+--B1. Stop ứng dụng (tránh mất mát dữ liệu và ảnh hưởng đến người dùng)
+--B2. Backup table
+    create table ADS_SOTHAM_KHANGCAO_BAK as select * from GSCM.ADS_SOTHAM_KHANGCAO;
+--B3. Kiểm tra độ dài của column (NOIDUNGKHANGCAO NCLOB) cần convert
+-- SELECT *
+--  FROM (  SELECT id, MAX (LENGTH (NOIDUNGKHANGCAO)) max_len
+--            FROM GSCM.ADS_SOTHAM_KHANGCAO where NOIDUNGKHANGCAO is not null
+--        GROUP BY id
+--        ORDER BY 2 DESC)
+-- WHERE ROWNUM = 1; 
+ --id=603; max_lneght=626 sử dụng cho bước tạo column mới và kiểm tra sau khi update
+--B4. Thêm trường mới NOIDUNGKHANGCAO_TMP có length tối thiểu >=626
+	alter table ADS_SOTHAM_KHANGCAO add NOIDUNGKHANGCAO_TMP varchar2(2000);
+--B5. Chuyển đổi dữ liệu convert từ trường cũ sang trường mới
+	update ADS_SOTHAM_KHANGCAO set NOIDUNGKHANGCAO_TMP=substr(TO_CHAR(NOIDUNGKHANGCAO),1,2000);
+--	select NOIDUNGKHANGCAO_TMP from ADS_SOTHAM_KHANGCAO where id=603; --Kiểm tra dữ liệu
+    commit;	
+--B6. Xóa column dữ liệu cũ NOIDUNGKHANGCAO ở dạng NCLOB	
+	alter table GSCM.ADS_SOTHAM_KHANGCAO drop column NOIDUNGKHANGCAO;
+--B7. Rename column NOIDUNGKHANGCAO_TMP
+	alter table GSCM.ADS_SOTHAM_KHANGCAO RENAME COLUMN  NOIDUNGKHANGCAO_TMP to NOIDUNGKHANGCAO;
+--B8. Start ứng dụng và kiểm tra.
+--B9. Xóa table backup (nên để một thời gian sau)
+--	drop table ADS_SOTHAM_KHANGCAO_BAK;
+--select * from ADS_SOTHAM_KHANGCAO where id=603; --
+--select * from ADS_DON WHERE ID=1162;--02149032
+--SELECT * FROM DM_TOAAN WHERE ID=238;
+-------------------------------------------
+--B1. Stop ứng dụng (tránh mất mát dữ liệu và ảnh hưởng đến người dùng)
+--B2. Backup table
+    create table ADS_SOTHAM_KHANGNGHI_BAK as select * from GSCM.ADS_SOTHAM_KHANGNGHI;
+--B3. Kiểm tra độ dài của column (NOIDUNGKN nvarchar2) cần convert
+-- SELECT *
+--          FROM (  SELECT id, MAX (LENGTH (NOIDUNGKN)) max_len
+--                    FROM GSCM.ADS_SOTHAM_KHANGNGHI  where NOIDUNGKN is not null
+--                GROUP BY id
+--                ORDER BY 2 DESC)
+--         WHERE ROWNUM = 1; 
+         --id=603; max_lneght=626 sử dụng cho bước tạo column mới và kiểm tra sau khi update
+--B4. Thêm trường mới NOIDUNGKN_TMP có length tối thiểu >=626
+	alter table ADS_SOTHAM_KHANGNGHI add NOIDUNGKN_TMP varchar2(1000);
+--B5. Chuyển đổi dữ liệu convert từ trường cũ sang trường mới
+	update ADS_SOTHAM_KHANGNGHI set NOIDUNGKN_TMP=substr(TO_CHAR(NOIDUNGKN),1,1000);
+--	select NOIDUNGKN_TMP from ADS_SOTHAM_KHANGNGHI where id=544; --Kiểm tra dữ liệu
+    commit;	
+--B6. Xóa column dữ liệu cũ NOIDUNGKN ở dạng NCLOB	
+	alter table GSCM.ADS_SOTHAM_KHANGNGHI drop column NOIDUNGKN;
+--B7. Rename column NOIDUNGKN_TMP
+	alter table GSCM.ADS_SOTHAM_KHANGNGHI RENAME COLUMN  NOIDUNGKN_TMP to NOIDUNGKN;
+--B8. Start ứng dụng và kiểm tra.
+--B9. Xóa table backup (nên để một thời gian sau)
+--	drop table ADS_SOTHAM_KHANGNGHI_BAK;
+--select * from ADS_SOTHAM_KHANGNGHI where id=544; --
+--select * from ADS_DON WHERE ID=3436;--02149032
+--SELECT * FROM DM_TOAAN WHERE ID=247;
+--------------
+ <asp:ListItem Value="0" Text="--- Tất cả ---" Selected="True"></asp:ListItem>
+<asp:ListItem Value="1" Text="Đơn đề nghị GĐT,TT"></asp:ListItem>
+<%--  <asp:ListItem Value="2" Text="Công văn"></asp:ListItem>--%>
+//-----------------đơn + công văn 
+<asp:ListItem Value="3" Text="Đơn đề nghị GĐT,TT kèm theo CV chuyển đơn"></asp:ListItem>
+//-----------------đơn + công văn end
+<asp:ListItem Value="4" Text="Hồ sơ Kháng nghị GĐT,TT"></asp:ListItem>
+//-----------------tương đương với 2
+<asp:ListItem Value="6" Text="CV kiến nghị GĐT,TT"></asp:ListItem>
+<asp:ListItem Value="9" Text="CV kiến nghị GĐT,TT kèm Hồ sơ"></asp:ListItem>
+//-----------------tương đương với 2 end
+<asp:ListItem Value="7" Text="Thông báo phát hiện vi phạm pháp luật"></asp:ListItem>
+<asp:ListItem Value="8" Text="Đơn khiếu nại tư pháp"></asp:ListItem>

@@ -1,0 +1,2643 @@
+--------------------------------------------------------
+--  DDL for Package Body PKG_GSTP_SOTHULY_PHUCTHAM
+--------------------------------------------------------
+
+  CREATE OR REPLACE NONEDITIONABLE PACKAGE BODY "GSCM"."PKG_GSTP_SOTHULY_PHUCTHAM" AS
+
+	PROCEDURE SO_DANSU_PHUCTHAM
+	(
+		 in_TOAANID IN NUMBER,
+		 in_TOAANCAPCON IN NVARCHAR2,
+		 in_NGAYBATDAU IN NVARCHAR2,
+		 in_NGAYKETTHUC IN NVARCHAR2,
+		 curReturn OUT SYS_REFCURSOR
+	) AS
+		v_ARRAY T_DANSU_PHUCTHAM;
+		v_IDS T_ID;
+	BEGIN
+		--
+		--TÒA ÁN CẤP CON
+		v_IDS:=T_ID();
+		IF (in_TOAANCAPCON='TRUE') THEN
+			SELECT R_ID(ID) BULK COLLECT INTO v_IDS FROM DM_TOAAN WHERE CAPCHAID=in_TOAANID;
+		END IF;
+		v_IDS.EXTEND();
+		v_IDS(v_IDS.COUNT):=R_ID(in_TOAANID);
+		--
+		--XAC DINH ID THU LY AN THEO THAM SO
+		SELECT R_DANSU_PHUCTHAM(
+			v_STT=>row_number() over (order by TL.ID),
+			v_THULYID=>TL.ID,
+			v_VUANID=>TL.DONID,
+            v_TOAANSOTHAMID=>NULL,
+			v_TOAANID=>TL.TOAANID,
+			v_QUANHEPHAPLUATID=>TL.QUANHEPHAPLUATID,
+			v_TL_1=>NULL,
+			v_BA_QD_TA_ST_2=>NULL,
+			v_ND_NYC_3=>NULL,
+			v_BD_NLQ_DS_4=>NULL,
+			v_NGUOI_QLNVLQ_5=>NULL,
+			v_NGUOIBV_QLIHP_DS_6=>NULL,
+			v_QHPL_7=>NULL,
+			v_KC_8=>NULL,
+			v_KN_9=>NULL,
+			v_ADBPKCTT_10=>NULL,
+			v_RUT_KC_11=>NULL,
+			v_RUT_KN_12=>NULL,
+			v_TDC_13=>NULL,
+			v_DC_14=>NULL,
+			v_LYDO_15=>NULL,
+			v_HDXX_VKS_TKPT_16=>NULL,
+			v_BA_QDPT_17=>NULL,
+			v_QD_TA_PT_18=>NULL,
+			v_LYDO_SH_STSAI_19=>NULL,
+			v_LYDO_SH_LDK_20=>NULL,
+			v_APDUNGANLE_21=>NULL,
+			v_GQVA_TTRG_22=>NULL,
+			v_VIECDS_23=>NULL,
+			v_QD_GDTTT_24=>NULL,
+			v_GHICHU_25=>NULL,
+            V_NGAYTHULY=>NULL,V_SOTHULY=>NULL
+		)
+--		BULK COLLECT INTO v_ARRAY
+--		FROM ADS_PHUCTHAM_THULY TL INNER JOIN TABLE(v_IDS) I ON I.v_ID=TL.TOAANID
+--      INNER JOIN ADS_SOTHAM_BANAN bast on bast.DONID=TL.DONID
+--		WHERE
+--			NGAYTHULY BETWEEN TO_DATE(in_NGAYBATDAU,'DD/MM/YYYY') AND TO_DATE(in_NGAYKETTHUC,'DD/MM/YYYY');
+
+		BULK COLLECT INTO v_ARRAY
+        FROM (
+        SELECT TL.*
+		FROM ADS_PHUCTHAM_THULY TL 
+            INNER JOIN TABLE(v_IDS) I ON I.v_ID=TL.TOAANID
+		WHERE
+			NGAYTHULY BETWEEN TO_DATE(in_NGAYBATDAU,'DD/MM/YYYY') AND TO_DATE(in_NGAYKETTHUC,'DD/MM/YYYY')
+            
+        UNION 
+		SELECT TL.*
+		FROM ADS_PHUCTHAM_THULY TL 
+            INNER JOIN TABLE(v_IDS) I ON I.v_ID=TL.TOAANID
+		WHERE
+			NGAYTHULY < TO_DATE(in_NGAYBATDAU,'DD/MM/YYYY') AND 
+            (NOT EXISTS (SELECT  STQD.* FROM ADS_PHUCTHAM_QUYETDINH STQD 
+                INNER JOIN DM_QD_QUYETDINH DMQD ON DMQD.ID = STQD.QUYETDINHID AND DMQD.KET_THUC = 1 WHERE TL.DONID = STQD.DONID)
+            AND NOT EXISTS (SELECT BA.* FROM ADS_PHUCTHAM_BANAN BA WHERE TL.DONID = BA.DONID))
+            
+        UNION 
+		SELECT TL.*
+		FROM ADS_PHUCTHAM_THULY TL 
+            INNER JOIN TABLE(v_IDS) I ON I.v_ID=TL.TOAANID
+		WHERE
+			NGAYTHULY < TO_DATE(in_NGAYBATDAU,'DD/MM/YYYY') AND 
+            (EXISTS (SELECT  STQD.* FROM ADS_PHUCTHAM_QUYETDINH STQD 
+                         INNER JOIN DM_QD_QUYETDINH DMQD ON DMQD.ID = STQD.QUYETDINHID AND DMQD.KET_THUC = 1 
+                     WHERE TL.DONID = STQD.DONID AND STQD.NGAYQD BETWEEN TO_DATE(in_NGAYBATDAU,'DD/MM/YYYY') AND TO_DATE(in_NGAYKETTHUC,'DD/MM/YYYY'))
+             OR EXISTS (SELECT BA.* FROM ADS_PHUCTHAM_BANAN BA WHERE TL.DONID = BA.DONID 
+                        AND BA.NGAYTUYENAN BETWEEN TO_DATE(in_NGAYBATDAU,'DD/MM/YYYY') AND TO_DATE(in_NGAYKETTHUC,'DD/MM/YYYY')))
+            ) TL;
+		--
+		--THONG TIN SO THU LY
+		PKG_GSTP_SOTHULY_PHUCTHAM.FILL_DANSU_PHUCTHAM(v_ARRAY);
+		/*--
+		FOR ITEM IN (SELECT * FROM TABLE(v_ARRAY)) LOOP
+			DBMS_OUTPUT.PUT_LINE (ITEM.v_STT||' - '||ITEM.v_THULYID);
+		END LOOP;
+		--*/
+		OPEN curReturn FOR SELECT * FROM TABLE(v_ARRAY)
+        ORDER by EXTRACT(YEAR FROM  V_NGAYTHULY),to_number(REGEXP_REPLACE(V_SOTHULY, '[^0-9]')),V_NGAYTHULY;
+		--
+	EXCEPTION 
+		WHEN OTHERS THEN 
+			RAISE_APPLICATION_ERROR(-20000, sqlerrm);
+	END;
+	/*1 - SỔ THỤ LÝ VÀ KẾT QỦA GIẢI QUYẾT CÁC VỤ VIỆC DÂN SỰ PHÚC THẨM*/
+	PROCEDURE FILL_DANSU_PHUCTHAM
+	(
+		v_ARRAY IN OUT T_DANSU_PHUCTHAM
+	) AS
+	BEGIN	
+		--v_ARRAY:=T_DANSU_PHUCTHAM();
+		-- v_TL_1 - THỤ LÝ Số, ngày tháng năm - 1 - 
+		FOR ITEM IN (
+			SELECT 
+				T1.v_STT, 
+				T2.QUANHEPHAPLUATID v_QUANHEPHAPLUATID,
+				T2.SOTHULY|| CHR(10) ||TO_CHAR(T2.NGAYTHULY,'DD/MM/YYYY') v_TL_1,
+                T2.NGAYTHULY  V_NGAYTHULY,T2.SOTHULY V_SOTHULY
+			FROM 
+				TABLE(v_ARRAY) T1 
+				INNER JOIN ADS_PHUCTHAM_THULY T2 ON T1.v_THULYID=T2.ID
+		) LOOP
+			v_ARRAY(ITEM.v_STT).v_TL_1:=ITEM.v_TL_1;
+			v_ARRAY(ITEM.v_STT).v_QUANHEPHAPLUATID:=ITEM.v_QUANHEPHAPLUATID;
+            v_ARRAY(ITEM.v_STT).V_NGAYTHULY:=ITEM.V_NGAYTHULY;v_ARRAY(ITEM.v_STT).V_SOTHULY:=ITEM.V_SOTHULY;
+		END LOOP;
+		-- v_BA_QD_TA_ST_2 - BẢN ÁN, QUYẾT ĐỊNH CỦA TOÀ ÁN CẤP SƠ THẨM Số, ngày tháng năm và tên Toà án đã giải quyết - 2 - 
+		FOR ITEM IN (
+			SELECT 
+				T1.v_STT
+                ,DECODE(NVL(T2.ID,0),0
+                    ,T3.SOQD|| CHR(10) ||TO_CHAR(T3.NGAYQD,'DD/MM/YYYY')|| CHR(10) || T3.QTENTOA 
+                    ,T2.SOBANAN|| CHR(10) || TO_CHAR(T2.NGAYTUYENAN,'DD/MM/YYYY') || CHR(10) || T2.BTENTOA 
+                         )
+                        v_BA_QD_TA_ST_2
+			FROM 
+				TABLE(v_ARRAY) T1  
+				LEFT JOIN (SELECT B.ID,B.DONID,B.SOBANAN,B.NGAYTUYENAN,DM.TEN BTENTOA 
+                                        FROM ADS_SOTHAM_BANAN B 
+                                        LEFT JOIN DM_TOAAN DM ON B.TOAANID = DM.ID)T2 ON T1.v_VUANID=T2.DONID
+                LEFT JOIN (SELECT Q.SOQD, Q.NGAYQD,Q.DONID,Q.QUYETDINHID,DM.TEN QTENTOA
+                                        FROM ADS_SOTHAM_QUYETDINH Q
+                                        LEFT JOIN DM_TOAAN DM ON Q.TOAANID = DM.ID
+                                        LEFT JOIN DM_QD_QUYETDINH D ON D.ID=Q.QUYETDINHID 
+                                                WHERE D.KET_THUC = 1) T3 ON T1.v_VUANID=T3.DONID
+		) LOOP
+			v_ARRAY(ITEM.v_STT).v_BA_QD_TA_ST_2:=ITEM.v_BA_QD_TA_ST_2;
+		END LOOP;
+       
+		-- v_ND_NYC_3 - NGUYÊN ĐƠN HOẶC NGƯỜI YÊU CẦU Họ tên, năm sinh, địa chỉ - 3 - 
+		FOR ITEM IN (
+			SELECT 
+				T1.v_STT, 
+				LISTAGG(
+					CAST(
+						'- ' || T2.TENDUONGSU||'; '||
+						case when T2.NAMSINH = 0 then ' ' else ' ' || T2.NAMSINH ||'; ' end ||
+						T2.DIACHI 
+						AS VARCHAR2(4000)
+					), CHR(10)
+				) WITHIN GROUP (ORDER BY T1.v_STT) v_ND_NYC_3
+			FROM 
+				TABLE(v_ARRAY) T1 
+				INNER JOIN (SELECT ID,DONID,TENDUONGSU,NAMSINH,TUCACHTOTUNG_MA,
+                      CASE WHEN LOAIDUONGSU =1 THEN TAMTRUCHITIET ELSE NDD_DIACHICHITIET end as DIACHI  
+                    FROM ADS_DON_DUONGSU 
+                    where 
+                    --ISPHUCTHAM=1 and 
+                    TUCACHTOTUNG_MA ='NGUYENDON' --NGUYÊN ĐƠN
+                    )T2 ON T1.v_VUANID=T2.DONID
+			GROUP BY T1.v_STT
+		) LOOP
+			v_ARRAY(ITEM.v_STT).v_ND_NYC_3:=ITEM.v_ND_NYC_3;
+		END LOOP;
+
+		-- v_BD_NLQ_DS_4 - BỊ ĐƠN HOẶC NGƯỜI LIÊN QUAN TRONG VIỆC DÂN SỰ Họ tên, năm sinh, địa chỉ - 4 - 
+		FOR ITEM IN (
+			SELECT 
+				T1.v_STT, 
+				LISTAGG(
+					CAST(
+						'- ' || T2.TENDUONGSU ||'; '||
+						case when T2.NAMSINH = 0 then ' ' else ' ' || T2.NAMSINH ||'; ' end ||
+						T2.DIACHI 
+						AS VARCHAR2(4000)
+					), CHR(10)
+				) WITHIN GROUP (ORDER BY T1.v_STT) v_BD_NLQ_DS_4
+			FROM 
+				TABLE(v_ARRAY) T1 
+				INNER JOIN (SELECT ID,DONID,TENDUONGSU,NAMSINH,TUCACHTOTUNG_MA,
+                      CASE WHEN LOAIDUONGSU =1 THEN TAMTRUCHITIET ELSE NDD_DIACHICHITIET end as DIACHI  
+                    FROM ADS_DON_DUONGSU 
+                    where 
+                    --ISPHUCTHAM=1 and 
+                    TUCACHTOTUNG_MA ='BIDON'
+                    ) T2 ON T1.v_VUANID=T2.DONID
+			GROUP BY T1.v_STT
+		) LOOP
+			v_ARRAY(ITEM.v_STT).v_BD_NLQ_DS_4:=ITEM.v_BD_NLQ_DS_4;
+		END LOOP;
+
+		-- v_NGUOI_QLNVLQ_5 - NGƯỜI CÓ QUYỀN LỢI, NGHĨA VỤ LIÊN QUAN Họ tên, năm sinh, địa chỉ - 5 - 
+		FOR ITEM IN (
+			SELECT 
+				T1.v_STT, 
+				LISTAGG(
+					CAST(
+						'- ' || T2.TENDUONGSU ||'; '||
+						case when T2.NAMSINH = 0 then ' ' else ' ' || T2.NAMSINH ||'; ' end ||
+						decode(T2.LOAIDUONGSU,1,T2.TAMTRUCHITIET,T2.NDD_DIACHICHITIET) 
+						AS VARCHAR2(4000)
+					), CHR(10)
+				) WITHIN GROUP (ORDER BY T1.v_STT) v_NGUOI_QLNVLQ_5
+			FROM 
+				TABLE(v_ARRAY) T1 
+				INNER JOIN ADS_DON_DUONGSU T2 ON T1.v_VUANID=T2.DONID AND T2.TUCACHTOTUNG_MA='QUYENNVLQ' --AND T2.ISPHUCTHAM=1 --NGƯỜI CÓ QUYỀN LỢI NGHĨA VỤ LIÊN QUAN
+			GROUP BY T1.v_STT
+		) LOOP
+			v_ARRAY(ITEM.v_STT).v_NGUOI_QLNVLQ_5:=ITEM.v_NGUOI_QLNVLQ_5;
+		END LOOP;
+
+		-- v_NGUOIBV_QLIHP_DS_6 - HỌ TÊN NGƯỜI BẢO VỆ QUYỀN, LỢI ÍCH HỢP PHÁP CỦA ĐƯƠNG SỰ - 6 - 
+		FOR ITEM IN (
+			SELECT 
+				T1.v_STT, 
+				LISTAGG(
+					CAST(
+						'- ' || T2.HOTEN||'; '||
+						case when T2.NAMSINH = 0 then ' ' else ' ' || T2.NAMSINH ||'; ' end ||
+						T2.HKTTCHITIET 
+						AS VARCHAR2(4000)
+					), CHR(10)
+				) WITHIN GROUP (ORDER BY T1.v_STT) v_NGUOIBV_QLIHP_DS_6
+			FROM 
+				TABLE(v_ARRAY) T1 
+				INNER JOIN ADS_PHUCTHAM_THAMGIATOTUNG T2 ON T2.TUCACHTGTTID='TGTTDS_07' AND T1.v_VUANID=T2.DONID
+			GROUP BY T1.v_STT
+		) LOOP
+			v_ARRAY(ITEM.v_STT).v_NGUOIBV_QLIHP_DS_6:=ITEM.v_NGUOIBV_QLIHP_DS_6;
+		END LOOP;
+
+		-- v_QHPL_7 - QUAN HỆ PHÁP LUẬT - 7 - 
+		FOR ITEM IN (
+			SELECT 
+				T1.v_STT, 
+				--T2.TEN v_QHPL_7
+                DECODE(D.QUANHEPHAPLUAT_NAME, NULL, D.TEN,D.QUANHEPHAPLUAT_NAME) v_QHPL_7
+			FROM 
+				TABLE(v_ARRAY) T1 
+                INNER JOIN (select d1.id,d1.QUANHEPHAPLUAT_NAME,dm.TEN  
+                                    From  ADS_DON d1
+                                        left join DM_DATAITEM dm on dm.id = d1.QUANHEPHAPLUATID
+                                        ) D ON T1.v_VUANID = D.ID --MANHND
+		) LOOP
+			v_ARRAY(ITEM.v_STT).v_QHPL_7:=ITEM.v_QHPL_7;
+		END LOOP;
+
+		-- v_KC_8 - KHÁNG CÁO Ngày tháng năm - 8 -
+        --MANHND
+		FOR ITEM IN (
+			SELECT 
+				T1.v_STT, 
+				LISTAGG(TO_CHAR(T2.NGAYKHANGCAO,'dd/MM/yyyy'), CHR(10)) WITHIN GROUP (ORDER BY T1.v_STT) v_KC_8
+			FROM 
+				TABLE(v_ARRAY) T1 
+				INNER JOIN ADS_SOTHAM_KHANGCAO T2 ON T1.v_VUANID=T2.DONID
+			GROUP BY 
+				T1.v_STT				
+		) LOOP
+			v_ARRAY(ITEM.v_STT).v_KC_8:=ITEM.v_KC_8;
+		END LOOP;
+
+		-- v_KN_9 - KHÁNG NGHỊ Số, ngày tháng năm - 9 - 
+        --MANHND
+		FOR ITEM IN (
+			SELECT 
+				T1.v_STT, 
+				LISTAGG(
+					T2.SOKN||', '||
+					TO_CHAR(T2.NGAYKN,'DD/MM/YYYY')
+					, CHR(10)
+				) WITHIN GROUP (ORDER BY T1.v_STT)  v_KN_9
+			FROM 
+				TABLE(v_ARRAY) T1 
+				INNER JOIN ADS_SOTHAM_KHANGNGHI T2 ON T1.v_VUANID=T2.DONID
+			GROUP BY 
+				T1.v_STT				
+		) LOOP
+			v_ARRAY(ITEM.v_STT).v_KN_9:=ITEM.v_KN_9;
+		END LOOP;
+
+		-- v_ADBPKCTT_10 - ÁP DỤNG BIỆN PHÁP KHẨN CẤP TẠM THỜI Số, ngày tháng năm - 10 - 
+		FOR ITEM IN (
+			SELECT 
+				T1.v_STT, 
+				LISTAGG(
+					T2.SOQD || CHR(10) ||
+					TO_CHAR(T2.NGAYQD,'DD/MM/YYYY')
+					, CHR(10)
+				) WITHIN GROUP (ORDER BY T1.v_STT) v_ADBPKCTT_10
+			FROM 
+				TABLE(v_ARRAY) T1 
+				INNER JOIN ADS_PHUCTHAM_QUYETDINH T2 ON T1.v_VUANID=T2.DONID
+        inner join DM_QD_LOAI T3 on T3.ID=T2.LOAIQDID and T3.MA='ADBPTT'
+			GROUP BY T1.v_STT
+		) LOOP
+			v_ARRAY(ITEM.v_STT).v_ADBPKCTT_10:=ITEM.v_ADBPKCTT_10;
+		END LOOP;
+
+		-- v_RUT_KC_11 - RÚT KHÁNG CÁO Ngày tháng năm - 11 - 
+		FOR ITEM IN (
+			SELECT 
+				T1.v_STT, 
+				LISTAGG(T2.NGAYRUT, CHR(10)) WITHIN GROUP (ORDER BY T1.v_STT) v_RUT_KC_11
+			FROM 
+				TABLE(v_ARRAY) T1 
+				INNER JOIN ADS_SOTHAM_RUTKCKN T2 ON T1.v_VUANID=T2.DONID AND T2.ISKCKN=1 --RÚT KHÁNG CÁO
+			GROUP BY 
+				T1.v_STT				
+		) LOOP
+			v_ARRAY(ITEM.v_STT).v_RUT_KC_11:=ITEM.v_RUT_KC_11;
+		END LOOP;
+
+		-- v_RUT_KN_12 - RÚT KHÁNG NGHỊ Số, ngày tháng năm - 12 - 
+		FOR ITEM IN (
+			SELECT 
+				T1.v_STT, 
+				LISTAGG(T2.NGAYRUT, CHR(10)) WITHIN GROUP (ORDER BY T1.v_STT) v_RUT_KN_12
+			FROM 
+				TABLE(v_ARRAY) T1 
+				INNER JOIN ADS_SOTHAM_RUTKCKN T2 ON T1.v_VUANID=T2.DONID AND T2.ISKCKN=2 -- RÚT KHÁNG NGHỊ
+			GROUP BY 
+				T1.v_STT				
+		) LOOP
+			v_ARRAY(ITEM.v_STT).v_RUT_KN_12:=ITEM.v_RUT_KN_12;
+		END LOOP;
+
+		-- v_TDC_13 - TẠM ĐÌNH CHỈ Số, ngày tháng năm - 13 - 
+		FOR ITEM IN (
+			SELECT 
+				T1.v_STT, 
+				LISTAGG(
+					T2.SOQD || CHR(10) ||
+					TO_CHAR(T2.NGAYQD,'DD/MM/YYYY')
+					, CHR(10)
+				) WITHIN GROUP (ORDER BY T1.v_STT) v_TDC_13
+			FROM 
+				TABLE(v_ARRAY) T1 
+				INNER JOIN ADS_PHUCTHAM_QUYETDINH T2 ON T1.v_VUANID=T2.DONID
+        inner join DM_QD_LOAI T3 on T3.ID=T2.LOAIQDID and T3.MA='TDC'
+			GROUP BY T1.v_STT
+		) LOOP
+			v_ARRAY(ITEM.v_STT).v_TDC_13:=ITEM.v_TDC_13;
+		END LOOP;
+
+		-- v_DC_14 - ĐÌNH CHỈ Số, ngày tháng năm - 14 - 
+		FOR ITEM IN (
+			SELECT 
+				T1.v_STT, 
+				LISTAGG(
+					T2.SOQD || CHR(10) ||
+					TO_CHAR(T2.NGAYQD,'DD/MM/YYYY')
+					, CHR(10)
+				) WITHIN GROUP (ORDER BY T1.v_STT) v_DC_14
+			FROM 
+				TABLE(v_ARRAY) T1 
+				INNER JOIN ADS_PHUCTHAM_QUYETDINH T2 ON T1.v_VUANID=T2.DONID
+        inner join DM_QD_LOAI T3 on T3.ID=T2.LOAIQDID and T3.MA='DC'
+			GROUP BY T1.v_STT
+		) LOOP
+			v_ARRAY(ITEM.v_STT).v_DC_14:=ITEM.v_DC_14;
+		END LOOP;
+
+		-- v_LYDO_15 - LÝ DO - 15 - 
+		FOR ITEM IN (
+			SELECT 
+				T1.v_STT,
+        T3.TEN v_LYDO_15
+			FROM 
+				TABLE(v_ARRAY) T1 
+				INNER JOIN ADS_PHUCTHAM_QUYETDINH T2 on T1.v_VUANID=T2.DONID
+        inner join DM_QD_LOAI T5 on T2.LOAIQDID=T5.ID
+        inner join DM_QD_QUYETDINH_LYDO T3 ON T2.LYDOID=T3.ID and T5.MA='DC'
+		) LOOP
+			v_ARRAY(ITEM.v_STT).v_LYDO_15:=ITEM.v_LYDO_15;
+		END LOOP;
+
+		-- v_HDXX_VKS_TKPT_16 - HỘI ĐỒNG XÉT XỬ, ĐẠI DIỆN VIỆN KIỂM SÁT, THƯ KÝ PHIÊN TOÀ -- Ghi đầy đủ họ tên - 16 - 
+		FOR ITEM IN (
+			SELECT 
+				T1.v_STT, 
+				LISTAGG(
+					CAST(
+						'- ' || NVL(T5.TenCanBoToaAn,'')||NVL(T5.TenKSV,'')||
+						' ('||DECODE(T5.MAVAITRO,'THAMPHAN','TPCT','THAMPHANHDXX', 'TPTV','THAMPHANDUKHUYET', 'TPDK','HTND', 'HTND','THUKY', 'TK','THUKYDUKHUYET', 'TKDK','KSV', 'KSV','')||')' 
+						AS VARCHAR2(4000)
+					), CHR(10)
+				) WITHIN GROUP (ORDER BY T1.v_STT) v_HDXX_VKS_TKPT_16
+			FROM 
+				TABLE(v_ARRAY) T1 
+				inner join (
+        select T2.DONID,T3.HOTEN as TenCanBoToaAn,T4.HOTEN as TenKSV,T2.MAVAITRO from ADS_PHUCTHAM_HDXX T2
+				LEFT JOIN DM_CANBO T3 ON T3.ID=T2.CANBOID AND INSTR('THAMPHAN,THAMPHANHDXX,THAMPHANDUKHUYET,THUKY,THUKYDUKHUYET',T2.MAVAITRO)>0
+				LEFT JOIN DM_CANBOVKS T4 ON T4.ID=T2.CANBOID AND INSTR('HTND,KSV',T2.MAVAITRO)>0
+        ORDER BY NLSSORT(T2.MAVAITRO, 'NLS_SORT = VIETNAMESE')
+        )T5 ON T1.v_VUANID=T5.DONID
+      group by T1.v_STT
+		) LOOP
+			v_ARRAY(ITEM.v_STT).v_HDXX_VKS_TKPT_16:=ITEM.v_HDXX_VKS_TKPT_16;
+		END LOOP;
+
+		-- v_BA_QDPT_17 - BẢN ÁN, QUYẾT ĐỊNH PHÚC THẨM Số, ngày tháng năm - 17 - 
+
+		FOR ITEM IN (
+			SELECT 
+				T1.v_STT
+                ,DECODE(NVL(T2.ID,0),0
+                    ,T3.SOQD|| CHR(10) ||TO_CHAR(T3.NGAYQD,'DD/MM/YYYY') 
+                    ,T2.SOBANAN|| CHR(10) || TO_CHAR(T2.NGAYTUYENAN,'DD/MM/YYYY')
+
+                        )
+                        v_BA_QDPT_17
+			FROM 
+				TABLE(v_ARRAY) T1 
+				LEFT JOIN ADS_PHUCTHAM_BANAN T2 ON T1.v_VUANID=T2.DONID
+                LEFT JOIN (SELECT Q.SOQD, Q.NGAYQD,Q.DONID,Q.QUYETDINHID 
+                                        FROM ADS_PHUCTHAM_QUYETDINH Q 
+                                        LEFT JOIN DM_QD_QUYETDINH D ON D.ID=Q.QUYETDINHID 
+                                                WHERE D.KET_THUC = 1) T3 ON T1.v_VUANID=T3.DONID
+		) LOOP
+			v_ARRAY(ITEM.v_STT).v_BA_QDPT_17:=ITEM.v_BA_QDPT_17;
+		END LOOP;
+
+		-- v_QD_TA_PT_18 - QUYẾT ĐỊNH CỦA TÒA ÁN CẤP PHÚC THẨM  -- Tóm tắt phần quyết định - 18 - 
+        FOR ITEM IN (
+			SELECT 
+				T1.v_STT
+                ,DECODE(NVL(T2.ID,0),0
+                    ,T3.QTENKQ|| CHR(10)
+                    ,T2.BTENKQ|| CHR(10) 
+                        )
+                        v_QD_TA_PT_18
+			FROM 
+				TABLE(v_ARRAY) T1 
+				LEFT JOIN (SELECT B.ID,B.DONID,B.SOBANAN,B.NGAYTUYENAN,BKQ.TEN BTENKQ 
+                                        FROM ADS_PHUCTHAM_BANAN B
+                                        LEFT JOIN DM_KETQUA_PHUCTHAM BKQ ON BKQ.ID = B.KETQUAPHUCTHAMID) T2 ON T1.v_VUANID=T2.DONID
+                LEFT JOIN (SELECT Q.SOQD, Q.NGAYQD,Q.DONID,Q.QUYETDINHID,KQ.TEN QTENKQ 
+                                        FROM ADS_PHUCTHAM_QUYETDINH Q 
+                                        LEFT JOIN DM_QD_QUYETDINH D ON D.ID=Q.QUYETDINHID 
+                                        LEFT JOIN DM_KETQUA_PHUCTHAM KQ ON KQ.ID = Q.KETQUAID
+                                                WHERE D.KET_THUC = 1) T3 ON T1.v_VUANID=T3.DONID
+		) LOOP
+			v_ARRAY(ITEM.v_STT).v_QD_TA_PT_18:=ITEM.v_QD_TA_PT_18;
+		END LOOP;
+
+		-- v_LYDO_SH_STSAI_19 - LÝ DO SỬA, HỦY… - Do cấp sơ thẩm sai - 19 - 
+		FOR ITEM IN (
+			SELECT 
+				T1.v_STT, 
+				DECODE(SIGN(COUNT(T4.ID)),1,'X','') v_LYDO_SH_STSAI_19
+			FROM 
+				TABLE(v_ARRAY) T1 
+				INNER JOIN ADS_PHUCTHAM_BANAN T2 ON T1.v_VUANID=T2.DONID
+				INNER JOIN DM_KETQUA_PHUCTHAM T3 ON T2.KETQUAPHUCTHAMID=T3.ID AND INSTR('02,03,04,05,06,13,14',T3.MA)>0 and T3.ISADS=1 --SỬA,HỦY
+				INNER JOIN DM_KETQUA_PHUCTHAM_LYDO T4 ON T2.LYDOBANANID=T4.ID AND INSTR('do cấp sơ thẩm sai',lower(T4.TEN))>0 --Do cấp sơ thẩm sai
+        group by T1.v_STT
+		) LOOP
+			v_ARRAY(ITEM.v_STT).v_LYDO_SH_STSAI_19:=ITEM.v_LYDO_SH_STSAI_19;
+		END LOOP;
+
+		-- v_LYDO_SH_LDK_20 - LÝ DO SỬA, HỦY… - Do có lý do khác - 20 - 
+		FOR ITEM IN (
+			SELECT 
+				T1.v_STT, 
+				DECODE(SIGN(COUNT(T4.ID)),1,'X','') v_LYDO_SH_LDK_20
+			FROM 
+				TABLE(v_ARRAY) T1 
+				INNER JOIN ADS_PHUCTHAM_BANAN T2 ON T1.v_VUANID=T2.DONID
+				INNER JOIN DM_KETQUA_PHUCTHAM T3 ON T2.KETQUAPHUCTHAMID=T3.ID AND INSTR('02,03,04,05,06,13,14',T3.MA)>0 and T3.ISADS=1 --SỬA,HỦY
+				INNER JOIN DM_KETQUA_PHUCTHAM_LYDO T4 ON T2.LYDOBANANID=T4.ID AND INSTR('do có tình tiết mới,lý do khác',lower(T4.TEN))>0 --Lý do khác
+        group by T1.v_STT
+		) LOOP
+			v_ARRAY(ITEM.v_STT).v_LYDO_SH_LDK_20:=ITEM.v_LYDO_SH_LDK_20;
+		END LOOP;
+
+		-- v_APDUNGANLE_21 - ÁP DỤNG ÁN LỆ - 21 - 
+		FOR ITEM IN (
+			SELECT 
+				T1.v_STT, 
+				DECODE(T2.APDUNGANLE,1,'X','') v_APDUNGANLE_21
+			FROM 
+				TABLE(v_ARRAY) T1 
+				INNER JOIN ADS_PHUCTHAM_BANAN T2 ON T1.v_VUANID=T2.DONID
+		) LOOP
+			v_ARRAY(ITEM.v_STT).v_APDUNGANLE_21:=ITEM.v_APDUNGANLE_21;
+		END LOOP;
+
+		-- v_GQVA_TTRG_22 - GIẢI QUYẾT VỤ ÁN THEO THỦ TỤC RÚT GỌN -- Số, ngày tháng năm - 22 - 
+		FOR ITEM IN (
+			SELECT 
+				T1.v_STT, 
+				LISTAGG(
+          T2.SOQD || CHR(10) ||
+          TO_CHAR(T2.NGAYQD,'DD/MM/YYYY')
+          , CHR(10)
+        ) within group (order by T1.v_STT)  v_GQVA_TTRG_22
+			FROM 
+				TABLE(v_ARRAY) T1 
+				INNER JOIN ADS_PHUCTHAM_QUYETDINH T2 ON T1.v_VUANID=T2.DONID
+        inner join DM_QD_QUYETDINH T3 on T3.ID=T2.QUYETDINHID and T3.MA='80-DS'
+        GROUP BY T1.v_STT
+		) LOOP
+			v_ARRAY(ITEM.v_STT).v_GQVA_TTRG_22:=ITEM.v_GQVA_TTRG_22;
+		END LOOP;
+
+		-- v_VIECDS_23 - VIỆC DÂN SỰ - 23 -
+		FOR ITEM IN (
+			SELECT 
+				T1.v_STT, 
+				DECODE(T2.LOAIQUANHE,2,'X','') v_VIECDS_23
+			FROM 
+				TABLE(v_ARRAY) T1 
+				INNER JOIN ADS_PHUCTHAM_THULY T2 ON T1.v_VUANID=T2.DONID
+		) LOOP
+			v_ARRAY(ITEM.v_STT).v_VIECDS_23:=ITEM.v_VIECDS_23;
+		END LOOP;
+		-- v_QD_GDTTT_24 - QUYẾT ĐỊNH GIÁM ĐỐC THẨM, TÁI THẨM Số, ngày tháng năm - 24 - 
+
+		-- v_GHICHU_25 - GHI CHÚ - 25 - 
+		FOR ITEM IN (
+			SELECT 
+				T1.v_STT, 
+				T2.GHICHU v_GHICHU_25
+			FROM 
+				TABLE(v_ARRAY) T1 
+				INNER JOIN ADS_PHUCTHAM_THULY T2 ON T1.v_THULYID=T2.ID
+		) LOOP
+			v_ARRAY(ITEM.v_STT).v_GHICHU_25:=ITEM.v_GHICHU_25;
+		END LOOP;
+		--
+	END;
+
+    PROCEDURE SO_HONNHAN_PHUCTHAM
+	(
+		 in_TOAANID IN NUMBER,
+		 in_TOAANCAPCON IN NVARCHAR2,
+		 in_NGAYBATDAU IN NVARCHAR2,
+		 in_NGAYKETTHUC IN NVARCHAR2,
+		 curReturn OUT SYS_REFCURSOR
+	) AS
+		v_ARRAY T_HONNHAN_PHUCTHAM;
+		v_IDS T_ID;
+	BEGIN
+		--
+		--TÒA ÁN CẤP CON
+		v_IDS:=T_ID();
+		IF (in_TOAANCAPCON='TRUE') THEN
+			SELECT R_ID(ID) BULK COLLECT INTO v_IDS FROM DM_TOAAN WHERE CAPCHAID=in_TOAANID;
+		END IF;
+		v_IDS.EXTEND();
+		v_IDS(v_IDS.COUNT):=R_ID(in_TOAANID);
+		--
+		--XAC DINH ID THU LY AN THEO THAM SO
+		SELECT R_HONNHAN_PHUCTHAM(
+			v_STT=>row_number() over (order by TL.ID),
+			v_THULYID=>TL.ID,
+			v_VUANID=>TL.DONID,
+			v_TOAANID=>TL.TOAANID,
+			v_QUANHEPHAPLUATID=>NULL,
+			v_TL_1=>NULL,
+			v_BA_QDST_2=>NULL,
+			v_ND_NYC_3=>NULL,
+			v_BD_NLQ_HNGD_4=>NULL,
+			v_NGUOI_QLNVLQ_5=>NULL,
+			v_NGUOIBV_QLIHP_DS_6=>NULL,
+			v_QHPL_7=>NULL,
+			v_KC_8=>NULL,
+			v_KN_9=>NULL,
+			v_ADBPKCTT_10=>NULL,
+			v_RUT_KC_11=>NULL,
+			v_RUT_KN_12=>NULL,
+			v_TDC_13=>NULL,
+			v_DC_14=>NULL,
+			v_LYDO_15=>NULL,
+			v_HDXX_VKS_TKPT_16=>NULL,
+			v_BA_QDPT_17=>NULL,
+			v_QD_TA_PT_18=>NULL,
+			v_LYDO_SH_STSAI_19=>NULL,
+			v_LYDO_SH_LDK_20=>NULL,
+			v_APDUNGANLE_21=>NULL,
+			v_GQ_TTRG_22=>NULL,
+			v_HN_GD_23=>NULL,
+			v_QD_GDTTT_24=>NULL,
+			v_GHICHU_25=>NULL,
+            V_NGAYTHULY=>NULL,V_SOTHULY=>NULL
+		)
+--		BULK COLLECT INTO v_ARRAY
+--		FROM AHN_PHUCTHAM_THULY TL INNER JOIN TABLE(v_IDS) I ON I.v_ID=TL.TOAANID
+--		WHERE
+--			NGAYTHULY BETWEEN TO_DATE(in_NGAYBATDAU,'DD/MM/YYYY') AND TO_DATE(in_NGAYKETTHUC,'DD/MM/YYYY');
+
+		BULK COLLECT INTO v_ARRAY
+        FROM (
+        SELECT TL.*
+		FROM AHN_PHUCTHAM_THULY TL 
+            INNER JOIN TABLE(v_IDS) I ON I.v_ID=TL.TOAANID
+		WHERE
+			NGAYTHULY BETWEEN TO_DATE(in_NGAYBATDAU,'DD/MM/YYYY') AND TO_DATE(in_NGAYKETTHUC,'DD/MM/YYYY')
+            
+        UNION 
+		SELECT TL.*
+		FROM AHN_PHUCTHAM_THULY TL 
+            INNER JOIN TABLE(v_IDS) I ON I.v_ID=TL.TOAANID
+		WHERE
+			NGAYTHULY < TO_DATE(in_NGAYBATDAU,'DD/MM/YYYY') AND 
+            (NOT EXISTS (SELECT  STQD.* FROM AHN_PHUCTHAM_QUYETDINH STQD 
+                INNER JOIN DM_QD_QUYETDINH DMQD ON DMQD.ID = STQD.QUYETDINHID AND DMQD.KET_THUC = 1 WHERE TL.DONID = STQD.DONID)
+            AND NOT EXISTS (SELECT BA.* FROM AHN_PHUCTHAM_BANAN BA WHERE TL.DONID = BA.DONID))
+            
+            
+        UNION 
+		SELECT TL.*
+		FROM AHN_PHUCTHAM_THULY TL 
+            INNER JOIN TABLE(v_IDS) I ON I.v_ID=TL.TOAANID
+		WHERE
+			NGAYTHULY < TO_DATE(in_NGAYBATDAU,'DD/MM/YYYY') AND 
+            (EXISTS (SELECT  STQD.* FROM AHN_PHUCTHAM_QUYETDINH STQD 
+                         INNER JOIN DM_QD_QUYETDINH DMQD ON DMQD.ID = STQD.QUYETDINHID AND DMQD.KET_THUC = 1 
+                     WHERE TL.DONID = STQD.DONID AND STQD.NGAYQD BETWEEN TO_DATE(in_NGAYBATDAU,'DD/MM/YYYY') AND TO_DATE(in_NGAYKETTHUC,'DD/MM/YYYY'))
+             OR EXISTS (SELECT BA.* FROM AHN_PHUCTHAM_BANAN BA WHERE TL.DONID = BA.DONID 
+                        AND BA.NGAYTUYENAN BETWEEN TO_DATE(in_NGAYBATDAU,'DD/MM/YYYY') AND TO_DATE(in_NGAYKETTHUC,'DD/MM/YYYY')))
+            ) TL;
+		--
+		--THONG TIN SO THU LY
+		FILL_HONNHAN_PHUCTHAM(v_ARRAY);
+		/*--
+		FOR ITEM IN (SELECT * FROM TABLE(v_ARRAY)) LOOP
+			DBMS_OUTPUT.PUT_LINE (ITEM.v_STT||' - '||ITEM.v_THULYID);
+		END LOOP;
+		--*/
+		OPEN curReturn FOR SELECT * FROM TABLE(v_ARRAY) 
+        ORDER by EXTRACT(YEAR FROM  V_NGAYTHULY),to_number(REGEXP_REPLACE(V_SOTHULY, '[^0-9]')),V_NGAYTHULY;
+		--
+	EXCEPTION 
+		WHEN OTHERS THEN 
+			RAISE_APPLICATION_ERROR(-20000, sqlerrm);
+	END;
+    /* - SỔ THỤ LÝ VÀ KẾT QỦA GIẢI QUYẾT CÁC VỤ VIỆC HÔN NHÂN VÀ GIA ĐÌNH PHÚC THẨM*/
+	PROCEDURE FILL_HONNHAN_PHUCTHAM
+	(
+		v_ARRAY IN OUT T_HONNHAN_PHUCTHAM
+	) AS
+	BEGIN	
+		--v_ARRAY:=T_HONNHAN_PHUCTHAM();
+		-- v_TL_1 - THỤ LÝ Số, ngày tháng năm - 1 - 
+		FOR ITEM IN (
+			SELECT 
+				T1.v_STT, 
+				T2.QUANHEPHAPLUATID v_QUANHEPHAPLUATID,
+				T2.SOTHULY|| CHR(10) ||TO_CHAR(T2.NGAYTHULY,'DD/MM/YYYY') v_TL_1,
+                T2.NGAYTHULY  V_NGAYTHULY,T2.SOTHULY V_SOTHULY
+			FROM 
+				TABLE(v_ARRAY) T1 
+				INNER JOIN AHN_PHUCTHAM_THULY T2 ON T1.v_THULYID=T2.ID
+		) LOOP
+			v_ARRAY(ITEM.v_STT).v_TL_1:=ITEM.v_TL_1;
+			v_ARRAY(ITEM.v_STT).v_QUANHEPHAPLUATID:=ITEM.v_QUANHEPHAPLUATID;
+            v_ARRAY(ITEM.v_STT).V_NGAYTHULY:=ITEM.V_NGAYTHULY;v_ARRAY(ITEM.v_STT).V_SOTHULY:=ITEM.V_SOTHULY;
+		END LOOP;
+
+    -- v_BA_QDST_2 - BẢN ÁN, QUYẾT ĐỊNH SƠ THẨM Số, ngày tháng năm và tên Toà án đã giải quyết - 2 - 
+		FOR ITEM IN (
+			SELECT 
+				T1.v_STT
+                ,DECODE(NVL(T2.ID,0),0
+                    ,T3.SOQD|| CHR(10) ||TO_CHAR(T3.NGAYQD,'DD/MM/YYYY')|| CHR(10) || T3.QTENTOA 
+                    ,T2.SOBANAN|| CHR(10) || TO_CHAR(T2.NGAYTUYENAN,'DD/MM/YYYY') || CHR(10) || T2.BTENTOA 
+                         )
+                        v_BA_QDST_2
+			FROM 
+				TABLE(v_ARRAY) T1  
+				LEFT JOIN (SELECT B.ID,B.DONID,B.SOBANAN,B.NGAYTUYENAN,DM.TEN BTENTOA 
+                                        FROM AHN_SOTHAM_BANAN B 
+                                        LEFT JOIN DM_TOAAN DM ON B.TOAANID = DM.ID)T2 ON T1.v_VUANID=T2.DONID
+                LEFT JOIN (SELECT Q.SOQD, Q.NGAYQD,Q.DONID,Q.QUYETDINHID,DM.TEN QTENTOA
+                                        FROM AHN_SOTHAM_QUYETDINH Q
+                                        LEFT JOIN DM_TOAAN DM ON Q.TOAANID = DM.ID
+                                        LEFT JOIN DM_QD_QUYETDINH D ON D.ID=Q.QUYETDINHID 
+                                                WHERE D.KET_THUC = 1) T3 ON T1.v_VUANID=T3.DONID
+		) LOOP
+			v_ARRAY(ITEM.v_STT).v_BA_QDST_2:=ITEM.v_BA_QDST_2;
+		END LOOP;
+
+    -- v_ND_NYC_3 - NGUYÊN ĐƠN HOẶC NGƯỜI YÊU CẦU Họ tên, năm sinh, địa chỉ - 3 - 
+		FOR ITEM IN (
+			SELECT 
+				T1.v_STT, 
+				LISTAGG(
+					CAST(
+						'- ' || T2.TENDUONGSU||'; '||
+						case when T2.NAMSINH = 0 then ' ' else ' ' || T2.NAMSINH ||'; ' end ||
+						T2.DIACHI 
+						AS VARCHAR2(4000)
+					), CHR(10)
+				) WITHIN GROUP (ORDER BY T1.v_STT) v_ND_NYC_3
+			FROM 
+				TABLE(v_ARRAY) T1 
+				INNER JOIN (SELECT ID,DONID,TENDUONGSU,NAMSINH,TUCACHTOTUNG_MA,
+                      CASE WHEN LOAIDUONGSU =1 THEN TAMTRUCHITIET ELSE NDD_DIACHICHITIET end as DIACHI  
+                    FROM AHN_DON_DUONGSU
+                    where  TUCACHTOTUNG_MA ='NGUYENDON' --NGUYÊN ĐƠN ISPHUCTHAM=1 and
+                    )T2 ON T1.v_VUANID=T2.DONID
+			GROUP BY T1.v_STT
+		) LOOP
+			v_ARRAY(ITEM.v_STT).v_ND_NYC_3:=ITEM.v_ND_NYC_3;
+		END LOOP;
+    -- v_BD_NLQ_HNGD_4 - BỊ ĐƠN HOẶC NGƯỜI LIÊN QUAN TRONG VIỆC HÔN NHÂN VÀ GIA ĐÌNH Họ tên, năm sinh, địa chỉ - 4 - 
+		FOR ITEM IN (
+			SELECT 
+				T1.v_STT, 
+				LISTAGG(
+					CAST(
+						'- ' || T2.TENDUONGSU||'; '||
+						case when T2.NAMSINH = 0 then ' ' else ' ' || T2.NAMSINH ||'; ' end ||
+						T2.DIACHI 
+						AS VARCHAR2(4000)
+					), CHR(10)
+				) WITHIN GROUP (ORDER BY T1.v_STT) v_BD_NLQ_HNGD_4
+			FROM 
+				TABLE(v_ARRAY) T1 
+				INNER JOIN (SELECT ID,DONID,TENDUONGSU,NAMSINH,TUCACHTOTUNG_MA,
+                      CASE WHEN LOAIDUONGSU =1 THEN TAMTRUCHITIET ELSE NDD_DIACHICHITIET end as DIACHI  
+                    FROM AHN_DON_DUONGSU 
+                    where TUCACHTOTUNG_MA ='BIDON'--ISPHUCTHAM=1 and 
+                    ) T2 ON T1.v_VUANID=T2.DONID
+			GROUP BY T1.v_STT
+		) LOOP
+			v_ARRAY(ITEM.v_STT).v_BD_NLQ_HNGD_4:=ITEM.v_BD_NLQ_HNGD_4;
+		END LOOP;
+    -- v_NGUOI_QLNVLQ_5 - NGƯỜI CÓ QUYỀN LỢI, NGHĨA VỤ LIÊN QUAN Họ tên, năm sinh, địa chỉ - 5 - 
+		FOR ITEM IN (
+			SELECT 
+				T1.v_STT, 
+				LISTAGG(
+					CAST(
+						'- ' || T2.TENDUONGSU ||'; '||
+						case when T2.NAMSINH = 0 then ' ' else ' ' || T2.NAMSINH ||'; ' end ||
+						decode(T2.LOAIDUONGSU,1,T2.TAMTRUCHITIET,T2.NDD_DIACHICHITIET) 
+						AS VARCHAR2(4000)
+					), CHR(10)
+				) WITHIN GROUP (ORDER BY T1.v_STT) v_NGUOI_QLNVLQ_5
+			FROM 
+				TABLE(v_ARRAY) T1 
+				INNER JOIN AHN_DON_DUONGSU T2 ON T1.v_VUANID=T2.DONID AND T2.TUCACHTOTUNG_MA='QUYENNVLQ'  --NGƯỜI CÓ QUYỀN LỢI NGHĨA VỤ LIÊN QUAN AND T2.ISPHUCTHAM=1
+			GROUP BY T1.v_STT
+		) LOOP
+			v_ARRAY(ITEM.v_STT).v_NGUOI_QLNVLQ_5:=ITEM.v_NGUOI_QLNVLQ_5;
+		END LOOP;
+    -- v_NGUOIBV_QLIHP_DS_6 - NGƯỜI BẢO VỆ QUYỀN, LỢI ÍCH HỢP PHÁP CỦA ĐƯƠNG SỰ -- Họ tên, chức danh (nếu có) - 6 - 
+		FOR ITEM IN (
+			SELECT 
+				T1.v_STT, 
+				LISTAGG(
+					CAST(
+						'- ' || T2.HOTEN||'; '||
+						case when T2.NAMSINH = 0 then ' ' else ' ' || T2.NAMSINH ||'; ' end ||
+						T2.HKTTCHITIET 
+						AS VARCHAR2(4000)
+					), CHR(10)
+				) WITHIN GROUP (ORDER BY T1.v_STT) v_NGUOIBV_QLIHP_DS_6
+			FROM 
+				TABLE(v_ARRAY) T1 
+				INNER JOIN AHN_PHUCTHAM_THAMGIATOTUNG T2 ON T2.TUCACHTGTTID='TGTTDS_07' AND T1.v_VUANID=T2.DONID
+			GROUP BY T1.v_STT
+		) LOOP
+			v_ARRAY(ITEM.v_STT).v_NGUOIBV_QLIHP_DS_6:=ITEM.v_NGUOIBV_QLIHP_DS_6;
+		END LOOP;
+
+    -- v_QHPL_7 - QUAN HỆ PHÁP LUẬT - 7 - 
+	 FOR ITEM IN (
+			SELECT 
+				T1.v_STT, 
+				--T2.TEN v_QHPL_7
+                DECODE(D.QUANHEPHAPLUAT_NAME, NULL, D.TEN,D.QUANHEPHAPLUAT_NAME) v_QHPL_7
+			FROM 
+				TABLE(v_ARRAY) T1 
+                INNER JOIN (select d1.id,d1.QUANHEPHAPLUAT_NAME,dm.TEN  
+                                    From  AHN_DON d1
+                                        left join DM_DATAITEM dm on dm.id = d1.QUANHEPHAPLUATID
+                                        ) D ON T1.v_VUANID = D.ID --MANHND
+		) LOOP
+			v_ARRAY(ITEM.v_STT).v_QHPL_7:=ITEM.v_QHPL_7;
+		END LOOP;
+
+    -- v_KC_8 - KHÁNG CÁO Ngày tháng năm - 8 - 
+        FOR ITEM IN (
+			SELECT 
+				T1.v_STT, 
+				LISTAGG(TO_CHAR(T2.NGAYKHANGCAO,'dd/MM/yyyy'), CHR(10)) WITHIN GROUP (ORDER BY T1.v_STT) v_KC_8
+			FROM 
+				TABLE(v_ARRAY) T1 
+				INNER JOIN AHN_SOTHAM_KHANGCAO T2 ON T1.v_VUANID=T2.DONID
+			GROUP BY 
+				T1.v_STT				
+		) LOOP
+			v_ARRAY(ITEM.v_STT).v_KC_8:=ITEM.v_KC_8;
+		END LOOP;
+    -- v_KN_9 - KHÁNG NGHỊ Số, ngày tháng năm - 9 - 
+    FOR ITEM IN (
+			SELECT 
+				T1.v_STT, 
+				LISTAGG(
+					T2.SOKN||', '||
+					TO_CHAR(T2.NGAYKN,'DD/MM/YYYY')
+					, CHR(10)
+				) WITHIN GROUP (ORDER BY T1.v_STT)  v_KN_9
+			FROM 
+				TABLE(v_ARRAY) T1 
+				INNER JOIN AHN_SOTHAM_KHANGNGHI T2 ON T1.v_VUANID=T2.DONID
+			GROUP BY 
+				T1.v_STT				
+		) LOOP
+			v_ARRAY(ITEM.v_STT).v_KN_9:=ITEM.v_KN_9;
+		END LOOP;
+    -- v_ADBPKCTT_10 - ÁP DỤNG BIỆN PHÁP KHẨN CẤP TẠM THỜI Số, ngày tháng năm - 10 - 
+		FOR ITEM IN (
+			SELECT 
+				T1.v_STT, 
+				LISTAGG(
+					T2.SOQD || CHR(10) ||
+					TO_CHAR(T2.NGAYQD,'DD/MM/YYYY')
+					, CHR(10)
+				) WITHIN GROUP (ORDER BY T1.v_STT) v_ADBPKCTT_10
+			FROM 
+				TABLE(v_ARRAY) T1 
+				INNER JOIN AHN_PHUCTHAM_QUYETDINH T2 ON T1.v_VUANID=T2.DONID
+        inner join DM_QD_LOAI T3 on T3.ID=T2.LOAIQDID and T3.MA='ADBPTT'
+			GROUP BY T1.v_STT
+		) LOOP
+			v_ARRAY(ITEM.v_STT).v_ADBPKCTT_10:=ITEM.v_ADBPKCTT_10;
+		END LOOP;
+    -- v_RUT_KC_11 - RÚT KHÁNG CÁO Ngày tháng năm - 11 - 
+   FOR ITEM IN (
+			SELECT 
+				T1.v_STT, 
+				LISTAGG(T2.NGAYRUT, CHR(10)) WITHIN GROUP (ORDER BY T1.v_STT) v_RUT_KC_11
+			FROM 
+				TABLE(v_ARRAY) T1 
+				INNER JOIN AHN_SOTHAM_RUTKCKN T2 ON T1.v_VUANID=T2.DONID AND T2.ISKCKN=1 --RÚT KHÁNG CÁO
+			GROUP BY 
+				T1.v_STT				
+		) LOOP
+			v_ARRAY(ITEM.v_STT).v_RUT_KC_11:=ITEM.v_RUT_KC_11;
+		END LOOP;
+    -- v_RUT_KN_12 - RÚT KHÁNG NGHỊ Số, Ngày tháng năm - 12 - 
+     FOR ITEM IN (
+			SELECT 
+				T1.v_STT, 
+				LISTAGG(T2.NGAYRUT, CHR(10)) WITHIN GROUP (ORDER BY T1.v_STT) v_RUT_KN_12
+			FROM 
+				TABLE(v_ARRAY) T1 
+				INNER JOIN AHN_SOTHAM_RUTKCKN T2 ON T1.v_VUANID=T2.DONID AND T2.ISKCKN=2 -- RÚT KHÁNG NGHỊ
+			GROUP BY 
+				T1.v_STT				
+		) LOOP
+			v_ARRAY(ITEM.v_STT).v_RUT_KN_12:=ITEM.v_RUT_KN_12;
+		END LOOP;
+    -- v_TDC_13 - TẠM ĐÌNH CHỈ Số, ngày tháng năm - 13 - 
+		FOR ITEM IN (
+			SELECT 
+				T1.v_STT, 
+				LISTAGG(
+					T2.SOQD || CHR(10) ||
+					TO_CHAR(T2.NGAYQD,'DD/MM/YYYY')
+					, CHR(10)
+				) WITHIN GROUP (ORDER BY T1.v_STT) v_TDC_13
+			FROM 
+				TABLE(v_ARRAY) T1 
+				INNER JOIN AHN_PHUCTHAM_QUYETDINH T2 ON T1.v_VUANID=T2.DONID 
+        inner join DM_QD_LOAI T3 on T3.ID=T2.LOAIQDID and T3.MA='TDC'
+			GROUP BY T1.v_STT
+		) LOOP
+			v_ARRAY(ITEM.v_STT).v_TDC_13:=ITEM.v_TDC_13;
+		END LOOP;
+    -- v_DC_14 - ĐÌNH CHỈ Số, ngày tháng năm - 14 - 
+		FOR ITEM IN (
+			SELECT 
+				T1.v_STT, 
+				LISTAGG(
+					T2.SOQD || CHR(10) ||
+					TO_CHAR(T2.NGAYQD,'DD/MM/YYYY')
+					, CHR(10)
+				) WITHIN GROUP (ORDER BY T1.v_STT) v_DC_14
+			FROM 
+				TABLE(v_ARRAY) T1 
+				INNER JOIN AHN_PHUCTHAM_QUYETDINH T2 ON T1.v_VUANID=T2.DONID
+        inner join DM_QD_LOAI T3 on T3.ID=T2.LOAIQDID and T3.MA='DC'
+			GROUP BY T1.v_STT
+		) LOOP
+			v_ARRAY(ITEM.v_STT).v_DC_14:=ITEM.v_DC_14;
+		END LOOP;
+    -- v_LYDO_15 - LÝ DO - 15 - 
+		FOR ITEM IN (
+			SELECT 
+				T1.v_STT,
+        T3.TEN v_LYDO_15
+			FROM 
+				TABLE(v_ARRAY) T1 
+				INNER JOIN AHN_PHUCTHAM_QUYETDINH T2 on T1.v_VUANID=T2.DONID
+        inner join DM_QD_LOAI T5 on T2.LOAIQDID=T5.ID
+        inner join DM_QD_QUYETDINH_LYDO T3 ON T2.LYDOID=T3.ID and T5.MA='DC'
+		) LOOP
+			v_ARRAY(ITEM.v_STT).v_LYDO_15:=ITEM.v_LYDO_15;
+		END LOOP;
+    -- v_HDXX_VKS_TKPT_16 - HỘI ĐỒNG XÉT XỬ, ĐẠI DIỆN VIỆN KIỂM SÁT, THƯ KÝ PHIÊN TOÀ -- Ghi đầy đủ họ tên - 16 - 
+		FOR ITEM IN (
+			SELECT 
+				T1.v_STT, 
+				LISTAGG(
+					CAST(
+						'- ' || NVL(T5.TenCanBoToaAn,'')||NVL(T5.TenKSV,'')||
+						' ('||DECODE(T5.MAVAITRO,'THAMPHAN','TPCT','THAMPHANHDXX', 'TPTV','THAMPHANDUKHUYET', 'TPDK','HTND', 'HTND','THUKY', 'TK','THUKYDUKHUYET', 'TKDK','KSV', 'KSV','')||')' 
+						AS VARCHAR2(4000)
+					), CHR(10)
+				) WITHIN GROUP (ORDER BY T1.v_STT) v_HDXX_VKS_TKPT_16
+			FROM 
+				TABLE(v_ARRAY) T1 
+				inner join (
+        select T2.DONID,T3.HOTEN as TenCanBoToaAn,T4.HOTEN as TenKSV,T2.MAVAITRO from AHN_PHUCTHAM_HDXX T2
+				LEFT JOIN DM_CANBO T3 ON T3.ID=T2.CANBOID AND INSTR('THAMPHAN,THAMPHANHDXX,THAMPHANDUKHUYET,THUKY,THUKYDUKHUYET,HTND',T2.MAVAITRO)>0
+				LEFT JOIN DM_CANBOVKS T4 ON T4.ID=T2.CANBOID AND INSTR('HTND,KSV',T2.MAVAITRO)>0
+                ORDER BY NLSSORT(T2.MAVAITRO, 'NLS_SORT = VIETNAMESE')
+        )T5 ON T1.v_VUANID=T5.DONID
+      group by T1.v_STT
+		) LOOP
+			v_ARRAY(ITEM.v_STT).v_HDXX_VKS_TKPT_16:=ITEM.v_HDXX_VKS_TKPT_16;
+		END LOOP;
+
+    -- v_BA_QDPT_17 - BẢN ÁN, QUYẾT ĐỊNH PHÚC THẨM Số, ngày tháng năm - 17 - 
+--		FOR ITEM IN (
+--			SELECT 
+--				T1.v_STT, 
+--				LISTAGG(
+--					T2.SOBANAN|| CHR(10) ||
+--					TO_CHAR(T2.NGAYTUYENAN,'DD/MM/YYYY')
+--					, CHR(10)
+--				) WITHIN GROUP (ORDER BY T1.v_STT) v_BA_QDPT_17
+--			FROM 
+--				TABLE(v_ARRAY) T1 
+--				INNER JOIN AHN_PHUCTHAM_BANAN T2 ON T1.v_VUANID=T2.DONID
+--			GROUP BY T1.v_STT
+--		) LOOP
+--			v_ARRAY(ITEM.v_STT).v_BA_QDPT_17:=ITEM.v_BA_QDPT_17;
+--		END LOOP;
+    FOR ITEM IN (
+			SELECT 
+				T1.v_STT
+                ,DECODE(NVL(T2.ID,0),0
+                    ,T3.SOQD|| CHR(10) ||TO_CHAR(T3.NGAYQD,'DD/MM/YYYY') 
+                    ,T2.SOBANAN|| CHR(10) || TO_CHAR(T2.NGAYTUYENAN,'DD/MM/YYYY')
+
+                        )
+                        v_BA_QDPT_17
+			FROM 
+				TABLE(v_ARRAY) T1 
+				LEFT JOIN AHN_PHUCTHAM_BANAN T2 ON T1.v_VUANID=T2.DONID
+                LEFT JOIN (SELECT Q.SOQD, Q.NGAYQD,Q.DONID,Q.QUYETDINHID 
+                                        FROM AHN_PHUCTHAM_QUYETDINH Q 
+                                        LEFT JOIN DM_QD_QUYETDINH D ON D.ID=Q.QUYETDINHID 
+                                                WHERE D.KET_THUC = 1) T3 ON T1.v_VUANID=T3.DONID
+		) LOOP
+			v_ARRAY(ITEM.v_STT).v_BA_QDPT_17:=ITEM.v_BA_QDPT_17;
+		END LOOP;
+
+    -- v_QD_TA_PT_18 - QUYẾT ĐỊNH CỦA TÒA ÁN CẤP PHÚC THẨM  -- Tóm tắt phần quyết định - 18 - 
+	 FOR ITEM IN (
+			SELECT 
+				T1.v_STT
+                ,DECODE(NVL(T2.ID,0),0
+                    ,T3.QTENKQ|| CHR(10)
+                    ,T2.BTENKQ|| CHR(10) 
+                        )
+                        v_QD_TA_PT_18
+			FROM 
+				TABLE(v_ARRAY) T1 
+				LEFT JOIN (SELECT B.ID,B.DONID,B.SOBANAN,B.NGAYTUYENAN,BKQ.TEN BTENKQ 
+                                        FROM AHN_PHUCTHAM_BANAN B
+                                        LEFT JOIN DM_KETQUA_PHUCTHAM BKQ ON BKQ.ID = B.KETQUAPHUCTHAMID) T2 ON T1.v_VUANID=T2.DONID
+                LEFT JOIN (SELECT Q.SOQD, Q.NGAYQD,Q.DONID,Q.QUYETDINHID,KQ.TEN QTENKQ 
+                                        FROM AHN_PHUCTHAM_QUYETDINH Q 
+                                        LEFT JOIN DM_QD_QUYETDINH D ON D.ID=Q.QUYETDINHID 
+                                        LEFT JOIN DM_KETQUA_PHUCTHAM KQ ON KQ.ID = Q.KETQUAID
+                                                WHERE D.KET_THUC = 1) T3 ON T1.v_VUANID=T3.DONID
+		) LOOP
+			v_ARRAY(ITEM.v_STT).v_QD_TA_PT_18:=ITEM.v_QD_TA_PT_18;
+		END LOOP;
+    -- v_LYDO_SH_STSAI_19 - LÝ DO SỬA, HỦY… - Do cấp sơ thẩm sai - 19 - 
+		FOR ITEM IN (
+			SELECT 
+				T1.v_STT, 
+				DECODE(SIGN(COUNT(T4.ID)),1,'X','') v_LYDO_SH_STSAI_19
+			FROM 
+				TABLE(v_ARRAY) T1 
+				INNER JOIN AHN_PHUCTHAM_BANAN T2 ON T1.v_VUANID=T2.DONID
+				INNER JOIN DM_KETQUA_PHUCTHAM T3 ON T2.KETQUAPHUCTHAMID=T3.ID AND INSTR('02,03,04,05,06,13,14',T3.MA)>0 and T3.ISAHN=1 --SỬA,HỦY
+				INNER JOIN DM_KETQUA_PHUCTHAM_LYDO T4 ON T2.LYDOBANANID=T4.ID AND INSTR('do cấp sơ thẩm sai',lower(T4.TEN))>0 --Do cấp sơ thẩm sai
+        group by T1.v_STT
+		) LOOP
+			v_ARRAY(ITEM.v_STT).v_LYDO_SH_STSAI_19:=ITEM.v_LYDO_SH_STSAI_19;
+		END LOOP;
+
+    -- v_LYDO_SH_LDK_20 - LÝ DO SỬA, HỦY… - Do có lý do khác - 20 - 
+		FOR ITEM IN (
+			SELECT 
+				T1.v_STT, 
+				DECODE(SIGN(COUNT(T4.ID)),1,'X','') v_LYDO_SH_LDK_20
+			FROM 
+				TABLE(v_ARRAY) T1 
+				INNER JOIN AHN_PHUCTHAM_BANAN T2 ON T1.v_VUANID=T2.DONID
+				INNER JOIN DM_KETQUA_PHUCTHAM T3 ON T2.KETQUAPHUCTHAMID=T3.ID AND INSTR('02,03,04,05,06,13,14',T3.MA)>0 and T3.ISAHN=1 --SỬA,HỦY
+				INNER JOIN DM_KETQUA_PHUCTHAM_LYDO T4 ON T2.LYDOBANANID=T4.ID AND INSTR('lý do khác',lower(T4.TEN))>0 --Lý do khác
+        group by T1.v_STT
+		) LOOP
+			v_ARRAY(ITEM.v_STT).v_LYDO_SH_LDK_20:=ITEM.v_LYDO_SH_LDK_20;
+		END LOOP;
+    -- v_APDUNGANLE_21 - ÁP DỤNG ÁN LỆ - 21 - 
+		FOR ITEM IN (
+			SELECT 
+				T1.v_STT, 
+				DECODE(T2.APDUNGANLE,1,'X','') v_APDUNGANLE_21
+			FROM 
+				TABLE(v_ARRAY) T1 
+				INNER JOIN AHN_PHUCTHAM_BANAN T2 ON T1.v_VUANID=T2.DONID
+		) LOOP
+			v_ARRAY(ITEM.v_STT).v_APDUNGANLE_21:=ITEM.v_APDUNGANLE_21;
+		END LOOP;
+
+    -- v_GQ_TTRG_22 - GIẢI QUYẾT THEO THỦ TỤC RÚT GỌN --  - 22 - 
+		FOR ITEM IN (
+			SELECT 
+				T1.v_STT, 
+				decode(sign(count(T2.DONID)),1,'X','')  v_GQ_TTRG_22
+			FROM 
+				TABLE(v_ARRAY) T1 
+				INNER JOIN AHN_PHUCTHAM_QUYETDINH T2 ON T1.v_VUANID=T2.DONID
+        inner join DM_QD_QUYETDINH T3 on T3.ID=T2.QUYETDINHID and T3.MA='80-DS'
+        group by T1.v_STT
+		) LOOP
+			v_ARRAY(ITEM.v_STT).v_GQ_TTRG_22:=ITEM.v_GQ_TTRG_22;
+		END LOOP;
+    -- v_HN_GD_23 - VIỆC HÔN NHÂN VÀ GIA ĐÌNH - 23 - 
+		FOR ITEM IN (
+			SELECT 
+				T1.v_STT, 
+				DECODE(T2.LOAIQUANHE,2,'X','') v_HN_GD_23
+			FROM 
+				TABLE(v_ARRAY) T1 
+				INNER JOIN AHN_PHUCTHAM_THULY T2 ON T1.v_VUANID=T2.DONID
+		) LOOP
+			v_ARRAY(ITEM.v_STT).v_HN_GD_23:=ITEM.v_HN_GD_23;
+		END LOOP;
+    -- v_QD_GDTTT_24 - QUYẾT ĐỊNH GIÁM ĐỐC THẨM, TÁI THẨM Số, ngày tháng năm - 24 - 
+
+    -- v_GHICHU_25 - GHI CHÚ - 25 - 
+    FOR ITEM IN (
+			SELECT 
+				T1.v_STT, 
+				T2.GHICHU v_GHICHU_25
+			FROM 
+				TABLE(v_ARRAY) T1 
+				INNER JOIN AHN_PHUCTHAM_THULY T2 ON T1.v_THULYID=T2.ID
+		) LOOP
+			v_ARRAY(ITEM.v_STT).v_GHICHU_25:=ITEM.v_GHICHU_25;
+		END LOOP;
+	END;
+
+    PROCEDURE SO_KINHTE_PHUCTHAM
+	(
+		 in_TOAANID IN NUMBER,
+		 in_TOAANCAPCON IN NVARCHAR2,
+		 in_NGAYBATDAU IN NVARCHAR2,
+		 in_NGAYKETTHUC IN NVARCHAR2,
+		 curReturn OUT SYS_REFCURSOR
+	) AS
+		v_ARRAY T_KINHTE_PHUCTHAM;
+		v_IDS T_ID;
+	BEGIN
+		--
+		--TÒA ÁN CẤP CON
+		v_IDS:=T_ID();
+		IF (in_TOAANCAPCON='TRUE') THEN
+			SELECT R_ID(ID) BULK COLLECT INTO v_IDS FROM DM_TOAAN WHERE CAPCHAID=in_TOAANID;
+		END IF;
+		v_IDS.EXTEND();
+		v_IDS(v_IDS.COUNT):=R_ID(in_TOAANID);
+		--
+		--XAC DINH ID THU LY AN THEO THAM SO
+		SELECT R_KINHTE_PHUCTHAM(
+			v_STT=>row_number() over (order by TL.ID),
+			v_THULYID=>TL.ID,
+			v_VUANID=>TL.DONID,
+			v_TOAANID=>TL.TOAANID,
+			v_QUANHEPHAPLUATID=>NULL,
+			v_TL_1=>NULL,
+			v_BA_QDST_2=>NULL,
+			v_ND_NYC_3=>NULL,
+			v_BD_NLQ_KDTM_4=>NULL,
+			v_NGUOI_QLNVLQ_5=>NULL,
+			v_NGUOIBV_QLIHP_DS_6=>NULL,
+			v_QHPL_7=>NULL,
+			v_KC_8=>NULL,
+			v_KN_9=>NULL,
+			v_ADBPKCTT_10=>NULL,
+			v_RUT_KC_11=>NULL,
+			v_RUT_KN_12=>NULL,
+			v_TDC_13=>NULL,
+			v_DC_14=>NULL,
+			v_LYDO_15=>NULL,
+			v_HDXX_VKS_TKPT_16=>NULL,
+			v_BA_QDPT_17=>NULL,
+			v_QD_TA_PT_18=>NULL,
+			v_LYDO_SH_STSAI_19=>NULL,
+			v_LYDO_SH_LDK_20=>NULL,
+			v_APDUNGANLE_21=>NULL,
+			v_GQ_TTRG_22=>NULL,
+			v_VIEC_KDTM_23=>NULL,
+			v_QD_GDTTT_24=>NULL,
+			v_GHICHU_25=>NULL,
+            V_NGAYTHULY=>NULL,V_SOTHULY=>NULL
+		)
+--		BULK COLLECT INTO v_ARRAY
+--		FROM AKT_PHUCTHAM_THULY TL INNER JOIN TABLE(v_IDS) I ON I.v_ID=TL.TOAANID
+--		WHERE
+--			NGAYTHULY BETWEEN TO_DATE(in_NGAYBATDAU,'DD/MM/YYYY') AND TO_DATE(in_NGAYKETTHUC,'DD/MM/YYYY');
+
+		BULK COLLECT INTO v_ARRAY
+        FROM (
+        SELECT TL.*
+		FROM AKT_PHUCTHAM_THULY TL 
+            INNER JOIN TABLE(v_IDS) I ON I.v_ID=TL.TOAANID
+		WHERE
+			NGAYTHULY BETWEEN TO_DATE(in_NGAYBATDAU,'DD/MM/YYYY') AND TO_DATE(in_NGAYKETTHUC,'DD/MM/YYYY')
+            
+        UNION 
+		SELECT TL.*
+		FROM AKT_PHUCTHAM_THULY TL 
+            INNER JOIN TABLE(v_IDS) I ON I.v_ID=TL.TOAANID
+		WHERE
+			NGAYTHULY < TO_DATE(in_NGAYBATDAU,'DD/MM/YYYY') AND 
+            (NOT EXISTS (SELECT  STQD.* FROM AKT_PHUCTHAM_QUYETDINH STQD 
+                INNER JOIN DM_QD_QUYETDINH DMQD ON DMQD.ID = STQD.QUYETDINHID AND DMQD.KET_THUC = 1 WHERE TL.DONID = STQD.DONID)
+            AND NOT EXISTS (SELECT BA.* FROM AKT_PHUCTHAM_BANAN BA WHERE TL.DONID = BA.DONID))
+            
+        UNION 
+		SELECT TL.*
+		FROM AKT_PHUCTHAM_THULY TL 
+            INNER JOIN TABLE(v_IDS) I ON I.v_ID=TL.TOAANID
+		WHERE
+			NGAYTHULY < TO_DATE(in_NGAYBATDAU,'DD/MM/YYYY') AND 
+            (EXISTS (SELECT  STQD.* FROM AKT_PHUCTHAM_QUYETDINH STQD 
+                         INNER JOIN DM_QD_QUYETDINH DMQD ON DMQD.ID = STQD.QUYETDINHID AND DMQD.KET_THUC = 1 
+                     WHERE TL.DONID = STQD.DONID AND STQD.NGAYQD BETWEEN TO_DATE(in_NGAYBATDAU,'DD/MM/YYYY') AND TO_DATE(in_NGAYKETTHUC,'DD/MM/YYYY'))
+             OR EXISTS (SELECT BA.* FROM AKT_PHUCTHAM_BANAN BA WHERE TL.DONID = BA.DONID 
+                        AND BA.NGAYTUYENAN BETWEEN TO_DATE(in_NGAYBATDAU,'DD/MM/YYYY') AND TO_DATE(in_NGAYKETTHUC,'DD/MM/YYYY')))
+            ) TL;
+		--
+		--THONG TIN SO THU LY
+		FILL_KINHTE_PHUCTHAM(v_ARRAY);
+		/*--
+		FOR ITEM IN (SELECT * FROM TABLE(v_ARRAY)) LOOP
+			DBMS_OUTPUT.PUT_LINE (ITEM.v_STT||' - '||ITEM.v_THULYID);
+		END LOOP;
+		--*/
+		OPEN curReturn FOR SELECT * FROM TABLE(v_ARRAY) 
+        ORDER by EXTRACT(YEAR FROM  V_NGAYTHULY),to_number(REGEXP_REPLACE(V_SOTHULY, '[^0-9]')),V_NGAYTHULY;
+		--
+	EXCEPTION 
+		WHEN OTHERS THEN 
+			RAISE_APPLICATION_ERROR(-20000, sqlerrm);
+	END;  
+    /*9 - SỔ THỤ LÝ VÀ KẾT QỦA GIẢI QUYẾT CÁC VỤ VIỆC KINH DOANH THƯƠNG MẠI PHÚC THẨM*/
+	PROCEDURE FILL_KINHTE_PHUCTHAM
+	(
+		v_ARRAY IN OUT T_KINHTE_PHUCTHAM
+	) AS
+	BEGIN	
+		--v_ARRAY:=T_KINHTE_PHUCTHAM();
+		-- v_TL_1 - THỤ LÝ Số, ngày tháng năm - 1 - 
+		FOR ITEM IN (
+			SELECT 
+				T1.v_STT, 
+				T2.QUANHEPHAPLUATID v_QUANHEPHAPLUATID,
+				T2.SOTHULY|| CHR(10) ||TO_CHAR(T2.NGAYTHULY,'DD/MM/YYYY') v_TL_1,
+                T2.NGAYTHULY  V_NGAYTHULY,T2.SOTHULY V_SOTHULY
+			FROM 
+				TABLE(v_ARRAY) T1 
+				INNER JOIN AKT_PHUCTHAM_THULY T2 ON T1.v_THULYID=T2.ID
+		) LOOP
+			v_ARRAY(ITEM.v_STT).v_TL_1:=ITEM.v_TL_1;
+			v_ARRAY(ITEM.v_STT).v_QUANHEPHAPLUATID:=ITEM.v_QUANHEPHAPLUATID;
+            v_ARRAY(ITEM.v_STT).V_NGAYTHULY:=ITEM.V_NGAYTHULY;v_ARRAY(ITEM.v_STT).V_SOTHULY:=ITEM.V_SOTHULY;
+		END LOOP;
+    -- v_BA_QDST_2 - BẢN ÁN, QUYẾT ĐỊNH SƠ THẨM Số, ngày tháng năm và tên Toà án đã giải quyết - 2 - 
+		      FOR ITEM IN (
+			SELECT 
+				T1.v_STT
+                ,DECODE(NVL(T2.ID,0),0
+                    ,T3.SOQD|| CHR(10) ||TO_CHAR(T3.NGAYQD,'DD/MM/YYYY')|| CHR(10) || T3.QTENTOA 
+                    ,T2.SOBANAN|| CHR(10) || TO_CHAR(T2.NGAYTUYENAN,'DD/MM/YYYY') || CHR(10) || T2.BTENTOA 
+                         )
+                        v_BA_QD_TA_ST_2
+			FROM 
+				TABLE(v_ARRAY) T1  
+				LEFT JOIN (SELECT B.ID,B.DONID,B.SOBANAN,B.NGAYTUYENAN,DM.TEN BTENTOA 
+                                        FROM AKT_SOTHAM_BANAN B 
+                                        LEFT JOIN DM_TOAAN DM ON B.TOAANID = DM.ID)T2 ON T1.v_VUANID=T2.DONID
+                LEFT JOIN (SELECT Q.SOQD, Q.NGAYQD,Q.DONID,Q.QUYETDINHID,DM.TEN QTENTOA
+                                        FROM AKT_SOTHAM_QUYETDINH Q
+                                        LEFT JOIN DM_TOAAN DM ON Q.TOAANID = DM.ID
+                                        LEFT JOIN DM_QD_QUYETDINH D ON D.ID=Q.QUYETDINHID 
+                                                WHERE D.KET_THUC = 1) T3 ON T1.v_VUANID=T3.DONID
+		) LOOP
+			v_ARRAY(ITEM.v_STT).v_BA_QDST_2:=ITEM.v_BA_QD_TA_ST_2;
+		END LOOP;
+
+    -- v_ND_NYC_3 - NGUYÊN ĐƠN HOẶC NGƯỜI YÊU CẦU Họ tên, địa chỉ. Họ tên người đại diện, chức vụ, địa chỉ - 3 - 
+		FOR ITEM IN (
+			SELECT 
+				T1.v_STT, 
+				LISTAGG(
+					CAST(
+						'- ' || T2.TENDUONGSU||'; '||
+						case when T2.NAMSINH = 0 then ' ' else ' ' || T2.NAMSINH ||'; ' end ||
+						T2.DIACHI 
+						AS VARCHAR2(4000)
+					), CHR(10)
+				) WITHIN GROUP (ORDER BY T1.v_STT) v_ND_NYC_3
+			FROM 
+				TABLE(v_ARRAY) T1 
+				INNER JOIN (SELECT ID,DONID,TENDUONGSU,NAMSINH,TUCACHTOTUNG_MA,
+                      CASE WHEN LOAIDUONGSU =1 THEN TAMTRUCHITIET ELSE NDD_DIACHICHITIET end as DIACHI  
+                    FROM AKT_DON_DUONGSU 
+                    where  TUCACHTOTUNG_MA ='NGUYENDON' --NGUYÊN ĐƠN ISPHUCTHAM=1 and 
+                    )T2 ON T1.v_VUANID=T2.DONID
+			GROUP BY T1.v_STT
+		) LOOP
+			v_ARRAY(ITEM.v_STT).v_ND_NYC_3:=ITEM.v_ND_NYC_3;
+		END LOOP;
+    -- v_BD_NLQ_KDTM_4 - BỊ ĐƠN HOẶC NGƯỜI LIÊN QUAN TRONG VỤ VIỆC KINH DOANH THƯƠNG MẠI Họ tên, địa chỉ. Họ tên người đại diện, chức vụ, địa chỉ - 4 - 
+		FOR ITEM IN (
+			SELECT 
+				T1.v_STT, 
+				LISTAGG(
+					CAST(
+						'- ' || T2.TENDUONGSU||'; '||
+						case when T2.NAMSINH = 0 then ' ' else ' ' || T2.NAMSINH ||'; ' end ||
+						T2.DIACHI 
+						AS VARCHAR2(4000)
+					), CHR(10)
+				) WITHIN GROUP (ORDER BY T1.v_STT) v_BD_NLQ_KDTM_4
+			FROM 
+				TABLE(v_ARRAY) T1 
+				INNER JOIN (SELECT ID,DONID,TENDUONGSU,NAMSINH,TUCACHTOTUNG_MA,
+                      CASE WHEN LOAIDUONGSU =1 THEN TAMTRUCHITIET ELSE NDD_DIACHICHITIET end as DIACHI  
+                    FROM AKT_DON_DUONGSU 
+                    where  TUCACHTOTUNG_MA ='BIDON'--ISPHUCTHAM=1 and
+                    ) T2 ON T1.v_VUANID=T2.DONID
+			GROUP BY T1.v_STT
+		) LOOP
+			v_ARRAY(ITEM.v_STT).v_BD_NLQ_KDTM_4:=ITEM.v_BD_NLQ_KDTM_4;
+		END LOOP;
+    -- v_NGUOI_QLNVLQ_5 - NGƯỜI CÓ QUYỀN LỢI, NGHĨA VỤ LIÊN QUAN Họ tên, địa chỉ Họ tên người đại diện, chức vụ, địa chỉ - 5 - 
+		FOR ITEM IN (
+			SELECT 
+				T1.v_STT, 
+				LISTAGG(
+					CAST(
+						'- ' || T2.TENDUONGSU ||'; '||
+						case when T2.NAMSINH = 0 then ' ' else ' ' || T2.NAMSINH ||'; ' end ||
+						decode(T2.LOAIDUONGSU,1,T2.TAMTRUCHITIET,T2.NDD_DIACHICHITIET) 
+						AS VARCHAR2(4000)
+					), CHR(10)
+				) WITHIN GROUP (ORDER BY T1.v_STT) v_NGUOI_QLNVLQ_5
+			FROM 
+				TABLE(v_ARRAY) T1 
+				INNER JOIN AKT_DON_DUONGSU T2 ON T1.v_VUANID=T2.DONID AND T2.TUCACHTOTUNG_MA='QUYENNVLQ' --AND T2.ISPHUCTHAM=1 --NGƯỜI CÓ QUYỀN LỢI NGHĨA VỤ LIÊN QUAN
+			GROUP BY T1.v_STT
+		) LOOP
+			v_ARRAY(ITEM.v_STT).v_NGUOI_QLNVLQ_5:=ITEM.v_NGUOI_QLNVLQ_5;
+		END LOOP;
+    -- v_NGUOIBV_QLIHP_DS_6 - HỌ TÊN NGƯỜI BẢO VỆ QUYỀN, LỢI ÍCH HỢP PHÁP CỦA ĐƯƠNG SỰ - 6 - 
+		FOR ITEM IN (
+			SELECT 
+				T1.v_STT, 
+				LISTAGG(
+					CAST(
+						'- ' || T2.HOTEN||'; '||
+						case when T2.NAMSINH = 0 then ' ' else ' ' || T2.NAMSINH ||'; ' end ||
+						T2.HKTTCHITIET 
+						AS VARCHAR2(4000)
+					), CHR(10)
+				) WITHIN GROUP (ORDER BY T1.v_STT) v_NGUOIBV_QLIHP_DS_6
+			FROM 
+				TABLE(v_ARRAY) T1 
+				INNER JOIN AKT_PHUCTHAM_THAMGIATOTUNG T2 ON T2.TUCACHTGTTID='TGTTDS_07' AND T1.v_VUANID=T2.DONID
+			GROUP BY T1.v_STT
+		) LOOP
+			v_ARRAY(ITEM.v_STT).v_NGUOIBV_QLIHP_DS_6:=ITEM.v_NGUOIBV_QLIHP_DS_6;
+		END LOOP;
+    -- v_QHPL_7 - QUAN HỆ PHÁP LUẬT - 7 - 
+	FOR ITEM IN (
+			SELECT 
+				T1.v_STT, 
+				--T2.TEN v_QHPL_7
+                DECODE(D.QUANHEPHAPLUAT_NAME, NULL, D.TEN,D.QUANHEPHAPLUAT_NAME) v_QHPL_7
+			FROM 
+				TABLE(v_ARRAY) T1 
+                INNER JOIN (select d1.id,d1.QUANHEPHAPLUAT_NAME,dm.TEN  
+                                    From  AKT_DON d1
+                                        left join DM_DATAITEM dm on dm.id = d1.QUANHEPHAPLUATID
+                                        ) D ON T1.v_VUANID = D.ID --MANHND
+		) LOOP
+			v_ARRAY(ITEM.v_STT).v_QHPL_7:=ITEM.v_QHPL_7;
+		END LOOP;
+    -- v_KC_8 - KHÁNG CÁO Ngày tháng năm - 8 - 
+        FOR ITEM IN (
+			SELECT 
+				T1.v_STT, 
+				LISTAGG(TO_CHAR(T2.NGAYKHANGCAO,'dd/MM/yyyy'), CHR(10)) WITHIN GROUP (ORDER BY T1.v_STT) v_KC_8
+			FROM 
+				TABLE(v_ARRAY) T1 
+				INNER JOIN AKT_SOTHAM_KHANGCAO T2 ON T1.v_VUANID=T2.DONID
+			GROUP BY 
+				T1.v_STT				
+		) LOOP
+			v_ARRAY(ITEM.v_STT).v_KC_8:=ITEM.v_KC_8;
+		END LOOP;
+    -- v_KN_9 - KHÁNG NGHỊ Số, ngày tháng năm - 9 - 
+     FOR ITEM IN (
+			SELECT 
+				T1.v_STT, 
+				LISTAGG(
+					T2.SOKN||', '||
+					TO_CHAR(T2.NGAYKN,'DD/MM/YYYY')
+					, CHR(10)
+				) WITHIN GROUP (ORDER BY T1.v_STT)  v_KN_9
+			FROM 
+				TABLE(v_ARRAY) T1 
+				INNER JOIN AKT_SOTHAM_KHANGNGHI T2 ON T1.v_VUANID=T2.DONID
+			GROUP BY 
+				T1.v_STT				
+		) LOOP
+			v_ARRAY(ITEM.v_STT).v_KN_9:=ITEM.v_KN_9;
+		END LOOP;
+    -- v_ADBPKCTT_10 - ÁP DỤNG BIỆN PHÁP KHẨN CẤP TẠM THỜI Số, ngày tháng năm - 10 - 
+		FOR ITEM IN (
+			SELECT 
+				T1.v_STT, 
+				LISTAGG(
+					T2.SOQD || CHR(10) ||
+					TO_CHAR(T2.NGAYQD,'DD/MM/YYYY')
+					, CHR(10)
+				) WITHIN GROUP (ORDER BY T1.v_STT) v_ADBPKCTT_10
+			FROM 
+				TABLE(v_ARRAY) T1 
+				INNER JOIN AKT_PHUCTHAM_QUYETDINH T2 ON T1.v_VUANID=T2.DONID
+        inner join DM_QD_LOAI T3 on T3.ID=T2.LOAIQDID and T3.MA='ADBPTT'
+			GROUP BY T1.v_STT
+		) LOOP
+			v_ARRAY(ITEM.v_STT).v_ADBPKCTT_10:=ITEM.v_ADBPKCTT_10;
+		END LOOP;
+    -- v_RUT_KC_11 - RÚT KHÁNG CÁO Ngày tháng năm - 11 - 
+       FOR ITEM IN (
+			SELECT 
+				T1.v_STT, 
+				LISTAGG(T2.NGAYRUT, CHR(10)) WITHIN GROUP (ORDER BY T1.v_STT) v_RUT_KC_11
+			FROM 
+				TABLE(v_ARRAY) T1 
+				INNER JOIN AKT_SOTHAM_RUTKCKN T2 ON T1.v_VUANID=T2.DONID AND T2.ISKCKN=1 --RÚT KHÁNG CÁO
+			GROUP BY 
+				T1.v_STT				
+		) LOOP
+			v_ARRAY(ITEM.v_STT).v_RUT_KC_11:=ITEM.v_RUT_KC_11;
+		END LOOP;
+    -- v_RUT_KN_12 - RÚT KHÁNG NGHỊ Số, Ngày tháng năm - 12 - 
+        FOR ITEM IN (
+			SELECT 
+				T1.v_STT, 
+				LISTAGG(T2.NGAYRUT, CHR(10)) WITHIN GROUP (ORDER BY T1.v_STT) v_RUT_KN_12
+			FROM 
+				TABLE(v_ARRAY) T1 
+				INNER JOIN AKT_SOTHAM_RUTKCKN T2 ON T1.v_VUANID=T2.DONID AND T2.ISKCKN=2 -- RÚT KHÁNG NGHỊ
+			GROUP BY 
+				T1.v_STT				
+		) LOOP
+			v_ARRAY(ITEM.v_STT).v_RUT_KN_12:=ITEM.v_RUT_KN_12;
+		END LOOP;
+
+    -- v_TDC_13 - TẠM ĐÌNH CHỈ Số, ngày tháng năm - 13 - 
+		FOR ITEM IN (
+			SELECT 
+				T1.v_STT, 
+				LISTAGG(
+					T2.SOQD || CHR(10) ||
+					TO_CHAR(T2.NGAYQD,'DD/MM/YYYY')
+					, CHR(10)
+				) WITHIN GROUP (ORDER BY T1.v_STT) v_TDC_13
+			FROM 
+				TABLE(v_ARRAY) T1 
+				INNER JOIN AKT_PHUCTHAM_QUYETDINH T2 ON T1.v_VUANID=T2.DONID
+        inner join DM_QD_LOAI T3 on T3.ID=T2.LOAIQDID and T3.MA='TDC'
+			GROUP BY T1.v_STT
+		) LOOP
+			v_ARRAY(ITEM.v_STT).v_TDC_13:=ITEM.v_TDC_13;
+		END LOOP;
+    -- v_DC_14 - ĐÌNH CHỈ Số, ngày tháng năm - 14 - 
+		FOR ITEM IN (
+			SELECT 
+				T1.v_STT, 
+				LISTAGG(
+					T2.SOQD || CHR(10) ||
+					TO_CHAR(T2.NGAYQD,'DD/MM/YYYY')
+					, CHR(10)
+				) WITHIN GROUP (ORDER BY T1.v_STT) v_DC_14
+			FROM 
+				TABLE(v_ARRAY) T1 
+				INNER JOIN AKT_PHUCTHAM_QUYETDINH T2 ON T1.v_VUANID=T2.DONID
+        inner join DM_QD_LOAI T3 on T3.ID=T2.LOAIQDID and T3.MA='DC'
+			GROUP BY T1.v_STT
+		) LOOP
+			v_ARRAY(ITEM.v_STT).v_DC_14:=ITEM.v_DC_14;
+		END LOOP;
+    -- v_LYDO_15 - LÝ DO - 15 - 
+		FOR ITEM IN (
+			SELECT 
+				T1.v_STT,
+        T3.TEN v_LYDO_15
+			FROM 
+				TABLE(v_ARRAY) T1 
+				INNER JOIN AKT_PHUCTHAM_QUYETDINH T2 on T1.v_VUANID=T2.DONID
+        inner join DM_QD_LOAI T5 on T2.LOAIQDID=T5.ID
+        inner join DM_QD_QUYETDINH_LYDO T3 ON T2.LYDOID=T3.ID and T5.MA='DC'
+		) LOOP
+			v_ARRAY(ITEM.v_STT).v_LYDO_15:=ITEM.v_LYDO_15;
+		END LOOP;
+    -- v_HDXX_VKS_TKPT_16 - HỘI ĐỒNG XÉT XỬ, ĐẠI DIỆN VIỆN KIỂM SÁT, THƯ KÝ PHIÊN TOÀ -- Ghi đầy đủ họ tên - 16 - 
+		FOR ITEM IN (
+			SELECT 
+				T1.v_STT, 
+				LISTAGG(
+					CAST(
+						'- ' || NVL(T5.TenCanBoToaAn,'')||NVL(T5.TenKSV,'')||
+						' ('||DECODE(T5.MAVAITRO,'THAMPHAN','TPCT','THAMPHANHDXX', 'TPTV','THAMPHANDUKHUYET', 'TPDK','HTND', 'HTND','THUKY', 'TK','THUKYDUKHUYET', 'TKDK','KSV', 'KSV','')||')' 
+						AS VARCHAR2(4000)
+					), CHR(10)
+				) WITHIN GROUP (ORDER BY T1.v_STT) v_HDXX_VKS_TKPT_16
+			FROM 
+				TABLE(v_ARRAY) T1 
+				inner join (
+        select T2.DONID,T3.HOTEN as TenCanBoToaAn,T4.HOTEN as TenKSV,T2.MAVAITRO from AKT_PHUCTHAM_HDXX T2
+				LEFT JOIN DM_CANBO T3 ON T3.ID=T2.CANBOID AND INSTR('THAMPHAN,THAMPHANHDXX,THAMPHANDUKHUYET,THUKY,THUKYDUKHUYET,HTND',T2.MAVAITRO)>0
+				LEFT JOIN DM_CANBOVKS T4 ON T4.ID=T2.CANBOID AND INSTR('HTND,KSV',T2.MAVAITRO)>0
+        )T5 ON T1.v_VUANID=T5.DONID
+      group by T1.v_STT
+		) LOOP
+			v_ARRAY(ITEM.v_STT).v_HDXX_VKS_TKPT_16:=ITEM.v_HDXX_VKS_TKPT_16;
+		END LOOP;
+    -- v_BA_QDPT_17 - BẢN ÁN, QUYẾT ĐỊNH PHÚC THẨM Số, ngày tháng năm - 17 - 
+		FOR ITEM IN (
+			SELECT 
+				T1.v_STT
+                ,DECODE(NVL(T2.ID,0),0
+                    ,T3.SOQD|| CHR(10) ||TO_CHAR(T3.NGAYQD,'DD/MM/YYYY') 
+                    ,T2.SOBANAN|| CHR(10) || TO_CHAR(T2.NGAYTUYENAN,'DD/MM/YYYY')
+
+                        )
+                        v_BA_QDPT_17
+			FROM 
+				TABLE(v_ARRAY) T1 
+				LEFT JOIN AKT_PHUCTHAM_BANAN T2 ON T1.v_VUANID=T2.DONID
+                LEFT JOIN (SELECT Q.SOQD, Q.NGAYQD,Q.DONID,Q.QUYETDINHID 
+                                        FROM ADS_PHUCTHAM_QUYETDINH Q 
+                                        LEFT JOIN DM_QD_QUYETDINH D ON D.ID=Q.QUYETDINHID 
+                                                WHERE D.KET_THUC = 1) T3 ON T1.v_VUANID=T3.DONID
+		) LOOP
+			v_ARRAY(ITEM.v_STT).v_BA_QDPT_17:=ITEM.v_BA_QDPT_17;
+		END LOOP;
+
+    -- v_QD_TA_PT_18 - QUYẾT ĐỊNH CỦA TÒA ÁN CẤP PHÚC THẨM  -- Tóm tắt phần quyết định - 18 - 
+     FOR ITEM IN (
+			SELECT 
+				T1.v_STT
+                ,DECODE(NVL(T2.ID,0),0
+                    ,T3.QTENKQ|| CHR(10)
+                    ,T2.BTENKQ|| CHR(10) 
+                        )
+                        v_QD_TA_PT_18
+			FROM 
+				TABLE(v_ARRAY) T1 
+				LEFT JOIN (SELECT B.ID,B.DONID,B.SOBANAN,B.NGAYTUYENAN,BKQ.TEN BTENKQ 
+                                        FROM AKT_PHUCTHAM_BANAN B
+                                        LEFT JOIN DM_KETQUA_PHUCTHAM BKQ ON BKQ.ID = B.KETQUAPHUCTHAMID) T2 ON T1.v_VUANID=T2.DONID
+                LEFT JOIN (SELECT Q.SOQD, Q.NGAYQD,Q.DONID,Q.QUYETDINHID,KQ.TEN QTENKQ 
+                                        FROM AKT_PHUCTHAM_QUYETDINH Q 
+                                        LEFT JOIN DM_QD_QUYETDINH D ON D.ID=Q.QUYETDINHID 
+                                        LEFT JOIN DM_KETQUA_PHUCTHAM KQ ON KQ.ID = Q.KETQUAID
+                                                WHERE D.KET_THUC = 1) T3 ON T1.v_VUANID=T3.DONID
+		) LOOP
+			v_ARRAY(ITEM.v_STT).v_QD_TA_PT_18:=ITEM.v_QD_TA_PT_18;
+		END LOOP;
+    -- v_LYDO_SH_STSAI_19 - LÝ DO SỬA, HỦY… - Do cấp sơ thẩm sai - 19 - 
+		FOR ITEM IN (
+			SELECT 
+				T1.v_STT, 
+				DECODE(SIGN(COUNT(T4.ID)),1,'X','') v_LYDO_SH_STSAI_19
+			FROM 
+				TABLE(v_ARRAY) T1 
+				INNER JOIN AKT_PHUCTHAM_BANAN T2 ON T1.v_VUANID=T2.DONID
+				INNER JOIN DM_KETQUA_PHUCTHAM T3 ON T2.KETQUAPHUCTHAMID=T3.ID AND INSTR('02,03,04,05,06,13,14',T3.MA)>0 and T3.ISADS=1 --SỬA,HỦY
+				INNER JOIN DM_KETQUA_PHUCTHAM_LYDO T4 ON T2.LYDOBANANID=T4.ID AND INSTR('do cấp sơ thẩm sai',lower(T4.TEN))>0 --Do cấp sơ thẩm sai
+        group by T1.v_STT
+		) LOOP
+			v_ARRAY(ITEM.v_STT).v_LYDO_SH_STSAI_19:=ITEM.v_LYDO_SH_STSAI_19;
+		END LOOP;
+    -- v_LYDO_SH_LDK_20 - LÝ DO SỬA, HỦY… - Do có lý do khác - 20 - 
+		FOR ITEM IN (
+			SELECT 
+				T1.v_STT, 
+				DECODE(SIGN(COUNT(T4.ID)),1,'X','') v_LYDO_SH_LDK_20
+			FROM 
+				TABLE(v_ARRAY) T1 
+				INNER JOIN AKT_PHUCTHAM_BANAN T2 ON T1.v_VUANID=T2.DONID
+				INNER JOIN DM_KETQUA_PHUCTHAM T3 ON T2.KETQUAPHUCTHAMID=T3.ID AND INSTR('02,03,04,05,06,13,14',T3.MA)>0 and T3.ISADS=1 --SỬA,HỦY
+				INNER JOIN DM_KETQUA_PHUCTHAM_LYDO T4 ON T2.LYDOBANANID=T4.ID AND INSTR('lý do khác',lower(T4.TEN))>0 --Lý do khác
+        group by T1.v_STT
+		) LOOP
+			v_ARRAY(ITEM.v_STT).v_LYDO_SH_LDK_20:=ITEM.v_LYDO_SH_LDK_20;
+		END LOOP;
+    -- v_APDUNGANLE_21 - ÁP DỤNG ÁN LỆ - 21 - 
+		FOR ITEM IN (
+			SELECT 
+				T1.v_STT, 
+				DECODE(T2.APDUNGANLE,1,'X','') v_APDUNGANLE_21
+			FROM 
+				TABLE(v_ARRAY) T1 
+				INNER JOIN AKT_PHUCTHAM_BANAN T2 ON T1.v_VUANID=T2.DONID
+		) LOOP
+			v_ARRAY(ITEM.v_STT).v_APDUNGANLE_21:=ITEM.v_APDUNGANLE_21;
+		END LOOP;
+    -- v_GQ_TTRG_22 - GIẢI QUYẾT THEO THỦ TỤC RÚT GỌN - 22 - 
+		FOR ITEM IN (
+			SELECT 
+				T1.v_STT, 
+				LISTAGG(
+          T2.SOQD || CHR(10) ||
+          TO_CHAR(T2.NGAYQD,'DD/MM/YYYY')
+          , CHR(10)
+        ) within group (order by T1.v_STT)  v_GQ_TTRG_22
+			FROM 
+				TABLE(v_ARRAY) T1 
+				INNER JOIN AKT_PHUCTHAM_QUYETDINH T2 ON T1.v_VUANID=T2.DONID
+        inner join DM_QD_QUYETDINH T3 on T3.ID=T2.QUYETDINHID and T3.MA='80-DS'
+        GROUP BY T1.v_STT
+		) LOOP
+			v_ARRAY(ITEM.v_STT).v_GQ_TTRG_22:=ITEM.v_GQ_TTRG_22;
+		END LOOP;
+    -- v_VIEC_KDTM_23 - VIỆC KINH DOANH THƯƠNG MẠI - 23 - 
+		FOR ITEM IN (
+			SELECT 
+				T1.v_STT, 
+				DECODE(T2.LOAIQUANHE,2,'X','') v_VIEC_KDTM_23
+			FROM 
+				TABLE(v_ARRAY) T1 
+				INNER JOIN AKT_PHUCTHAM_THULY T2 ON T1.v_VUANID=T2.DONID
+		) LOOP
+			v_ARRAY(ITEM.v_STT).v_VIEC_KDTM_23:=ITEM.v_VIEC_KDTM_23;
+		END LOOP;
+    -- v_QD_GDTTT_24 - QUYẾT ĐỊNH GIÁM ĐỐC THẨM, TÁI THẨM Số, ngày tháng năm - 24 - 
+
+    -- v_GHICHU_25 - GHI CHÚ - 25 - 
+    FOR ITEM IN (
+			SELECT 
+				T1.v_STT, 
+				T2.GHICHU v_GHICHU_25
+			FROM 
+				TABLE(v_ARRAY) T1 
+				INNER JOIN AKT_PHUCTHAM_THULY T2 ON T1.v_THULYID=T2.ID
+		) LOOP
+			v_ARRAY(ITEM.v_STT).v_GHICHU_25:=ITEM.v_GHICHU_25;
+		END LOOP;
+	END;
+
+	PROCEDURE SO_HANHCHINH_PHUCTHAM
+	(
+		 in_TOAANID IN NUMBER,
+		 in_TOAANCAPCON IN NVARCHAR2,
+		 in_NGAYBATDAU IN NVARCHAR2,
+		 in_NGAYKETTHUC IN NVARCHAR2,
+		 curReturn OUT SYS_REFCURSOR
+	) AS
+		v_ARRAY T_HANHCHINH_PHUCTHAM;
+		v_IDS T_ID;
+	BEGIN
+		--
+		--TÒA ÁN CẤP CON
+		v_IDS:=T_ID();
+		IF (in_TOAANCAPCON='TRUE') THEN
+			SELECT R_ID(ID) BULK COLLECT INTO v_IDS FROM DM_TOAAN WHERE CAPCHAID=in_TOAANID;
+		END IF;
+		v_IDS.EXTEND();
+		v_IDS(v_IDS.COUNT):=R_ID(in_TOAANID);
+		--
+		--XAC DINH ID THU LY AN THEO THAM SO
+		SELECT R_HANHCHINH_PHUCTHAM(
+			v_STT=>row_number() over (order by TL.ID),
+			v_THULYID=>TL.ID,
+			v_VUANID=>TL.DONID,
+			v_TOAANID=>TL.TOAANID,
+			v_QUANHEPHAPLUATID=>TL.QUANHEPHAPLUATID,
+			v_TL_1=>NULL,
+			v_BA_QDST_2=>NULL,
+			v_NGUOIKK_3=>NULL,
+			v_NGUOIBIKIEN_4=>NULL,
+			v_NGUOI_QLNVLQ_5=>NULL,
+			v_NGUOIBV_QLIHP_DS_6=>NULL,
+			v_QHPL_7=>NULL,
+			v_KC_8=>NULL,
+			v_KN_9=>NULL,
+			v_ADBPKCTT_10=>NULL,
+			v_RUT_KC_11=>NULL,
+			v_RUT_KN_12=>NULL,
+			v_TDC_13=>NULL,
+			v_DC_14=>NULL,
+			v_LYDO_15=>NULL,
+			v_HDXX_VKS_TKPT_16=>NULL,
+			v_BA_QDPT_17=>NULL,
+			v_QD_TA_PT_18=>NULL,
+			v_LYDO_SH_ST_QDKDPL_19=>NULL,
+			v_LYDO_SH_TTM_20=>NULL,
+			v_APDUNGANLE_21=>NULL,
+			v_GQ_TTRG_22=>NULL,
+			v_KNGDTTT_23=>NULL,
+			v_GHICHU_24=>NULL,
+            V_NGAYTHULY=>NULL,V_SOTHULY=>NULL
+		)
+--		BULK COLLECT INTO v_ARRAY
+--		FROM AHC_PHUCTHAM_THULY TL INNER JOIN TABLE(v_IDS) I ON I.v_ID=TL.TOAANID
+--		WHERE
+--			TL.NGAYTHULY BETWEEN TO_DATE(in_NGAYBATDAU,'DD/MM/YYYY') AND TO_DATE(in_NGAYKETTHUC,'DD/MM/YYYY');
+
+		BULK COLLECT INTO v_ARRAY
+        FROM (
+        SELECT TL.*
+		FROM AHC_PHUCTHAM_THULY TL 
+            INNER JOIN TABLE(v_IDS) I ON I.v_ID=TL.TOAANID
+		WHERE
+			NGAYTHULY BETWEEN TO_DATE(in_NGAYBATDAU,'DD/MM/YYYY') AND TO_DATE(in_NGAYKETTHUC,'DD/MM/YYYY')
+            
+        UNION 
+		SELECT TL.*
+		FROM AHC_PHUCTHAM_THULY TL 
+            INNER JOIN TABLE(v_IDS) I ON I.v_ID=TL.TOAANID
+		WHERE
+			NGAYTHULY < TO_DATE(in_NGAYBATDAU,'DD/MM/YYYY') AND 
+            (NOT EXISTS (SELECT  STQD.* FROM AHC_PHUCTHAM_QUYETDINH STQD 
+                INNER JOIN DM_QD_QUYETDINH DMQD ON DMQD.ID = STQD.QUYETDINHID AND DMQD.KET_THUC = 1 WHERE TL.DONID = STQD.DONID)
+            AND NOT EXISTS (SELECT BA.* FROM AHC_PHUCTHAM_BANAN BA WHERE TL.DONID = BA.DONID))            
+   
+        UNION 
+		SELECT TL.*
+		FROM AHC_PHUCTHAM_THULY TL 
+            INNER JOIN TABLE(v_IDS) I ON I.v_ID=TL.TOAANID
+		WHERE
+			NGAYTHULY < TO_DATE(in_NGAYBATDAU,'DD/MM/YYYY') AND 
+            (EXISTS (SELECT  STQD.* FROM AHC_PHUCTHAM_QUYETDINH STQD 
+                         INNER JOIN DM_QD_QUYETDINH DMQD ON DMQD.ID = STQD.QUYETDINHID AND DMQD.KET_THUC = 1 
+                     WHERE TL.DONID = STQD.DONID AND STQD.NGAYQD BETWEEN TO_DATE(in_NGAYBATDAU,'DD/MM/YYYY') AND TO_DATE(in_NGAYKETTHUC,'DD/MM/YYYY'))
+             OR EXISTS (SELECT BA.* FROM AHC_PHUCTHAM_BANAN BA WHERE TL.DONID = BA.DONID 
+                        AND BA.NGAYTUYENAN BETWEEN TO_DATE(in_NGAYBATDAU,'DD/MM/YYYY') AND TO_DATE(in_NGAYKETTHUC,'DD/MM/YYYY')))
+            ) TL;		--
+		--THONG TIN SO THU LY
+		PKG_GSTP_SOTHULY_PHUCTHAM.FILL_HANHCHINH_PHUCTHAM(v_ARRAY);
+		/*--
+		FOR ITEM IN (SELECT * FROM TABLE(v_ARRAY)) LOOP
+			DBMS_OUTPUT.PUT_LINE (ITEM.v_STT||' - '||ITEM.v_THULYID);
+		END LOOP;
+		--*/
+		OPEN curReturn FOR SELECT * FROM TABLE(v_ARRAY) O
+        ORDER by EXTRACT(YEAR FROM  V_NGAYTHULY),to_number(REGEXP_REPLACE(V_SOTHULY, '[^0-9]')),V_NGAYTHULY;
+		--
+	EXCEPTION 
+		WHEN OTHERS THEN 
+			RAISE_APPLICATION_ERROR(-20000, sqlerrm);
+	END;
+	/*3 - SỔ THỤ LÝ VÀ KẾT QỦA GIẢI QUYẾT CÁC VỤ ÁN HÀNH CHÍNH PHÚC THẨM*/
+	PROCEDURE FILL_HANHCHINH_PHUCTHAM
+	(
+		v_ARRAY IN OUT T_HANHCHINH_PHUCTHAM
+	) AS
+	BEGIN	
+		--v_ARRAY:=T_HANHCHINH_PHUCTHAM();
+		-- v_TL_1 - THỤ LÝ Số, ngày tháng năm - 1 - 
+    FOR ITEM IN (
+			SELECT 
+				T1.v_STT, 
+				T2.QUANHEPHAPLUATID v_QUANHEPHAPLUATID,
+				T2.SOTHULY|| CHR(10) ||TO_CHAR(T2.NGAYTHULY,'DD/MM/YYYY') v_TL_1,
+                T2.NGAYTHULY  V_NGAYTHULY,T2.SOTHULY V_SOTHULY
+			FROM 
+				TABLE(v_ARRAY) T1 
+				INNER JOIN AHC_PHUCTHAM_THULY T2 ON T1.v_THULYID=T2.ID
+		) LOOP
+			v_ARRAY(ITEM.v_STT).v_TL_1:=ITEM.v_TL_1;
+			v_ARRAY(ITEM.v_STT).v_QUANHEPHAPLUATID:=ITEM.v_QUANHEPHAPLUATID;
+            v_ARRAY(ITEM.v_STT).V_NGAYTHULY:=ITEM.V_NGAYTHULY;v_ARRAY(ITEM.v_STT).V_SOTHULY:=ITEM.V_SOTHULY;
+		END LOOP;
+		-- v_BA_QDST_2 - BẢN ÁN, QUYẾT ĐỊNH SƠ THẨM Số, ngày tháng năm và tên Toà án đã giải quyết - 2 - 
+		 --manhnd
+        FOR ITEM IN (
+			SELECT 
+				T1.v_STT
+                ,DECODE(NVL(T2.ID,0),0
+                    ,T3.SOQD|| CHR(10) ||TO_CHAR(T3.NGAYQD,'DD/MM/YYYY')|| CHR(10) || T3.QTENTOA 
+                    ,T2.SOBANAN|| CHR(10) || TO_CHAR(T2.NGAYTUYENAN,'DD/MM/YYYY') || CHR(10) || T2.BTENTOA 
+                         )
+                        v_BA_QDST_2
+			FROM 
+				TABLE(v_ARRAY) T1  
+				LEFT JOIN (SELECT B.ID,B.DONID,B.SOBANAN,B.NGAYTUYENAN,DM.TEN BTENTOA 
+                                        FROM AHC_SOTHAM_BANAN B 
+                                        LEFT JOIN DM_TOAAN DM ON B.TOAANID = DM.ID)T2 ON T1.v_VUANID=T2.DONID
+                LEFT JOIN (SELECT Q.SOQD, Q.NGAYQD,Q.DONID,Q.QUYETDINHID,DM.TEN QTENTOA
+                                        FROM AHC_SOTHAM_QUYETDINH Q
+                                        LEFT JOIN DM_TOAAN DM ON Q.TOAANID = DM.ID
+                                        LEFT JOIN DM_QD_QUYETDINH D ON D.ID=Q.QUYETDINHID 
+                                                WHERE D.KET_THUC = 1) T3 ON T1.v_VUANID=T3.DONID
+		) LOOP
+			v_ARRAY(ITEM.v_STT).v_BA_QDST_2:=ITEM.v_BA_QDST_2;
+		END LOOP;
+    -- v_NGUOIKK_3 - NGƯỜI KHỞI KIỆN Họ tên, địa chỉ Họ tên người đại diện, chức vụ, địa chỉ - 3 - 
+		FOR ITEM IN (
+			SELECT 
+				T1.v_STT, 
+				LISTAGG(
+					CAST(
+						'- ' || T2.TENDUONGSU||'; '||
+						case when T2.NAMSINH = 0 then ' ' else ' ' || T2.NAMSINH ||'; ' end ||
+						T2.DIACHI 
+						AS VARCHAR2(4000)
+					), CHR(10)
+				) WITHIN GROUP (ORDER BY T1.v_STT) v_NGUOIKK_3
+			FROM 
+				TABLE(v_ARRAY) T1 
+				INNER JOIN (SELECT ID,DONID,TENDUONGSU,NAMSINH,TUCACHTOTUNG_MA,
+                      CASE WHEN LOAIDUONGSU =1 THEN TAMTRUCHITIET ELSE NDD_DIACHICHITIET end as DIACHI  
+                    FROM AHC_DON_DUONGSU 
+                    where 
+                    --ISPHUCTHAM=1 and --Manhnd
+                    TUCACHTOTUNG_MA ='NGUYENDON' --NGUYÊN ĐƠN
+                    )T2 ON T1.v_VUANID=T2.DONID
+			GROUP BY T1.v_STT
+		) LOOP
+			v_ARRAY(ITEM.v_STT).v_NGUOIKK_3:=ITEM.v_NGUOIKK_3;
+		END LOOP;
+    -- v_NGUOIBIKIEN_4 - NGƯỜI BỊ KIỆN Họ tên, địa chỉ Họ tên người đại diện, chức vụ, địa chỉ - 4 - 
+		FOR ITEM IN (
+			SELECT 
+				T1.v_STT, 
+				LISTAGG(
+					CAST(
+						'- ' || T2.TENDUONGSU||'; '||
+						case when T2.NAMSINH = 0 then ' ' else ' ' || T2.NAMSINH ||'; ' end ||
+						T2.DIACHI 
+						AS VARCHAR2(4000)
+					), CHR(10)
+				) WITHIN GROUP (ORDER BY T1.v_STT) v_NGUOIBIKIEN_4
+			FROM 
+				TABLE(v_ARRAY) T1 
+				INNER JOIN (SELECT ID,DONID,TENDUONGSU,NAMSINH,TUCACHTOTUNG_MA,
+                      CASE WHEN LOAIDUONGSU =1 THEN TAMTRUCHITIET ELSE NDD_DIACHICHITIET end as DIACHI  
+                    FROM AHC_DON_DUONGSU 
+                    where 
+--                    ISPHUCTHAM=1 and  --Manhnd
+                    TUCACHTOTUNG_MA ='BIDON'
+                    ) T2 ON T1.v_VUANID=T2.DONID
+			GROUP BY T1.v_STT
+		) LOOP
+			v_ARRAY(ITEM.v_STT).v_NGUOIBIKIEN_4:=ITEM.v_NGUOIBIKIEN_4;
+		END LOOP;
+    -- v_NGUOI_QLNVLQ_5 - NGƯỜI CÓ QUYỀN LỢI, NGHĨA VỤ LIÊN QUAN Họ tên, địa chỉ Họ tên người đại diện, chức vụ, địa chỉ - 5 - 
+		FOR ITEM IN (
+			SELECT 
+				T1.v_STT, 
+				LISTAGG(
+					CAST(
+						'- ' || T2.TENDUONGSU ||'; '||
+						case when T2.NAMSINH = 0 then ' ' else ' ' || T2.NAMSINH ||'; ' end ||
+						decode(T2.LOAIDUONGSU,1,T2.TAMTRUCHITIET,T2.NDD_DIACHICHITIET) 
+						AS VARCHAR2(4000)
+					), CHR(10)
+				) WITHIN GROUP (ORDER BY T1.v_STT) v_NGUOI_QLNVLQ_5
+			FROM 
+				TABLE(v_ARRAY) T1 
+				INNER JOIN AHC_DON_DUONGSU T2 ON T1.v_VUANID=T2.DONID AND T2.TUCACHTOTUNG_MA='QUYENNVLQ' --AND T2.ISPHUCTHAM=1 --NGƯỜI CÓ QUYỀN LỢI NGHĨA VỤ LIÊN QUAN
+			GROUP BY T1.v_STT
+		) LOOP
+			v_ARRAY(ITEM.v_STT).v_NGUOI_QLNVLQ_5:=ITEM.v_NGUOI_QLNVLQ_5;
+		END LOOP;
+    -- v_NGUOIBV_QLIHP_DS_6 - NGƯỜI BẢO VỆ QUYỀN, LỢI ÍCH HỢP PHÁP CỦA ĐƯƠNG SỰ -- Họ tên, chức danh (nếu là Luật sư) - 6 - 
+		FOR ITEM IN (
+			SELECT 
+				T1.v_STT, 
+				LISTAGG(
+					CAST(
+						'- ' || T2.HOTEN||'; '||
+						case when T2.NAMSINH = 0 then ' ' else ' ' || T2.NAMSINH ||'; ' end ||
+						T2.HKTTCHITIET 
+						AS VARCHAR2(4000)
+					), CHR(10)
+				) WITHIN GROUP (ORDER BY T1.v_STT) v_NGUOIBV_QLIHP_DS_6
+			FROM 
+				TABLE(v_ARRAY) T1 
+				INNER JOIN AHC_PHUCTHAM_THAMGIATOTUNG T2 ON T2.TUCACHTGTTID='TGTTDS_07' AND T1.v_VUANID=T2.DONID
+			GROUP BY T1.v_STT
+		) LOOP
+			v_ARRAY(ITEM.v_STT).v_NGUOIBV_QLIHP_DS_6:=ITEM.v_NGUOIBV_QLIHP_DS_6;
+		END LOOP;
+
+        -- v_QHPL_7 - QUAN HỆ PHÁP LUẬT - 7 - 
+		FOR ITEM IN (
+			SELECT 
+				T1.v_STT, 
+				--T2.TEN v_QHPL_7
+                DECODE(D.QUANHEPHAPLUAT_NAME, NULL, D.TEN,D.QUANHEPHAPLUAT_NAME) v_QHPL_7
+			FROM 
+				TABLE(v_ARRAY) T1 
+                INNER JOIN (select d1.id,d1.QUANHEPHAPLUAT_NAME,dm.TEN  
+                                    From  AHC_DON d1
+                                        left join DM_DATAITEM dm on dm.id = d1.QUANHEPHAPLUATID
+                                        ) D ON T1.v_VUANID = D.ID --MANHND
+
+				--INNER JOIN DM_DATAITEM T2 ON T1.v_QUANHEPHAPLUATID=T2.ID
+		) LOOP
+			v_ARRAY(ITEM.v_STT).v_QHPL_7:=ITEM.v_QHPL_7;
+		END LOOP;
+
+		-- v_KC_8 - KHÁNG CÁO Ngày tháng năm - 8 -Tóm tắt nội dung
+        --MANHND
+		FOR ITEM IN (
+			SELECT 
+				T1.v_STT, 
+				LISTAGG(TO_CHAR(T2.NGAYKHANGCAO,'dd/MM/yyyy'), CHR(10)) WITHIN GROUP (ORDER BY T1.v_STT) v_KC_8
+			FROM 
+				TABLE(v_ARRAY) T1 
+				INNER JOIN AHC_SOTHAM_KHANGCAO T2 ON T1.v_VUANID=T2.DONID
+			GROUP BY 
+				T1.v_STT				
+		) LOOP
+			v_ARRAY(ITEM.v_STT).v_KC_8:=ITEM.v_KC_8;
+		END LOOP;
+
+		-- v_KN_9 - KHÁNG NGHỊ Số, ngày tháng năm - 9 - Tóm tắt nội dung
+        --MANHND
+		FOR ITEM IN (
+			SELECT 
+				T1.v_STT, 
+				LISTAGG(
+					T2.SOKN||', '||
+					TO_CHAR(T2.NGAYKN,'DD/MM/YYYY')
+					, CHR(10)
+				) WITHIN GROUP (ORDER BY T1.v_STT)  v_KN_9
+			FROM 
+				TABLE(v_ARRAY) T1 
+				INNER JOIN AHC_SOTHAM_KHANGNGHI T2 ON T1.v_VUANID=T2.DONID
+			GROUP BY 
+				T1.v_STT				
+		) LOOP
+			v_ARRAY(ITEM.v_STT).v_KN_9:=ITEM.v_KN_9;
+		END LOOP;
+
+    -- v_ADBPKCTT_10 - ÁP DỤNG BIỆN PHÁP KHẨN CẤP TẠM THỜI Số, ngày tháng năm - 10 - 
+		FOR ITEM IN (
+			SELECT 
+				T1.v_STT, 
+				LISTAGG(
+					T2.SOQD || CHR(10) ||
+					TO_CHAR(T2.NGAYQD,'DD/MM/YYYY')
+					, CHR(10)
+				) WITHIN GROUP (ORDER BY T1.v_STT) v_ADBPKCTT_10
+			FROM 
+				TABLE(v_ARRAY) T1 
+				INNER JOIN AHC_PHUCTHAM_QUYETDINH T2 ON T1.v_VUANID=T2.DONID
+        inner join DM_QD_LOAI T3 on T3.ID=T2.LOAIQDID and T3.MA='ADBPTT'
+			GROUP BY T1.v_STT
+		) LOOP
+			v_ARRAY(ITEM.v_STT).v_ADBPKCTT_10:=ITEM.v_ADBPKCTT_10;
+		END LOOP;
+    -- v_RUT_KC_11 - RÚT KHÁNG CÁO Ngày tháng năm - 11 - 
+        FOR ITEM IN (
+			SELECT 
+				T1.v_STT, 
+				LISTAGG(T2.NGAYRUT, CHR(10)) WITHIN GROUP (ORDER BY T1.v_STT) v_RUT_KC_11
+			FROM 
+				TABLE(v_ARRAY) T1 
+				INNER JOIN AHC_SOTHAM_RUTKCKN T2 ON T1.v_VUANID=T2.DONID AND T2.ISKCKN=1 --RÚT KHÁNG CÁO
+			GROUP BY 
+				T1.v_STT				
+		) LOOP
+			v_ARRAY(ITEM.v_STT).v_RUT_KC_11:=ITEM.v_RUT_KC_11;
+		END LOOP;
+
+		-- v_RUT_KN_12 - RÚT KHÁNG NGHỊ Số, ngày tháng năm - 12 - 
+		FOR ITEM IN (
+			SELECT 
+				T1.v_STT, 
+				LISTAGG(T2.NGAYRUT, CHR(10)) WITHIN GROUP (ORDER BY T1.v_STT) v_RUT_KN_12
+			FROM 
+				TABLE(v_ARRAY) T1 
+				INNER JOIN AHC_SOTHAM_RUTKCKN T2 ON T1.v_VUANID=T2.DONID AND T2.ISKCKN=2 -- RÚT KHÁNG NGHỊ
+			GROUP BY 
+				T1.v_STT				
+		) LOOP
+			v_ARRAY(ITEM.v_STT).v_RUT_KN_12:=ITEM.v_RUT_KN_12;
+		END LOOP;
+
+    -- v_TDC_13 - TẠM ĐÌNH CHỈ Số, ngày tháng năm - 13 - 
+		FOR ITEM IN (
+			SELECT 
+				T1.v_STT, 
+				LISTAGG(
+					T2.SOQD || CHR(10) ||
+					TO_CHAR(T2.NGAYQD,'DD/MM/YYYY')
+					, CHR(10)
+				) WITHIN GROUP (ORDER BY T1.v_STT) v_TDC_13
+			FROM 
+				TABLE(v_ARRAY) T1 
+				INNER JOIN AHC_PHUCTHAM_QUYETDINH T2 ON T1.v_VUANID=T2.DONID
+        inner join DM_QD_LOAI T3 on T3.ID=T2.LOAIQDID and T3.MA='TDC'
+			GROUP BY T1.v_STT
+		) LOOP
+			v_ARRAY(ITEM.v_STT).v_TDC_13:=ITEM.v_TDC_13;
+		END LOOP;
+    -- v_DC_14 - ĐÌNH CHỈ Số, ngày tháng năm - 14 - 
+		FOR ITEM IN (
+			SELECT 
+				T1.v_STT, 
+				LISTAGG(
+					T2.SOQD || CHR(10) ||
+					TO_CHAR(T2.NGAYQD,'DD/MM/YYYY')
+					, CHR(10)
+				) WITHIN GROUP (ORDER BY T1.v_STT) v_DC_14
+			FROM 
+				TABLE(v_ARRAY) T1 
+				INNER JOIN AHC_PHUCTHAM_QUYETDINH T2 ON T1.v_VUANID=T2.DONID
+        inner join DM_QD_LOAI T3 on T3.ID=T2.LOAIQDID and T3.MA='DC'
+			GROUP BY T1.v_STT
+		) LOOP
+			v_ARRAY(ITEM.v_STT).v_DC_14:=ITEM.v_DC_14;
+		END LOOP;
+    -- v_LYDO_15 - LÝ DO - 15 - 
+		FOR ITEM IN (
+			SELECT 
+				T1.v_STT,
+        T3.TEN v_LYDO_15
+			FROM 
+				TABLE(v_ARRAY) T1 
+				INNER JOIN AHC_PHUCTHAM_QUYETDINH T2 on T1.v_VUANID=T2.DONID
+        inner join DM_QD_LOAI T5 on T2.LOAIQDID=T5.ID
+        inner join DM_QD_QUYETDINH_LYDO T3 ON T2.LYDOID=T3.ID and T5.MA='DC'
+		) LOOP
+			v_ARRAY(ITEM.v_STT).v_LYDO_15:=ITEM.v_LYDO_15;
+		END LOOP;
+    -- v_HDXX_VKS_TKPT_16 - HỘI ĐỒNG XÉT XỬ, ĐẠI DIỆN VIỆN KIỂM SÁT, THƯ KÝ PHIÊN TOÀ -- Ghi đầy đủ họ tên - 16 - 
+		FOR ITEM IN (
+			SELECT 
+				T1.v_STT, 
+				LISTAGG(
+					CAST(
+						'- ' || NVL(T5.TenCanBoToaAn,'')||NVL(T5.TenKSV,'')||
+						' ('||DECODE(T5.MAVAITRO,'THAMPHAN','TPCT','THAMPHANHDXX', 'TPTV','THAMPHANDUKHUYET', 'TPDK','HTND', 'HTND','THUKY', 'TK','THUKYDUKHUYET', 'TKDK','KSV', 'KSV','')||')' 
+						AS VARCHAR2(4000)
+					), CHR(10)
+				) WITHIN GROUP (ORDER BY T1.v_STT) v_HDXX_VKS_TKPT_16
+			FROM 
+				TABLE(v_ARRAY) T1 
+				inner join (
+        select T2.DONID,T3.HOTEN as TenCanBoToaAn,T4.HOTEN as TenKSV,T2.MAVAITRO from AHC_PHUCTHAM_HDXX T2
+				LEFT JOIN DM_CANBO T3 ON T3.ID=T2.CANBOID AND INSTR('THAMPHAN,THAMPHANHDXX,THAMPHANDUKHUYET,THUKY,THUKYDUKHUYET',T2.MAVAITRO)>0
+				LEFT JOIN DM_CANBOVKS T4 ON T4.ID=T2.CANBOID AND INSTR('HTND,KSV',T2.MAVAITRO)>0
+        ORDER BY NLSSORT(T2.MAVAITRO, 'NLS_SORT = VIETNAMESE')
+        )T5 ON T1.v_VUANID=T5.DONID
+      group by T1.v_STT
+		) LOOP
+			v_ARRAY(ITEM.v_STT).v_HDXX_VKS_TKPT_16:=ITEM.v_HDXX_VKS_TKPT_16;
+		END LOOP;
+    -- v_BA_QDPT_17 - BẢN ÁN, QUYẾT ĐỊNH PHÚC THẨM Số, ngày tháng năm - 17 - 
+		FOR ITEM IN (
+			SELECT 
+				T1.v_STT
+                ,DECODE(NVL(T2.ID,0),0
+                    ,T3.SOQD|| CHR(10) ||TO_CHAR(T3.NGAYQD,'DD/MM/YYYY') 
+                    ,T2.SOBANAN|| CHR(10) || TO_CHAR(T2.NGAYTUYENAN,'DD/MM/YYYY')
+
+                        )
+                        v_BA_QDPT_17
+			FROM 
+				TABLE(v_ARRAY) T1 
+				LEFT JOIN AHC_PHUCTHAM_BANAN T2 ON T1.v_VUANID=T2.DONID
+                LEFT JOIN (SELECT Q.SOQD, Q.NGAYQD,Q.DONID,Q.QUYETDINHID 
+                                        FROM AHC_PHUCTHAM_QUYETDINH Q 
+                                        LEFT JOIN DM_QD_QUYETDINH D ON D.ID=Q.QUYETDINHID 
+                                                WHERE D.KET_THUC = 1) T3 ON T1.v_VUANID=T3.DONID
+		) LOOP
+			v_ARRAY(ITEM.v_STT).v_BA_QDPT_17:=ITEM.v_BA_QDPT_17;
+		END LOOP;
+
+		-- v_QD_TA_PT_18 - QUYẾT ĐỊNH CỦA TÒA ÁN CẤP PHÚC THẨM  -- Tóm tắt phần quyết định - 18 - 
+        FOR ITEM IN (
+			SELECT 
+				T1.v_STT
+                ,DECODE(NVL(T2.ID,0),0
+                    ,T3.QTENKQ|| CHR(10)
+                    ,T2.BTENKQ|| CHR(10) 
+                        )
+                        v_QD_TA_PT_18
+			FROM 
+				TABLE(v_ARRAY) T1 
+				LEFT JOIN (SELECT B.ID,B.DONID,B.SOBANAN,B.NGAYTUYENAN,BKQ.TEN BTENKQ 
+                                        FROM AHC_PHUCTHAM_BANAN B
+                                        LEFT JOIN DM_KETQUA_PHUCTHAM BKQ ON BKQ.ID = B.KETQUAPHUCTHAMID) T2 ON T1.v_VUANID=T2.DONID
+                LEFT JOIN (SELECT Q.SOQD, Q.NGAYQD,Q.DONID,Q.QUYETDINHID,KQ.TEN QTENKQ 
+                                        FROM AHC_PHUCTHAM_QUYETDINH Q 
+                                        LEFT JOIN DM_QD_QUYETDINH D ON D.ID=Q.QUYETDINHID 
+                                        LEFT JOIN DM_KETQUA_PHUCTHAM KQ ON KQ.ID = Q.KETQUAID
+                                                WHERE D.KET_THUC = 1) T3 ON T1.v_VUANID=T3.DONID
+		) LOOP
+			v_ARRAY(ITEM.v_STT).v_QD_TA_PT_18:=ITEM.v_QD_TA_PT_18;
+		END LOOP;
+
+    -- v_LYDO_SH_ST_QDKDPL_19 - LÝ DO SỬA, HỦY… - Do cấp sơ thẩm quyết định không đúng pháp luật - 19 - 
+		FOR ITEM IN (
+			SELECT 
+				T1.v_STT, 
+				DECODE(SIGN(COUNT(T4.ID)),1,'X','') v_LYDO_SH_ST_QDKDPL_19
+			FROM 
+				TABLE(v_ARRAY) T1 
+				INNER JOIN AHC_PHUCTHAM_BANAN T2 ON T1.v_VUANID=T2.DONID
+				INNER JOIN DM_KETQUA_PHUCTHAM T3 ON T2.KETQUAPHUCTHAMID=T3.ID AND INSTR('02,03,04,05,06,13,14',T3.MA)>0 and T3.ISAHC=1 --SỬA,HỦY
+				INNER JOIN DM_KETQUA_PHUCTHAM_LYDO T4 ON T2.LYDOBANANID=T4.ID AND INSTR('do cấp sơ thẩm sai',lower(T4.TEN))>0 --Do cấp sơ thẩm sai
+        group by T1.v_STT
+		) LOOP
+			v_ARRAY(ITEM.v_STT).v_LYDO_SH_ST_QDKDPL_19:=ITEM.v_LYDO_SH_ST_QDKDPL_19;
+		END LOOP;
+    -- v_LYDO_SH_TTM_20 - LÝ DO SỬA, HỦY… - Do có tình tiết mới - 20 - 
+		FOR ITEM IN (
+			SELECT 
+				T1.v_STT, 
+				DECODE(SIGN(COUNT(T4.ID)),1,'X','') v_LYDO_SH_TTM_20
+			FROM 
+				TABLE(v_ARRAY) T1 
+				INNER JOIN AHC_PHUCTHAM_BANAN T2 ON T1.v_VUANID=T2.DONID
+				INNER JOIN DM_KETQUA_PHUCTHAM T3 ON T2.KETQUAPHUCTHAMID=T3.ID AND INSTR('02,03,04,05,06,13,14',T3.MA)>0 and T3.ISADS=1 --SỬA,HỦY
+				INNER JOIN DM_KETQUA_PHUCTHAM_LYDO T4 ON T2.LYDOBANANID=T4.ID AND INSTR('do có tình tiết mới',lower(T4.TEN))>0 --Lý do khác
+        group by T1.v_STT
+		) LOOP
+			v_ARRAY(ITEM.v_STT).v_LYDO_SH_TTM_20:=ITEM.v_LYDO_SH_TTM_20;
+		END LOOP;
+    -- v_APDUNGANLE_21 - ÁP DỤNG ÁN LỆ - 21 - 
+		FOR ITEM IN (
+			SELECT 
+				T1.v_STT, 
+				DECODE(T2.APDUNGANLE,1,'X','') v_APDUNGANLE_21
+			FROM 
+				TABLE(v_ARRAY) T1 
+				INNER JOIN AHC_PHUCTHAM_BANAN T2 ON T1.v_VUANID=T2.DONID
+		) LOOP
+			v_ARRAY(ITEM.v_STT).v_APDUNGANLE_21:=ITEM.v_APDUNGANLE_21;
+		END LOOP;
+    -- v_GQ_TTRG_22 - GIẢI QUYẾT THEO THỦ TỤC RÚT GỌN - 22 - 
+		FOR ITEM IN (
+			SELECT 
+				T1.v_STT, 
+				LISTAGG(
+          T2.SOQD || CHR(10) ||
+          TO_CHAR(T2.NGAYQD,'DD/MM/YYYY')
+          , CHR(10)
+        ) within group (order by T1.v_STT)  v_GQ_TTRG_22
+			FROM 
+				TABLE(v_ARRAY) T1 
+				INNER JOIN AHC_PHUCTHAM_QUYETDINH T2 ON T1.v_VUANID=T2.DONID
+        inner join DM_QD_QUYETDINH T3 on T3.ID=T2.QUYETDINHID and T3.MA='37-HC'
+        GROUP BY T1.v_STT
+		) LOOP
+			v_ARRAY(ITEM.v_STT).v_GQ_TTRG_22:=ITEM.v_GQ_TTRG_22;
+		END LOOP;
+    -- v_KNGDTTT_23 - KHÁNG NGHỊ GIÁM ĐỐC THẨM, TÁI THẨM Số, ngày tháng năm - 23 - 
+
+    -- v_GHICHU_24 - GHI CHÚ - 24 - 
+
+	END;
+
+	PROCEDURE SO_LAODONG_PHUCTHAM
+	(
+		 in_TOAANID IN NUMBER,
+		 in_TOAANCAPCON IN NVARCHAR2,
+		 in_NGAYBATDAU IN NVARCHAR2,
+		 in_NGAYKETTHUC IN NVARCHAR2,
+		 curReturn OUT SYS_REFCURSOR
+	) AS
+		v_ARRAY T_LAODONG_PHUCTHAM;
+		v_IDS T_ID;
+	BEGIN
+		--
+		--TÒA ÁN CẤP CON
+		v_IDS:=T_ID();
+		IF (in_TOAANCAPCON='TRUE') THEN
+			SELECT R_ID(ID) BULK COLLECT INTO v_IDS FROM DM_TOAAN WHERE CAPCHAID=in_TOAANID;
+		END IF;
+		v_IDS.EXTEND();
+		v_IDS(v_IDS.COUNT):=R_ID(in_TOAANID);
+		--
+		--XAC DINH ID THU LY AN THEO THAM SO
+		SELECT R_LAODONG_PHUCTHAM(
+			v_STT=>row_number() over (order by TL.ID),
+			v_THULYID=>TL.ID,
+			v_VUANID=>TL.DONID,
+			v_TOAANID=>TL.TOAANID,
+			v_QUANHEPHAPLUATID=>NULL,
+			v_TL_1=>NULL,
+			v_BA_QDST_2=>NULL,
+			v_ND_NYC_3=>NULL,
+			v_BD_NLQLD_4=>NULL,
+			v_NGUOI_QLNVLQ_5=>NULL,
+			v_NGUOIBV_QLIHP_DS_6=>NULL,
+			v_QHPLKHITL_7=>NULL,
+			v_KC_8=>NULL,
+			v_KN_9=>NULL,
+			v_ADBPKCTT_10=>NULL,
+			v_RUT_KC_11=>NULL,
+			v_RUT_KN_12=>NULL,
+			v_TDC_13=>NULL,
+			v_DC_14=>NULL,
+			v_LYDO_15=>NULL,
+			v_HDXX_VKS_TKPT_16=>NULL,
+			v_BA_QDPT_17=>NULL,
+			v_QD_TA_PT_18=>NULL,
+			v_LYDO_SH_STSAI_19=>NULL,
+			v_LYDO_SH_LDK_20=>NULL,
+			v_APDUNGANLE_21=>NULL,
+			v_GQ_TTRG_22=>NULL,
+			v_VIECLD_23=>NULL,
+			v_QD_GDTTT_24=>NULL,
+			v_GHICHU_25=>NULL,
+            V_NGAYTHULY=>NULL,V_SOTHULY=>NULL
+		)
+--		BULK COLLECT INTO v_ARRAY
+--		FROM ALD_PHUCTHAM_THULY TL INNER JOIN TABLE(v_IDS) I ON I.v_ID=TL.TOAANID
+--		WHERE
+--			NGAYTHULY BETWEEN TO_DATE(in_NGAYBATDAU,'DD/MM/YYYY') AND TO_DATE(in_NGAYKETTHUC,'DD/MM/YYYY');
+
+		BULK COLLECT INTO v_ARRAY
+        FROM (
+        SELECT TL.*
+		FROM ALD_PHUCTHAM_THULY TL 
+            INNER JOIN TABLE(v_IDS) I ON I.v_ID=TL.TOAANID
+		WHERE
+			NGAYTHULY BETWEEN TO_DATE(in_NGAYBATDAU,'DD/MM/YYYY') AND TO_DATE(in_NGAYKETTHUC,'DD/MM/YYYY')
+            
+        UNION 
+		SELECT TL.*
+		FROM ALD_PHUCTHAM_THULY TL 
+            INNER JOIN TABLE(v_IDS) I ON I.v_ID=TL.TOAANID
+		WHERE
+			NGAYTHULY < TO_DATE(in_NGAYBATDAU,'DD/MM/YYYY') AND 
+            (NOT EXISTS (SELECT  STQD.* FROM ALD_PHUCTHAM_QUYETDINH STQD 
+                INNER JOIN DM_QD_QUYETDINH DMQD ON DMQD.ID = STQD.QUYETDINHID AND DMQD.KET_THUC = 1 WHERE TL.DONID = STQD.DONID)
+            AND NOT EXISTS (SELECT BA.* FROM ALD_PHUCTHAM_BANAN BA WHERE TL.DONID = BA.DONID))            
+        
+        UNION 
+		SELECT TL.*
+		FROM ALD_PHUCTHAM_THULY TL 
+            INNER JOIN TABLE(v_IDS) I ON I.v_ID=TL.TOAANID
+		WHERE
+			NGAYTHULY < TO_DATE(in_NGAYBATDAU,'DD/MM/YYYY') AND 
+            (EXISTS (SELECT  STQD.* FROM ALD_PHUCTHAM_QUYETDINH STQD 
+                         INNER JOIN DM_QD_QUYETDINH DMQD ON DMQD.ID = STQD.QUYETDINHID AND DMQD.KET_THUC = 1 
+                     WHERE TL.DONID = STQD.DONID AND STQD.NGAYQD BETWEEN TO_DATE(in_NGAYBATDAU,'DD/MM/YYYY') AND TO_DATE(in_NGAYKETTHUC,'DD/MM/YYYY'))
+             OR EXISTS (SELECT BA.* FROM ALD_PHUCTHAM_BANAN BA WHERE TL.DONID = BA.DONID 
+                        AND BA.NGAYTUYENAN BETWEEN TO_DATE(in_NGAYBATDAU,'DD/MM/YYYY') AND TO_DATE(in_NGAYKETTHUC,'DD/MM/YYYY')))
+                        
+            ) TL;
+            
+		--THONG TIN SO THU LY
+		PKG_GSTP_SOTHULY_PHUCTHAM.FILL_LAODONG_PHUCTHAM(v_ARRAY);
+		/*--
+		FOR ITEM IN (SELECT * FROM TABLE(v_ARRAY)) LOOP
+			DBMS_OUTPUT.PUT_LINE (ITEM.v_STT||' - '||ITEM.v_THULYID);
+		END LOOP;
+		--*/
+		OPEN curReturn FOR SELECT * FROM TABLE(v_ARRAY)
+        ORDER by EXTRACT(YEAR FROM  V_NGAYTHULY),to_number(REGEXP_REPLACE(V_SOTHULY, '[^0-9]')),V_NGAYTHULY;
+		--
+	EXCEPTION 
+		WHEN OTHERS THEN 
+			RAISE_APPLICATION_ERROR(-20000, sqlerrm);
+	END;
+	/*6 - SỔ THỤ LÝ VÀ KẾT QỦA GIẢI QUYẾT CÁC VỤ VIỆC LAO ĐỘNG PHÚC THẨM*/
+	PROCEDURE FILL_LAODONG_PHUCTHAM
+	(
+		v_ARRAY IN OUT T_LAODONG_PHUCTHAM
+	) AS
+	BEGIN	
+		--v_ARRAY:=T_LAODONG_PHUCTHAM();
+		-- v_TL_1 - THỤ LÝ Số, ngày tháng năm - 1 - 
+    FOR ITEM IN (
+			SELECT 
+				T1.v_STT, 
+				T2.QUANHEPHAPLUATID v_QUANHEPHAPLUATID,
+				T2.SOTHULY|| CHR(10) ||TO_CHAR(T2.NGAYTHULY,'DD/MM/YYYY') v_TL_1,
+				T2.NGAYTHULY  V_NGAYTHULY,T2.SOTHULY V_SOTHULY
+			FROM 
+				TABLE(v_ARRAY) T1 
+				INNER JOIN ALD_PHUCTHAM_THULY T2 ON T1.v_THULYID=T2.ID
+		) LOOP
+			v_ARRAY(ITEM.v_STT).v_TL_1:=ITEM.v_TL_1;
+			v_ARRAY(ITEM.v_STT).v_QUANHEPHAPLUATID:=ITEM.v_QUANHEPHAPLUATID;
+            v_ARRAY(ITEM.v_STT).V_NGAYTHULY:=ITEM.V_NGAYTHULY;v_ARRAY(ITEM.v_STT).V_SOTHULY:=ITEM.V_SOTHULY;
+		END LOOP;
+		-- v_BA_QDST_2 - BẢN ÁN, QUYẾT ĐỊNH SƠ THẨM Số, ngày tháng năm và tên Toà án đã giải quyết - 2 - 
+		FOR ITEM IN (
+			SELECT 
+				T1.v_STT
+                ,DECODE(NVL(T2.ID,0),0
+                    ,T3.SOQD|| CHR(10) ||TO_CHAR(T3.NGAYQD,'DD/MM/YYYY')|| CHR(10) || T3.QTENTOA 
+                    ,T2.SOBANAN|| CHR(10) || TO_CHAR(T2.NGAYTUYENAN,'DD/MM/YYYY') || CHR(10) || T2.BTENTOA 
+                         )
+                        v_BA_QDST_2
+			FROM 
+				TABLE(v_ARRAY) T1  
+				LEFT JOIN (SELECT B.ID,B.DONID,B.SOBANAN,B.NGAYTUYENAN,DM.TEN BTENTOA 
+                                        FROM ALD_SOTHAM_BANAN B 
+                                        LEFT JOIN DM_TOAAN DM ON B.TOAANID = DM.ID)T2 ON T1.v_VUANID=T2.DONID
+                LEFT JOIN (SELECT Q.SOQD, Q.NGAYQD,Q.DONID,Q.QUYETDINHID,DM.TEN QTENTOA
+                                        FROM ALD_SOTHAM_QUYETDINH Q
+                                        LEFT JOIN DM_TOAAN DM ON Q.TOAANID = DM.ID
+                                        LEFT JOIN DM_QD_QUYETDINH D ON D.ID=Q.QUYETDINHID 
+                                                WHERE D.KET_THUC = 1) T3 ON T1.v_VUANID=T3.DONID
+		) LOOP
+			v_ARRAY(ITEM.v_STT).v_BA_QDST_2:=ITEM.v_BA_QDST_2;
+		END LOOP;
+    -- v_ND_NYC_3 - NGUYÊN ĐƠN HOẶC NGƯỜI YÊU CẦU Họ tên, địa chỉ. Họ tên người đại diện, chức vụ, địa chỉ - 3 - 
+		FOR ITEM IN (
+			SELECT 
+				T1.v_STT, 
+				LISTAGG(
+					CAST(
+						'- ' || T2.TENDUONGSU||'; '||
+						case when T2.NAMSINH = 0 then ' ' else ' ' || T2.NAMSINH ||'; ' end ||
+						T2.DIACHI 
+						AS VARCHAR2(4000)
+					), CHR(10)
+				) WITHIN GROUP (ORDER BY T1.v_STT) v_ND_NYC_3
+			FROM 
+				TABLE(v_ARRAY) T1 
+				INNER JOIN (SELECT ID,DONID,TENDUONGSU,NAMSINH,TUCACHTOTUNG_MA,
+                      CASE WHEN LOAIDUONGSU =1 THEN TAMTRUCHITIET ELSE NDD_DIACHICHITIET end as DIACHI  
+                    FROM ALD_DON_DUONGSU 
+                    where 
+                    --ISPHUCTHAM=1 and 
+                    TUCACHTOTUNG_MA ='NGUYENDON' --NGUYÊN ĐƠN
+                    )T2 ON T1.v_VUANID=T2.DONID
+			GROUP BY T1.v_STT
+		) LOOP
+			v_ARRAY(ITEM.v_STT).v_ND_NYC_3:=ITEM.v_ND_NYC_3;
+		END LOOP;
+    -- v_BD_NLQLD_4 - BỊ ĐƠN HOẶC NGƯỜI LIÊN QUAN TRONG VỤ VIỆC LAO ĐỘNG Họ tên, địa chỉ. Họ tên người đại diện, chức vụ, địa chỉ - 4 - 
+		FOR ITEM IN (
+			SELECT 
+				T1.v_STT, 
+				LISTAGG(
+					CAST(
+						'- ' || T2.TENDUONGSU ||'; '||
+						case when T2.NAMSINH = 0 then ' ' else ' ' || T2.NAMSINH ||'; ' end ||
+						T2.DIACHI 
+						AS VARCHAR2(4000)
+					), CHR(10)
+				) WITHIN GROUP (ORDER BY T1.v_STT) v_BD_NLQLD_4
+			FROM 
+				TABLE(v_ARRAY) T1 
+				INNER JOIN (SELECT ID,DONID,TENDUONGSU,NAMSINH,TUCACHTOTUNG_MA,
+                      CASE WHEN LOAIDUONGSU =1 THEN TAMTRUCHITIET ELSE NDD_DIACHICHITIET end as DIACHI  
+                    FROM ALD_DON_DUONGSU 
+                    where 
+                    --ISPHUCTHAM=1 and 
+                    TUCACHTOTUNG_MA ='BIDON'
+                    ) T2 ON T1.v_VUANID=T2.DONID
+			GROUP BY T1.v_STT
+		) LOOP
+			v_ARRAY(ITEM.v_STT).v_BD_NLQLD_4:=ITEM.v_BD_NLQLD_4;
+		END LOOP;
+    -- v_NGUOI_QLNVLQ_5 - NGƯỜI CÓ QUYỀN LỢI, NGHĨA VỤ LIÊN QUAN Họ tên, địa chỉ. Họ tên người đại diện, chức vụ, địa chỉ - 5 - 
+		FOR ITEM IN (
+			SELECT 
+				T1.v_STT, 
+				LISTAGG(
+					CAST(
+						'- ' || T2.TENDUONGSU ||'; '||
+						case when T2.NAMSINH = 0 then ' ' else ' ' || T2.NAMSINH ||'; ' end ||
+						decode(T2.LOAIDUONGSU,1,T2.TAMTRUCHITIET,T2.NDD_DIACHICHITIET) 
+						AS VARCHAR2(4000)
+					), CHR(10)
+				) WITHIN GROUP (ORDER BY T1.v_STT) v_NGUOI_QLNVLQ_5
+			FROM 
+				TABLE(v_ARRAY) T1 
+				INNER JOIN ALD_DON_DUONGSU T2 ON T1.v_VUANID=T2.DONID AND T2.TUCACHTOTUNG_MA='QUYENNVLQ' --AND T2.ISPHUCTHAM=1 --NGƯỜI CÓ QUYỀN LỢI NGHĨA VỤ LIÊN QUAN
+			GROUP BY T1.v_STT
+		) LOOP
+			v_ARRAY(ITEM.v_STT).v_NGUOI_QLNVLQ_5:=ITEM.v_NGUOI_QLNVLQ_5;
+		END LOOP;
+    -- v_NGUOIBV_QLIHP_DS_6 - HỌ TÊN NGƯỜI BẢO VỆ QUYỀN, LỢI ÍCH HỢP PHÁP CHO ĐƯƠNG SỰ - 6 - 
+		FOR ITEM IN (
+			SELECT 
+				T1.v_STT, 
+				LISTAGG(
+					CAST(
+						'- ' || T2.HOTEN||'; '||
+						case when T2.NAMSINH = 0 then ' ' else ' ' || T2.NAMSINH ||'; ' end ||
+						T2.HKTTCHITIET 
+						AS VARCHAR2(4000)
+					), CHR(10)
+				) WITHIN GROUP (ORDER BY T1.v_STT) v_NGUOIBV_QLIHP_DS_6
+			FROM 
+				TABLE(v_ARRAY) T1 
+				INNER JOIN ALD_PHUCTHAM_THAMGIATOTUNG T2 ON T2.TUCACHTGTTID='TGTTDS_07' AND T1.v_VUANID=T2.DONID
+			GROUP BY T1.v_STT
+		) LOOP
+			v_ARRAY(ITEM.v_STT).v_NGUOIBV_QLIHP_DS_6:=ITEM.v_NGUOIBV_QLIHP_DS_6;
+		END LOOP;
+    -- v_QHPLKHITL_7 - QUAN HỆ PHÁP LUẬT KHI THỤ LÝ - 7 - 
+		FOR ITEM IN (
+			SELECT 
+				T1.v_STT, 
+				--T2.TEN v_QHPLKHITL_7
+                DECODE(D.QUANHEPHAPLUAT_NAME, NULL, D.TEN,D.QUANHEPHAPLUAT_NAME) v_QHPLKHITL_7
+			FROM 
+				TABLE(v_ARRAY) T1 
+                INNER JOIN (select d1.id,d1.QUANHEPHAPLUAT_NAME,dm.TEN  
+                                    From  ALD_DON d1
+                                        left join DM_DATAITEM dm on dm.id = d1.QUANHEPHAPLUATID
+                                        ) D ON T1.v_VUANID = D.ID --MANHND
+
+				--INNER JOIN DM_DATAITEM T2 ON T1.v_QUANHEPHAPLUATID=T2.ID
+		) LOOP
+			v_ARRAY(ITEM.v_STT).v_QHPLKHITL_7:=ITEM.v_QHPLKHITL_7;
+		END LOOP;
+   -- v_KC_8 - KHÁNG CÁO Ngày tháng năm - 8 -Tóm tắt nội dung
+        --MANHND
+		FOR ITEM IN (
+			SELECT 
+				T1.v_STT, 
+				LISTAGG(TO_CHAR(T2.NGAYKHANGCAO,'dd/MM/yyyy'), CHR(10)) WITHIN GROUP (ORDER BY T1.v_STT) v_KC_8
+			FROM 
+				TABLE(v_ARRAY) T1 
+				INNER JOIN ALD_SOTHAM_KHANGCAO T2 ON T1.v_VUANID=T2.DONID
+			GROUP BY 
+				T1.v_STT				
+		) LOOP
+			v_ARRAY(ITEM.v_STT).v_KC_8:=ITEM.v_KC_8;
+		END LOOP;
+
+		-- v_KN_9 - KHÁNG NGHỊ Số, ngày tháng năm - 9 - Tóm tắt nội dung
+        --MANHND
+		FOR ITEM IN (
+			SELECT 
+				T1.v_STT, 
+				LISTAGG(
+					T2.SOKN||', '||
+					TO_CHAR(T2.NGAYKN,'DD/MM/YYYY')
+					, CHR(10)
+				) WITHIN GROUP (ORDER BY T1.v_STT)  v_KN_9
+			FROM 
+				TABLE(v_ARRAY) T1 
+				INNER JOIN ALD_SOTHAM_KHANGNGHI T2 ON T1.v_VUANID=T2.DONID
+			GROUP BY 
+				T1.v_STT				
+		) LOOP
+			v_ARRAY(ITEM.v_STT).v_KN_9:=ITEM.v_KN_9;
+		END LOOP;
+
+    -- v_ADBPKCTT_10 - ÁP DỤNG BIỆN PHÁP KHẨN CẤP TẠM THỜI Số, ngày tháng năm - 10 - 
+		FOR ITEM IN (
+			SELECT 
+				T1.v_STT, 
+				LISTAGG(
+					T2.SOQD || CHR(10) ||
+					TO_CHAR(T2.NGAYQD,'DD/MM/YYYY')
+					, CHR(10)
+				) WITHIN GROUP (ORDER BY T1.v_STT) v_ADBPKCTT_10
+			FROM 
+				TABLE(v_ARRAY) T1 
+				INNER JOIN ALD_PHUCTHAM_QUYETDINH T2 ON T1.v_VUANID=T2.DONID
+        inner join DM_QD_LOAI T3 on T3.ID=T2.LOAIQDID and T3.MA='ADBPTT'
+			GROUP BY T1.v_STT
+		) LOOP
+			v_ARRAY(ITEM.v_STT).v_ADBPKCTT_10:=ITEM.v_ADBPKCTT_10;
+		END LOOP;
+    -- v_RUT_KC_11 - RÚT KHÁNG CÁO Ngày tháng năm - 11 - 
+		FOR ITEM IN (
+			SELECT 
+				T1.v_STT, 
+				LISTAGG(T2.NGAYRUT, CHR(10)) WITHIN GROUP (ORDER BY T1.v_STT) v_RUT_KC_11
+			FROM 
+				TABLE(v_ARRAY) T1 
+				INNER JOIN ALD_SOTHAM_RUTKCKN T2 ON T1.v_VUANID=T2.DONID AND T2.ISKCKN=1 --RÚT KHÁNG CÁO
+			GROUP BY 
+				T1.v_STT				
+		) LOOP
+			v_ARRAY(ITEM.v_STT).v_RUT_KC_11:=ITEM.v_RUT_KC_11;
+		END LOOP;
+
+		-- v_RUT_KN_12 - RÚT KHÁNG NGHỊ Số, ngày tháng năm - 12 - 
+		FOR ITEM IN (
+			SELECT 
+				T1.v_STT, 
+				LISTAGG(T2.NGAYRUT, CHR(10)) WITHIN GROUP (ORDER BY T1.v_STT) v_RUT_KN_12
+			FROM 
+				TABLE(v_ARRAY) T1 
+				INNER JOIN ALD_SOTHAM_RUTKCKN T2 ON T1.v_VUANID=T2.DONID AND T2.ISKCKN=2 -- RÚT KHÁNG NGHỊ
+			GROUP BY 
+				T1.v_STT				
+		) LOOP
+			v_ARRAY(ITEM.v_STT).v_RUT_KN_12:=ITEM.v_RUT_KN_12;
+		END LOOP; 
+
+    -- v_TDC_13 - TẠM ĐÌNH CHỈ Số, ngày tháng năm - 13 - 
+		FOR ITEM IN (
+			SELECT 
+				T1.v_STT, 
+				LISTAGG(
+					T2.SOQD || CHR(10) ||
+					TO_CHAR(T2.NGAYQD,'DD/MM/YYYY')
+					, CHR(10)
+				) WITHIN GROUP (ORDER BY T1.v_STT) v_TDC_13
+			FROM 
+				TABLE(v_ARRAY) T1 
+				INNER JOIN ALD_PHUCTHAM_QUYETDINH T2 ON T1.v_VUANID=T2.DONID
+        inner join DM_QD_LOAI T3 on T3.ID=T2.LOAIQDID and T3.MA='TDC'
+			GROUP BY T1.v_STT
+		) LOOP
+			v_ARRAY(ITEM.v_STT).v_TDC_13:=ITEM.v_TDC_13;
+		END LOOP;
+    -- v_DC_14 - ĐÌNH CHỈ Số, ngày tháng năm - 14 - 
+		FOR ITEM IN (
+			SELECT 
+				T1.v_STT, 
+				LISTAGG(
+					T2.SOQD || CHR(10) ||
+					TO_CHAR(T2.NGAYQD,'DD/MM/YYYY')
+					, CHR(10)
+				) WITHIN GROUP (ORDER BY T1.v_STT) v_DC_14
+			FROM 
+				TABLE(v_ARRAY) T1 
+				INNER JOIN ALD_PHUCTHAM_QUYETDINH T2 ON T1.v_VUANID=T2.DONID
+        inner join DM_QD_LOAI T3 on T3.ID=T2.LOAIQDID and T3.MA='DC'
+			GROUP BY T1.v_STT
+		) LOOP
+			v_ARRAY(ITEM.v_STT).v_DC_14:=ITEM.v_DC_14;
+		END LOOP;
+    -- v_LYDO_15 - LÝ DO - 15 - 
+		FOR ITEM IN (
+			SELECT 
+				T1.v_STT,
+        T3.TEN v_LYDO_15
+			FROM 
+				TABLE(v_ARRAY) T1 
+				INNER JOIN ALD_PHUCTHAM_QUYETDINH T2 on T1.v_VUANID=T2.DONID
+        inner join DM_QD_LOAI T5 on T2.LOAIQDID=T5.ID
+        inner join DM_QD_QUYETDINH_LYDO T3 ON T2.LYDOID=T3.ID and T5.MA='DC'
+		) LOOP
+			v_ARRAY(ITEM.v_STT).v_LYDO_15:=ITEM.v_LYDO_15;
+		END LOOP;
+    -- v_HDXX_VKS_TKPT_16 - HỘI ĐỒNG XÉT XỬ, ĐẠI DIỆN VIỆN KIỂM SÁT, THƯ KÝ PHIÊN TOÀ -- Ghi đầy đủ họ tên - 16 - 
+		FOR ITEM IN (
+			SELECT 
+				T1.v_STT, 
+				LISTAGG(
+					CAST(
+						'- ' || NVL(T5.TenCanBoToaAn,'')||NVL(T5.TenKSV,'')||
+						' ('||DECODE(T5.MAVAITRO,'THAMPHAN','TPCT','THAMPHANHDXX', 'TPTV','THAMPHANDUKHUYET', 'TPDK','HTND', 'HTND','THUKY', 'TK','THUKYDUKHUYET', 'TKDK','KSV', 'KSV','')||')' 
+						AS VARCHAR2(4000)
+					), CHR(10)
+				) WITHIN GROUP (ORDER BY T1.v_STT) v_HDXX_VKS_TKPT_16
+			FROM 
+				TABLE(v_ARRAY) T1 
+				inner join (
+        select T2.DONID,T3.HOTEN as TenCanBoToaAn,T4.HOTEN as TenKSV,T2.MAVAITRO from ALD_PHUCTHAM_HDXX T2
+				LEFT JOIN DM_CANBO T3 ON T3.ID=T2.CANBOID AND INSTR('THAMPHAN,THAMPHANHDXX,THAMPHANDUKHUYET,THUKY,THUKYDUKHUYET',T2.MAVAITRO)>0
+				LEFT JOIN DM_CANBOVKS T4 ON T4.ID=T2.CANBOID AND INSTR('HTND,KSV',T2.MAVAITRO)>0
+        ORDER BY NLSSORT(T2.MAVAITRO, 'NLS_SORT = VIETNAMESE')
+        )T5 ON T1.v_VUANID=T5.DONID
+      group by T1.v_STT
+		) LOOP
+			v_ARRAY(ITEM.v_STT).v_HDXX_VKS_TKPT_16:=ITEM.v_HDXX_VKS_TKPT_16;
+		END LOOP;
+
+    -- v_BA_QDPT_17 - BẢN ÁN, QUYẾT ĐỊNH PHÚC THẨM Số, ngày tháng năm - 17 - 
+		FOR ITEM IN (
+			SELECT 
+				T1.v_STT
+                ,DECODE(NVL(T2.ID,0),0
+                    ,T3.SOQD|| CHR(10) ||TO_CHAR(T3.NGAYQD,'DD/MM/YYYY') 
+                    ,T2.SOBANAN|| CHR(10) || TO_CHAR(T2.NGAYTUYENAN,'DD/MM/YYYY')
+
+                        )
+                        v_BA_QDPT_17
+			FROM 
+				TABLE(v_ARRAY) T1 
+				LEFT JOIN ALD_PHUCTHAM_BANAN T2 ON T1.v_VUANID=T2.DONID
+                LEFT JOIN (SELECT Q.SOQD, Q.NGAYQD,Q.DONID,Q.QUYETDINHID 
+                                        FROM ALD_PHUCTHAM_QUYETDINH Q 
+                                        LEFT JOIN DM_QD_QUYETDINH D ON D.ID=Q.QUYETDINHID 
+                                                WHERE D.KET_THUC = 1) T3 ON T1.v_VUANID=T3.DONID
+		) LOOP
+			v_ARRAY(ITEM.v_STT).v_BA_QDPT_17:=ITEM.v_BA_QDPT_17;
+		END LOOP;
+
+		-- v_QD_TA_PT_18 - QUYẾT ĐỊNH CỦA TÒA ÁN CẤP PHÚC THẨM  -- Tóm tắt phần quyết định - 18 - 
+        FOR ITEM IN (
+			SELECT 
+				T1.v_STT
+                ,DECODE(NVL(T2.ID,0),0
+                    ,T3.QTENKQ|| CHR(10)
+                    ,T2.BTENKQ|| CHR(10) 
+                        )
+                        v_QD_TA_PT_18
+			FROM 
+				TABLE(v_ARRAY) T1 
+				LEFT JOIN (SELECT B.ID,B.DONID,B.SOBANAN,B.NGAYTUYENAN,BKQ.TEN BTENKQ 
+                                        FROM ALD_PHUCTHAM_BANAN B
+                                        LEFT JOIN DM_KETQUA_PHUCTHAM BKQ ON BKQ.ID = B.KETQUAPHUCTHAMID) T2 ON T1.v_VUANID=T2.DONID
+                LEFT JOIN (SELECT Q.SOQD, Q.NGAYQD,Q.DONID,Q.QUYETDINHID,KQ.TEN QTENKQ 
+                                        FROM ALD_PHUCTHAM_QUYETDINH Q 
+                                        LEFT JOIN DM_QD_QUYETDINH D ON D.ID=Q.QUYETDINHID 
+                                        LEFT JOIN DM_KETQUA_PHUCTHAM KQ ON KQ.ID = Q.KETQUAID
+                                                WHERE D.KET_THUC = 1) T3 ON T1.v_VUANID=T3.DONID
+		) LOOP
+			v_ARRAY(ITEM.v_STT).v_QD_TA_PT_18:=ITEM.v_QD_TA_PT_18;
+		END LOOP;
+
+    -- v_LYDO_SH_STSAI_19 - LÝ DO SỬA, HỦY… - Do cấp sơ thẩm sai - 19 - 
+		FOR ITEM IN (
+			SELECT 
+				T1.v_STT, 
+				DECODE(SIGN(COUNT(T4.ID)),1,'X','') v_LYDO_SH_STSAI_19
+			FROM 
+				TABLE(v_ARRAY) T1 
+				INNER JOIN ALD_PHUCTHAM_BANAN T2 ON T1.v_VUANID=T2.DONID
+				INNER JOIN DM_KETQUA_PHUCTHAM T3 ON T2.KETQUAPHUCTHAMID=T3.ID AND INSTR('02,03,04,05,06,13,14',T3.MA)>0 and T3.ISALD=1 --SỬA,HỦY
+				INNER JOIN DM_KETQUA_PHUCTHAM_LYDO T4 ON T2.LYDOBANANID=T4.ID AND INSTR('do cấp sơ thẩm sai',lower(T4.TEN))>0 --Do cấp sơ thẩm sai
+        group by T1.v_STT
+		) LOOP
+			v_ARRAY(ITEM.v_STT).v_LYDO_SH_STSAI_19:=ITEM.v_LYDO_SH_STSAI_19;
+		END LOOP;
+    -- v_LYDO_SH_LDK_20 - LÝ DO SỬA, HỦY… - Do có lý do khác - 20 - 
+		FOR ITEM IN (
+			SELECT 
+				T1.v_STT, 
+				DECODE(SIGN(COUNT(T4.ID)),1,'X','') v_LYDO_SH_LDK_20
+			FROM 
+				TABLE(v_ARRAY) T1 
+				INNER JOIN ALD_PHUCTHAM_BANAN T2 ON T1.v_VUANID=T2.DONID
+				INNER JOIN DM_KETQUA_PHUCTHAM T3 ON T2.KETQUAPHUCTHAMID=T3.ID AND INSTR('02,03,04,05,06,13,14',T3.MA)>0 and T3.ISALD=1 --SỬA,HỦY
+				INNER JOIN DM_KETQUA_PHUCTHAM_LYDO T4 ON T2.LYDOBANANID=T4.ID AND INSTR('do có tình tiết mới,lý do khác',lower(T4.TEN))>0 --Lý do khác
+        group by T1.v_STT
+		) LOOP
+			v_ARRAY(ITEM.v_STT).v_LYDO_SH_LDK_20:=ITEM.v_LYDO_SH_LDK_20;
+		END LOOP;
+    -- v_APDUNGANLE_21 - ÁP DỤNG ÁN LỆ - 21 - 
+		FOR ITEM IN (
+			SELECT 
+				T1.v_STT, 
+				DECODE(T2.APDUNGANLE,1,'X','') v_APDUNGANLE_21
+			FROM 
+				TABLE(v_ARRAY) T1 
+				INNER JOIN ALD_PHUCTHAM_BANAN T2 ON T1.v_VUANID=T2.DONID
+		) LOOP
+			v_ARRAY(ITEM.v_STT).v_APDUNGANLE_21:=ITEM.v_APDUNGANLE_21;
+		END LOOP;
+    -- v_GQ_TTRG_22 - GIẢI QUYẾT THEO THỦ TỤC RÚT GỌN - 22 - 
+		FOR ITEM IN (
+			SELECT 
+				T1.v_STT, 
+				LISTAGG(
+          T2.SOQD || CHR(10) ||
+          TO_CHAR(T2.NGAYQD,'DD/MM/YYYY')
+          , CHR(10)
+        ) within group (order by T1.v_STT)  v_GQ_TTRG_22
+			FROM 
+				TABLE(v_ARRAY) T1 
+				INNER JOIN ALD_PHUCTHAM_QUYETDINH T2 ON T1.v_VUANID=T2.DONID
+        inner join DM_QD_QUYETDINH T3 on T3.ID=T2.QUYETDINHID and T3.MA='80-DS'
+        GROUP BY T1.v_STT
+		) LOOP
+			v_ARRAY(ITEM.v_STT).v_GQ_TTRG_22:=ITEM.v_GQ_TTRG_22;
+		END LOOP;
+    -- v_VIECLD_23 - VIỆC LAO ĐỘNG - 23 - 
+		FOR ITEM IN (
+			SELECT 
+				T1.v_STT, 
+				DECODE(T2.LOAIQUANHE,2,'X','') v_VIECLD_23
+			FROM 
+				TABLE(v_ARRAY) T1 
+				INNER JOIN ALD_PHUCTHAM_THULY T2 ON T1.v_VUANID=T2.DONID
+		) LOOP
+			v_ARRAY(ITEM.v_STT).v_VIECLD_23:=ITEM.v_VIECLD_23;
+		END LOOP;
+    -- v_QD_GDTTT_24 - QUYẾT ĐỊNH GIÁM ĐỐC THẨM, TÁI THẨM Số, ngày tháng năm - 24 - 
+
+    -- v_GHICHU_25 - GHI CHÚ - 25 - 
+    FOR ITEM IN (
+			SELECT 
+				T1.v_STT, 
+				T2.GHICHU v_GHICHU_25
+			FROM 
+				TABLE(v_ARRAY) T1 
+				INNER JOIN ALD_PHUCTHAM_THULY T2 ON T1.v_THULYID=T2.ID
+		) LOOP
+			v_ARRAY(ITEM.v_STT).v_GHICHU_25:=ITEM.v_GHICHU_25;
+		END LOOP;
+	END;
+
+END PKG_GSTP_SOTHULY_PHUCTHAM;
+
+/

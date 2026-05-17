@@ -1,0 +1,102 @@
+--------------------------------------------------------
+--  DDL for Package PKG_STPT_HANHCHINH
+--------------------------------------------------------
+
+  CREATE OR REPLACE NONEDITIONABLE PACKAGE "GSCM"."PKG_STPT_HANHCHINH" AS
+
+FUNCTION DON_SEARCH_ITEM
+( 
+    V_CAP_XET_XU_LOGIN  IN VARCHAR2,
+    V_TEN_VU_AN IN VARCHAR2, 
+    V_QHPL IN VARCHAR2, 
+    V_MA_VU_AN IN VARCHAR2, 
+    V_TENDUONGSU IN VARCHAR2,
+    V_CAPXX IN VARCHAR2,
+    V_TOAAN_ID IN VARCHAR2, 
+    V_TINHTRANG_THULY IN VARCHAR2,
+    V_NGAYTHULY_TU IN VARCHAR2,
+    V_NGAYTHULY_DEN IN VARCHAR2,
+    V_SOTHULY IN VARCHAR2,
+    V_THAMPHAN_ID IN VARCHAR2, 
+    V_TINHTRANG_GIAIQUYET IN VARCHAR2,
+    V_TUNGAY IN VARCHAR2,
+    V_DENNGAY IN VARCHAR2,
+    V_KETQUA IN VARCHAR2,
+    V_SO_QD IN VARCHAR2,
+    V_NGAY_QD IN VARCHAR2,
+    V_THUKY_ID IN VARCHAR2, 
+    V_THOIHAN_GQ IN VARCHAR2, 
+    V_LOAIDON IN VARCHAR2, 
+    V_PT_RKINHNGHIEM IN VARCHAR2, 
+    V_GQDON IN VARCHAR2, 
+    V_UTTP IN VARCHAR2,
+    Page_Index in	int,
+    Page_Size	in	int
+)RETURN T_STPT_6LOAIAN;
+PROCEDURE  AHC_FILE_CHECKSTT
+(   vdonviID in number,
+    vMaGiaiDoan number,
+    vNam number,
+    vLoaiFile number,
+    vSTT    number,
+    curReturn    OUT       sys_refcursor
+);
+PROCEDURE  AHC_FILE_CHECKSTT_ANPHI
+(   vdonviID in number,
+    vMaGiaiDoan number,
+    vNam number,
+    vLoaiFile number,
+    vSTT    number,
+    vSTB_Phu IN VARCHAR2,
+    vID number,
+    curReturn    OUT       sys_refcursor
+);
+PROCEDURE  GET_DUONGSU_NGUYENDON
+(   
+    vDONID in number,
+    curReturn    OUT       sys_refcursor
+);
+
+PROCEDURE  GET_DUONGSU_KHANGCAO
+(   
+    vDONID in number,
+    curReturn    OUT       sys_refcursor
+);
+
+-- Chuyển sang PKG_AHC_STPT_DS
+--PROCEDURE DON_SEARCH
+--( 
+--    V_CAP_XET_XU_LOGIN  IN VARCHAR2,
+--    V_TEN_VU_AN IN VARCHAR2, 
+--    V_QHPL IN VARCHAR2, 
+--    V_MA_VU_AN IN VARCHAR2, 
+--    V_TENDUONGSU IN VARCHAR2,
+--    V_CAPXX IN VARCHAR2,
+--    V_TOAAN_ID IN VARCHAR2, 
+--    V_TINHTRANG_THULY IN VARCHAR2,
+--    V_NGAYTHULY_TU IN VARCHAR2,
+--    V_NGAYTHULY_DEN IN VARCHAR2,
+--    V_SOTHULY IN VARCHAR2,
+--    V_THAMPHAN_ID IN VARCHAR2, 
+--    V_TINHTRANG_GIAIQUYET IN VARCHAR2,
+--    V_TUNGAY IN VARCHAR2,
+--    V_DENNGAY IN VARCHAR2,
+--    V_KETQUA IN VARCHAR2,
+--    V_SO_QD IN VARCHAR2,
+--    V_NGAY_QD IN VARCHAR2,
+--    V_THUKY_ID IN VARCHAR2, 
+--    V_THOIHAN_GQ IN VARCHAR2, 
+--    V_LOAIDON IN VARCHAR2, 
+--    V_PT_RKINHNGHIEM IN VARCHAR2, 
+--    V_GQDON IN VARCHAR2,
+--    V_UTTP IN VARCHAR2, 
+--    vchecktk in number,
+--    Page_Index in	int,
+--    Page_Size	in	int, 
+--    curReturn OUT sys_refcursor
+--);
+
+
+END PKG_STPT_HANHCHINH;
+
+/

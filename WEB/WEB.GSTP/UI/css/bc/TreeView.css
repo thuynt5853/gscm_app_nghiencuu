@@ -1,0 +1,310 @@
+/*
+
+RadTreeView Default skin
+
+* For notes on the CSS class names, please check RadTreeView common skin file *
+
+*/
+
+/* general styles */
+
+.RadTreeView_Default,
+.RadTreeView_Default a.rtIn,
+.RadTreeView_Default .rtEdit .rtIn input
+{
+	font:12px Arial,sans-serif;
+	color:#000;
+	line-height:1.273em;
+    margin-bottom:50px;	
+}
+
+.RadTreeView_Default .rtTop, 
+.RadTreeView_Default .rtMid, 
+.RadTreeView_Default .rtBot
+{
+	padding: 0 0 0 20px !important;
+}
+
+.RadTreeView_Default .rtPlus, 
+.RadTreeView_Default .rtMinus
+{
+	margin:3px 6px 0 -18px !important;
+	width:11px !important;
+	height:11px !important;
+}
+
+.RadTreeView_Default .rtPlus
+{
+	background: transparent url(/Resources/Images/TreeView/PlusMinus.gif) no-repeat 0 0 !important;
+}
+
+.RadTreeView_Default .rtMinus
+{
+	background: transparent url(/Resources/Images/TreeView/PlusMinus.gif) no-repeat 0 -11px !important;
+}
+
+.RadTreeView_Default .rtSp
+{
+	height:20px;
+}
+
+.RadTreeView_Default .rtChk
+{
+	margin: 0 2px;
+	padding:0;
+	width:13px;
+	height:13px;
+}
+
+.RadTreeView_Default .rtIn
+{
+	margin: 1px 0;
+	padding: 3px 3px 5px !important;
+}
+
+/* endof general styles */
+
+/*Three state checkboxes*/
+
+.RadTreeView_Default .rtIndeterminate
+{
+    background: transparent url(/Resources/Images/TreeView/TriState.gif) no-repeat 0 -26px  !important;
+}
+
+.RadTreeView_Default .rtChecked
+{
+    background: transparent url(/Resources/Images/TreeView/TriState.gif) no-repeat 0 0 !important;
+}
+
+.RadTreeView_Default .rtUnchecked
+{
+    background: transparent url(/Resources/Images/TreeView/TriState.gif) no-repeat 0 -13px !important;
+}
+        
+/* node states */
+
+.RadTreeView_Default .rtHover .rtIn
+{
+	color:#15428b;	
+	border: 1px solid #cee2fd;
+	padding: 3px 2px 2px !important;
+	cursor:pointer;
+}
+
+.RadTreeView_Default .rtSelected .rtIn
+{
+	color:#11449e;
+	background:url(/Resources/Images/TreeView/ItemSelectedBg.gif) repeat-x 0 0 !important;
+	border: 1px solid #123da0;
+	padding: 1px 2px 1px !important;
+}
+
+.RadTreeView_Default_disabled .rtIn,
+.RadTreeView_Default .rtDisabled .rtIn
+{
+	color:#ccc;
+}
+
+.RadTreeView_Default .rtSelected .rtLoadingBelow
+{
+	color: #000;
+}
+
+/* endof node states */
+
+
+/* in-line editing */
+
+.RadTreeView_Default .rtLI .rtEdit .rtIn
+{
+	border:1px solid black;
+	padding: 2px 1px 3px;
+	height:1.2em;
+	background: #fff;
+}
+
+.RadTreeView_Default .rtEdit .rtIn input
+{
+	height:1.4em;
+	line-height:1em;
+	border:0;
+	margin:0;
+	padding:0;
+	background:transparent;
+}
+
+* html div.RadTreeView_Default .rtLI .rtEdit .rtIn { padding-bottom: 1px;  }
+* html div.RadTreeView_Default .rtLI .rtEdit .rtIn input { line-height: 1.3em;}
+*+html div.RadTreeView_Default .rtLI .rtEdit .rtIn { padding-bottom: 1px;  }
+*+html div.RadTreeView_Default .rtLI .rtEdit .rtIn input { line-height: 1.3em;}
+
+/* endof in-line editing */
+
+
+/* drop targets */
+
+.rtDropAbove_Default,
+.rtDropBelow_Default
+{
+    border: 1px dotted black;
+    font-size: 3px;
+    line-height: 3px;
+    height: 3px;
+}
+
+.rtDropAbove_Default
+{
+    border-bottom: 0;
+}
+
+.rtDropBelow_Default
+{
+    border-top: 0;
+}
+
+/* endof drop targets */
+
+
+/* node lines */
+
+.RadTreeView_Default .rtLines .rtLI,
+.RadTreeView_Default .rtLines .rtFirst .rtUL
+{
+	background:url(/Resources/Images/TreeView/NodeSpan.gif) repeat-y 0 0 !important;
+}
+.RadTreeView_Default_rtl .rtLines .rtLI,
+.RadTreeView_Default_rtl .rtLines .rtFirst .rtUL
+{
+	background:url(/Resources/Images/TreeView/NodeSpan_rtl.gif) repeat-y 100% 0 !important;
+}
+
+.RadTreeView_Default .rtLines .rtFirst
+{
+    background:url(/Resources/Images/TreeView/FirstNodeSpan.gif) no-repeat 0 1.273em !important;
+}
+
+.RadTreeView_Default_rtl .rtLines .rtFirst
+{
+    background:url(/Resources/Images/TreeView/FirstNodeSpan_rtl.gif) no-repeat 100% 1.273em !important;
+}
+
+.RadTreeView_Default .rtLines .rtFirst .rtUL
+{
+	background:url(/Resources/Images/TreeView/FirstNodeSpan.gif) repeat-y 0 1.273em !important;
+}
+
+.RadTreeView_Default_rtl .rtLines .rtFirst .rtUL
+{
+	background:url(/Resources/Images/TreeView/FirstNodeSpan_rtl.gif) repeat-y 100% 1.273em !important;
+}
+
+.RadTreeView_Default .rtLines .rtLast,
+.RadTreeView_Default .rtLines .rtLast .rtUL
+{
+	background:none !important;
+}
+
+.RadTreeView_Default .rtLines .rtTop
+{
+	background:url(/Resources/Images/TreeView/TopLine.gif) 0 0 no-repeat !important;
+}
+.RadTreeView_Default_rtl .rtLines .rtTop
+{
+	background:url(/Resources/Images/TreeView/TopLine_rtl.gif) 100% 0 no-repeat !important;
+}
+
+.RadTreeView_Default .rtLines .rtLast .rtTop
+{
+	background:url(/Resources/Images/TreeView/SingleLine.gif) 0 0 no-repeat !important;
+}
+
+.RadTreeView_Default_rtl .rtLines .rtLast .rtTop
+{
+	background:url(/Resources/Images/TreeView/SingleLine_rtl.gif) 100% 0 no-repeat !important;
+}
+
+.RadTreeView_Default .rtLines .rtMid
+{
+	background:url(/Resources/Images/TreeView/MiddleLine.gif) 0 0 no-repeat !important;
+}
+.RadTreeView_Default_rtl .rtLines .rtMid
+{
+	background:url(/Resources/Images/TreeView/MiddleLine_rtl.gif) 100% 0 no-repeat !important;
+}
+
+.RadTreeView_Default .rtLines .rtBot
+{
+	background:url(/Resources/Images/TreeView/BottomLine.gif) 0 0 no-repeat !important;
+}
+.RadTreeView_Default_rtl .rtLines .rtBot
+{
+	background:url(/Resources/Images/TreeView/BottomLine_rtl.gif) 100% 0 no-repeat !important;
+}
+
+/* endof node lines */
+
+
+/* rtl-specific styles */
+
+/* firefox */
+.RadTreeView_Default_rtl .rtPlus,
+.RadTreeView_Default_rtl .rtMinus
+{
+	margin-right:-11px;
+	right:-13px;
+}
+
+* html .RadTreeView_Default_rtl .rtPlus,
+* html .RadTreeView_Default_rtl .rtMinus
+{
+	margin-right:-18px;
+	right:0;
+}
+
+*+html .RadTreeView_Default_rtl .rtPlus,
+*+html .RadTreeView_Default_rtl .rtMinus
+{
+	margin-right:-18px;
+	right:0;
+}
+
+.RadTreeView_Default_rtl .rtTop,
+.RadTreeView_Default_rtl .rtMid, 
+.RadTreeView_Default_rtl .rtBot
+{
+	padding: 0 20px 2px 0;
+	margin:0;
+}
+
+/* endof rtl-specific styles */
+
+/* hacks for Opera & Safari */
+
+@media all and (-webkit-min-device-pixel-ratio:10000),
+      not all and (-webkit-min-device-pixel-ratio:0)
+{
+	/* fixes for opera (changes the paddings/margins automatically in rtl mode) */
+	
+    :root div.RadTreeView_Default_rtl .rtLI .rtPlus,
+    :root div.RadTreeView_Default_rtl .rtLI .rtMinus,
+    :root div.RadTreeView_Default_rtl .rtFirst .rtLI .rtPlus,
+    :root div.RadTreeView_Default_rtl .rtFirst .rtLI .rtMinus
+	{
+		margin:4px 6px 0 -18px;
+		right:0;
+	}
+}
+	
+@media screen and (min-width:50px)
+{
+	/* fix for safari bug (inline-block positioned elements in rtl mode get no width) */
+	:root div.RadTreeView_Default_rtl .rtLI .rtPlus,
+	:root div.RadTreeView_Default_rtl .rtLI .rtMinus
+	{
+		right: 0;
+		margin-right: -18px;
+		margin-left: 7px;
+	}
+}
+
+/* endof hacks */

@@ -1,0 +1,17 @@
+﻿<%@ Page Title="" Language="C#" AutoEventWireup="true" CodeBehind="ViewReport.aspx.cs" Inherits="WEB.GSTP.BaoCao.AHS.ViewReport" %>
+<%@ Register Assembly="DevExpress.XtraReports.v22.2.Web.WebForms, Version=22.2.3.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a" Namespace="DevExpress.XtraReports.Web" TagPrefix="dx" %>
+<%@ Register Assembly="AjaxControlToolkit" Namespace="AjaxControlToolkit" TagPrefix="cc1" %>
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head runat="server">
+    <title runat="server" id="idTitle">Biểu mẫu</title>
+</head>
+<body>
+    <form id="form1" runat="server">
+        <asp:ScriptManager runat="server"></asp:ScriptManager>
+        <p id="ltlmsg" runat="server"></p>
+        <dx:ASPxWebDocumentViewer id="rptView" runat="server"></dx:ASPxWebDocumentViewer>
+    </form>
+</body>
+</html>

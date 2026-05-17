@@ -1,0 +1,21 @@
+﻿using System;
+using System.Drawing;
+using System.Collections;
+using System.ComponentModel;
+using DevExpress.XtraReports.UI;
+
+namespace WEB.GSTP.BaoCao.AHC
+{
+    public partial class rpt06HC : DevExpress.XtraReports.UI.XtraReport
+    {
+        public rpt06HC()
+        {
+            InitializeComponent();
+        }
+
+        private void xrTableCell1_BeforePrint(object sender, CancelEventArgs e)
+        {
+            xrTableCell1.Text = xrTableCell1.Text.ToUpper();
+        }
+    }
+}

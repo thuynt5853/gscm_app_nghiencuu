@@ -1,0 +1,6 @@
+---log tong dat
+select * from LOG_TONGDAT_QLTA 
+where json_value(CONTENT_JSON_OLD, '$.DONID')='696412'
+OR json_value(CONTENT_JSON, '$.DONID')='696412';
+---log giải quyết đơn
+SELECT to_char(ngaytao,'dd/MM/yyyy hh24:mi:ss'),lg.* FROM LOG_THONGTINANPHI_QLTA lg WHERE ma_thongbao IN('G1JJO4F3KN','5KOPD5HZIA');

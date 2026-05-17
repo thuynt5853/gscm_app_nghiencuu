@@ -1,0 +1,48 @@
+SELECT * FROM dba_network_acls;
+SELECT * FROM dba_network_acl_privileges;
+
+GRANT CONNECT,RESOURCE TO GSCM;
+GRANT debug CONNECT SESSION TO GSCM; --gan quyền connect 
+grant debug any procedure to GSCM; --gan quyền connect 
+
+BEGIN
+ DBMS_NETWORK_ACL_ADMIN.APPEND_HOST_ACE
+ (
+ host => '10.1.13.194',--máy develope code localhost
+ ace => xs$ace_type(privilege_list => xs$name_list('jdwp'),
+ principal_name => 'GSCM',--một cái tên để connect
+ principal_type => xs_acl.ptype_db)
+ );
+END;
+-----------
+https://floo.bar/2018/05/31/prerequisites-to-debug-pl-sql-in-oracle-database-12c-with-sql-developer/
+-------------error
+Connecting to the database test_debugger.
+Executing PL/SQL: CALL DBMS_DEBUG_JDWP.CONNECT_TCP( 'his.host', 'random_port' )
+ORA-01031: insufficient privileges
+ORA-06512: at "SYS.DBMS_DEBUG_JDWP", line 68
+ORA-06512: at line 1
+This session requires DEBUG CONNECT SESSION and DEBUG ANY PROCEDURE user privileges.
+Process exited.
+Disconnecting from the database test_debugger.
+----------------
+GRANT DEBUG CONNECT SESSION TO HIS_SCHEMA ;
+-------------error
+Connecting to the database test_debugger.
+Executing PL/SQL: CALL DBMS_DEBUG_JDWP.CONNECT_TCP( 'his.host', 'random_port' )
+ORA-24247: network access denied by access control list (ACL)
+ORA-06512: at "SYS.DBMS_DEBUG_JDWP", line 68
+ORA-06512: at line 1
+Process exited.
+Disconnecting from the database test_debugger.
+-------------------
+BEGIN
+ DBMS_NETWORK_ACL_ADMIN.APPEND_HOST_ACE
+ (
+ host => 'his.host',
+ ace => xs$ace_type(privilege_list => xs$name_list('jdwp'),
+ principal_name => 'HIS_SCHEMA',
+ principal_type => xs_acl.ptype_db)
+ );
+END;
+/

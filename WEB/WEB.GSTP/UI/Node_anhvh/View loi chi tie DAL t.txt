@@ -1,0 +1,18 @@
+View chi tiết lỗi DAL:
+catch (System.Data.Entity.Validation.DbEntityValidationException dbEx)
+{
+	foreach(var validationErrors in dbEx.EntityValidationErrors)
+	{
+		foreach (var validationError in validationErrors.ValidationErrors)
+		{
+			lbtthongbao.Text = "property: " + validationError.PropertyName + " Error: " + validationError.ErrorMessage;
+		}
+	}
+}
+
+
+View chi tiết lỗi DAL:
+            catch (Exception ex)
+            {
+                lbthongbao.Text = "Lỗi: " + ex.Message + ";" + ex.InnerException.InnerException;
+            }

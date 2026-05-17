@@ -1,0 +1,960 @@
+﻿<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.1.0.7\build\net45\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props" Condition="Exists('..\..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.1.0.7\build\net45\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props')" />
+  <Import Project="..\..\packages\Microsoft.Net.Compilers.1.3.2\build\Microsoft.Net.Compilers.props" Condition="Exists('..\..\packages\Microsoft.Net.Compilers.1.3.2\build\Microsoft.Net.Compilers.props')" />
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>
+    </ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{617A75CF-914A-4F4F-A598-41ED4352765B}</ProjectGuid>
+    <ProjectTypeGuids>{349c5851-65df-11da-9384-00065b846f21};{fae04ec0-301f-11d3-bf4b-00c04f79efbc}</ProjectTypeGuids>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>WEB.TP</RootNamespace>
+    <AssemblyName>WEB.TP</AssemblyName>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
+    <UseIISExpress>true</UseIISExpress>
+    <Use64BitIISExpress />
+    <IISExpressSSLPort />
+    <IISExpressAnonymousAuthentication />
+    <IISExpressWindowsAuthentication />
+    <IISExpressUseClassicPipelineMode />
+    <UseGlobalApplicationHostFile />
+    <SccProjectName>SAK</SccProjectName>
+    <SccLocalPath>SAK</SccLocalPath>
+    <SccAuxPath>SAK</SccAuxPath>
+    <SccProvider>SAK</SccProvider>
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="AjaxControlToolkit">
+      <HintPath>..\..\packages\AjaxControlToolkit.18.1.0\lib\net40\AjaxControlToolkit.dll</HintPath>
+    </Reference>
+    <Reference Include="Aspose.Cells">
+      <HintPath>..\..\DLL\Aspose.Cells.dll</HintPath>
+    </Reference>
+    <Reference Include="Aspose.Words, Version=10.7.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\DLL\Aspose.Words.dll</HintPath>
+    </Reference>
+    <Reference Include="DevExpress.Charts.v18.2.Core, Version=18.2.6.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a, processorArchitecture=MSIL" />
+    <Reference Include="DevExpress.Data.v18.2, Version=18.2.6.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a, processorArchitecture=MSIL" />
+    <Reference Include="DevExpress.DataAccess.v18.2, Version=18.2.6.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a, processorArchitecture=MSIL" />
+    <Reference Include="DevExpress.Office.v18.2.Core, Version=18.2.6.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a, processorArchitecture=MSIL" />
+    <Reference Include="DevExpress.Pdf.v18.2.Core, Version=18.2.6.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a, processorArchitecture=MSIL" />
+    <Reference Include="DevExpress.PivotGrid.v18.2.Core, Version=18.2.6.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a, processorArchitecture=MSIL" />
+    <Reference Include="DevExpress.Printing.v18.2.Core, Version=18.2.6.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a, processorArchitecture=MSIL" />
+    <Reference Include="DevExpress.RichEdit.v18.2.Core, Version=18.2.6.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a, processorArchitecture=MSIL" />
+    <Reference Include="DevExpress.RichEdit.v18.2.Export, Version=18.2.6.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a, processorArchitecture=MSIL" />
+    <Reference Include="DevExpress.Sparkline.v18.2.Core, Version=18.2.6.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a, processorArchitecture=MSIL" />
+    <Reference Include="DevExpress.Utils.v18.2, Version=18.2.6.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a, processorArchitecture=MSIL" />
+    <Reference Include="DevExpress.Web.Resources.v18.2, Version=18.2.6.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a, processorArchitecture=MSIL" />
+    <Reference Include="DevExpress.Web.v18.2, Version=18.2.6.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a, processorArchitecture=MSIL" />
+    <Reference Include="DevExpress.Xpo.v18.2, Version=18.2.6.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a, processorArchitecture=MSIL" />
+    <Reference Include="DevExpress.XtraCharts.v18.2, Version=18.2.6.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a, processorArchitecture=MSIL" />
+    <Reference Include="DevExpress.XtraEditors.v18.2, Version=18.2.6.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a, processorArchitecture=MSIL" />
+    <Reference Include="DevExpress.XtraGauges.v18.2.Core, Version=18.2.6.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a, processorArchitecture=MSIL" />
+    <Reference Include="DevExpress.XtraPivotGrid.v18.2, Version=18.2.6.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a, processorArchitecture=MSIL" />
+    <Reference Include="DevExpress.XtraPrinting.v18.2, Version=18.2.6.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a, processorArchitecture=MSIL" />
+    <Reference Include="DevExpress.CodeParser.v18.2, Version=18.2.6.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a, processorArchitecture=MSIL" />
+    <Reference Include="DevExpress.XtraReports.v18.2, Version=18.2.6.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a, processorArchitecture=MSIL" />
+    <Reference Include="DevExpress.XtraReports.v18.2.Web, Version=18.2.6.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a, processorArchitecture=MSIL" />
+    <Reference Include="DevExpress.XtraReports.v18.2.Web.WebForms, Version=18.2.6.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a, processorArchitecture=MSIL" />
+    <Reference Include="DevExpress.XtraScheduler.v18.2, Version=18.2.6.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a, processorArchitecture=MSIL" />
+    <Reference Include="DevExpress.XtraScheduler.v18.2.Core, Version=18.2.6.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a, processorArchitecture=MSIL" />
+    <Reference Include="DevExpress.XtraScheduler.v18.2.Reporting, Version=18.2.6.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a, processorArchitecture=MSIL" />
+    <Reference Include="EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\EntityFramework.6.2.0\lib\net45\EntityFramework.dll</HintPath>
+    </Reference>
+    <Reference Include="EntityFramework.SqlServer, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\EntityFramework.6.2.0\lib\net45\EntityFramework.SqlServer.dll</HintPath>
+    </Reference>
+    <Reference Include="EPPlus">
+      <HintPath>..\..\DLL\EPPlus.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.CodeDom.Providers.DotNetCompilerPlatform, Version=1.0.7.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.1.0.7\lib\net45\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="Microsoft.ReportViewer.Common, Version=12.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\packages\Microsoft.ReportingServices.ReportViewerControl.WebForms.140.1000.523\lib\net40\Microsoft.ReportViewer.Common.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.ReportViewer.DataVisualization, Version=12.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Microsoft.ReportViewer.Runtime.Common.12.0.2402.15\lib\Microsoft.ReportViewer.DataVisualization.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.ReportViewer.ProcessingObjectModel, Version=12.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Microsoft.ReportViewer.Runtime.Common.12.0.2402.15\lib\Microsoft.ReportViewer.ProcessingObjectModel.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.ReportViewer.WebForms, Version=12.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\packages\Microsoft.ReportingServices.ReportViewerControl.WebForms.140.1000.523\lib\net40\Microsoft.ReportViewer.WebForms.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Newtonsoft.Json.12.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="Oracle.ManagedDataAccess, Version=4.122.1.0, Culture=neutral, PublicKeyToken=89b483f429c47342, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Oracle.ManagedDataAccess.12.2.1100\lib\net40\Oracle.ManagedDataAccess.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Oracle.ManagedDataAccess.EntityFramework, Version=6.122.1.0, Culture=neutral, PublicKeyToken=89b483f429c47342, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Oracle.ManagedDataAccess.EntityFramework.12.2.1100\lib\net45\Oracle.ManagedDataAccess.EntityFramework.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="System.Data.Entity" />
+    <Reference Include="System.Deployment" />
+    <Reference Include="System.DirectoryServices" />
+    <Reference Include="System.DirectoryServices.Protocols" />
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.Security" />
+    <Reference Include="System.Transactions" />
+    <Reference Include="System.Web.DynamicData" />
+    <Reference Include="System.Web.Entity" />
+    <Reference Include="System.Web.ApplicationServices" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
+    <Reference Include="System" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Web" />
+    <Reference Include="System.Web.Extensions" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Web.Services" />
+    <Reference Include="System.EnterpriseServices" />
+    <Reference Include="System.Xml.Linq" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Ajax\SearchDanhmuc.aspx" />
+    <Content Include="baocao.aspx" />
+    <Content Include="baocaotinhhinhsudungbienlai.aspx" />
+    <Content Include="error.aspx" />
+    <Content Include="FileUploadHandler.aspx" />
+    <Content Include="Global.asax" />
+    <Content Include="huongdan.aspx" />
+    <Content Include="In\ViewReport.aspx" />
+    <Content Include="MasterPages\AN_PHI.Master" />
+    <Content Include="In\TP_ANPHI.xsc">
+      <DependentUpon>TP_ANPHI.xsd</DependentUpon>
+    </Content>
+    <Content Include="HDSD\HDSD_TP.pdf" />
+    <Content Include="TempUpload\TempUploadFiles.aspx" />
+    <Content Include="UI\img\bg_logins.png" />
+    <Content Include="UI\img\close_arv.png" />
+    <Content Include="UI\img\folder.gif" />
+    <Content Include="UI\img\ico2.png" />
+    <Content Include="UI\img\icons8-refresh-26.png" />
+    <Content Include="UI\img\lgbg_red_.png" />
+    <Content Include="UI\img\loading-gear.gif" />
+    <Content Include="UI\img\Manager\add_idea.png" />
+    <Content Include="UI\img\Manager\Bg_Line.gif" />
+    <Content Include="UI\img\Manager\file_attach.gif" />
+    <Content Include="UI\img\Manager\file_attach_pdf.gif" />
+    <Content Include="UI\img\Manager\img_landscapr.png" />
+    <Content Include="UI\img\Manager\nulls.gif" />
+    <Content Include="UI\img\Manager\page_white_excel.png" />
+    <Content Include="UI\img\Manager\page_white_word.png" />
+    <Content Include="UI\img\Manager\pdf_blues.png" />
+    <Content Include="UI\img\Manager\Recycle_Bin.gif" />
+    <Content Include="UI\img\Manager\Recycle_Bin_Attach.gif" />
+    <Content Include="UI\img\Manager\Recycle_Bin_Attach_not_in.gif" />
+    <Content Include="UI\img\Manager\stop.gif" />
+    <Content Include="UI\img\Manager\Tip-Bg.gif" />
+    <Content Include="UI\img\Manager\Tip_Select.gif" />
+    <Content Include="UI\img\Manager\Tip_Selec_Expandt.gif" />
+    <Content Include="UI\img\Manager\view_doc_pdf.gif" />
+    <Content Include="UI\img\Manager\view_doc_pdf_not_in.gif" />
+    <Content Include="UI\img\Manager\word.png" />
+    <Content Include="UI\img\root.gif" />
+    <Content Include="UI\img\tkth.png" />
+    <Content Include="User_Infor_his.aspx" />
+    <Content Include="WebForm2.aspx" />
+    <Content Include="HDSD\HDSD_TP.docx" />
+    <None Include="In\TP_ANPHI.xsd">
+      <SubType>Designer</SubType>
+      <Generator>MSDataSetGenerator</Generator>
+      <LastGenOutput>TP_ANPHI.Designer.cs</LastGenOutput>
+    </None>
+    <Content Include="In\TP_ANPHI.xss">
+      <DependentUpon>TP_ANPHI.xsd</DependentUpon>
+    </Content>
+    <None Include="packages.config" />
+    <Content Include="QuanLy.aspx" />
+    <Content Include="Quantri\DON_VI\Capnhat.aspx" />
+    <Content Include="Quantri\DON_VI\Danhsach.aspx" />
+    <Content Include="Quantri\User\Capnhat.aspx" />
+    <Content Include="Quantri\User\Danhsach.aspx" />
+    <Content Include="Quantri\User\ResetPass.aspx" />
+    <Content Include="UI\img\back.png" />
+    <Content Include="UI\img\bgheadleft.png" />
+    <Content Include="UI\img\bg_danhsach.png" />
+    <Content Include="UI\img\dowload.png" />
+    <Content Include="UI\img\next.png" />
+    <Content Include="UI\pdfjs\LICENSE" />
+    <Content Include="UI\pdfjs\web\cmaps\78-EUC-H.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\78-EUC-V.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\78-H.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\78-RKSJ-H.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\78-RKSJ-V.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\78-V.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\78ms-RKSJ-H.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\78ms-RKSJ-V.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\83pv-RKSJ-H.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\90ms-RKSJ-H.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\90ms-RKSJ-V.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\90msp-RKSJ-H.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\90msp-RKSJ-V.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\90pv-RKSJ-H.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\90pv-RKSJ-V.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\Add-H.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\Add-RKSJ-H.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\Add-RKSJ-V.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\Add-V.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\Adobe-CNS1-0.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\Adobe-CNS1-1.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\Adobe-CNS1-2.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\Adobe-CNS1-3.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\Adobe-CNS1-4.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\Adobe-CNS1-5.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\Adobe-CNS1-6.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\Adobe-CNS1-UCS2.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\Adobe-GB1-0.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\Adobe-GB1-1.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\Adobe-GB1-2.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\Adobe-GB1-3.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\Adobe-GB1-4.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\Adobe-GB1-5.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\Adobe-GB1-UCS2.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\Adobe-Japan1-0.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\Adobe-Japan1-1.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\Adobe-Japan1-2.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\Adobe-Japan1-3.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\Adobe-Japan1-4.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\Adobe-Japan1-5.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\Adobe-Japan1-6.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\Adobe-Japan1-UCS2.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\Adobe-Korea1-0.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\Adobe-Korea1-1.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\Adobe-Korea1-2.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\Adobe-Korea1-UCS2.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\B5-H.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\B5-V.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\B5pc-H.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\B5pc-V.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\CNS-EUC-H.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\CNS-EUC-V.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\CNS1-H.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\CNS1-V.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\CNS2-H.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\CNS2-V.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\ETen-B5-H.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\ETen-B5-V.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\ETenms-B5-H.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\ETenms-B5-V.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\ETHK-B5-H.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\ETHK-B5-V.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\EUC-H.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\EUC-V.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\Ext-H.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\Ext-RKSJ-H.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\Ext-RKSJ-V.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\Ext-V.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\GB-EUC-H.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\GB-EUC-V.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\GB-H.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\GB-V.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\GBK-EUC-H.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\GBK-EUC-V.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\GBK2K-H.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\GBK2K-V.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\GBKp-EUC-H.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\GBKp-EUC-V.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\GBpc-EUC-H.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\GBpc-EUC-V.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\GBT-EUC-H.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\GBT-EUC-V.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\GBT-H.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\GBT-V.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\GBTpc-EUC-H.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\GBTpc-EUC-V.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\H.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\Hankaku.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\Hiragana.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\HKdla-B5-H.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\HKdla-B5-V.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\HKdlb-B5-H.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\HKdlb-B5-V.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\HKgccs-B5-H.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\HKgccs-B5-V.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\HKm314-B5-H.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\HKm314-B5-V.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\HKm471-B5-H.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\HKm471-B5-V.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\HKscs-B5-H.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\HKscs-B5-V.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\Katakana.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\KSC-EUC-H.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\KSC-EUC-V.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\KSC-H.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\KSC-Johab-H.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\KSC-Johab-V.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\KSC-V.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\KSCms-UHC-H.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\KSCms-UHC-HW-H.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\KSCms-UHC-HW-V.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\KSCms-UHC-V.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\KSCpc-EUC-H.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\KSCpc-EUC-V.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\LICENSE" />
+    <Content Include="UI\pdfjs\web\cmaps\NWP-H.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\NWP-V.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\RKSJ-H.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\RKSJ-V.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\Roman.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\UniCNS-UCS2-H.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\UniCNS-UCS2-V.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\UniCNS-UTF16-H.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\UniCNS-UTF16-V.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\UniCNS-UTF32-H.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\UniCNS-UTF32-V.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\UniCNS-UTF8-H.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\UniCNS-UTF8-V.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\UniGB-UCS2-H.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\UniGB-UCS2-V.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\UniGB-UTF16-H.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\UniGB-UTF16-V.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\UniGB-UTF32-H.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\UniGB-UTF32-V.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\UniGB-UTF8-H.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\UniGB-UTF8-V.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\UniJIS-UCS2-H.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\UniJIS-UCS2-HW-H.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\UniJIS-UCS2-HW-V.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\UniJIS-UCS2-V.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\UniJIS-UTF16-H.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\UniJIS-UTF16-V.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\UniJIS-UTF32-H.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\UniJIS-UTF32-V.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\UniJIS-UTF8-H.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\UniJIS-UTF8-V.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\UniJIS2004-UTF16-H.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\UniJIS2004-UTF16-V.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\UniJIS2004-UTF32-H.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\UniJIS2004-UTF32-V.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\UniJIS2004-UTF8-H.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\UniJIS2004-UTF8-V.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\UniJISPro-UCS2-HW-V.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\UniJISPro-UCS2-V.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\UniJISPro-UTF8-V.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\UniJISX0213-UTF32-H.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\UniJISX0213-UTF32-V.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\UniJISX02132004-UTF32-H.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\UniJISX02132004-UTF32-V.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\UniKS-UCS2-H.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\UniKS-UCS2-V.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\UniKS-UTF16-H.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\UniKS-UTF16-V.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\UniKS-UTF32-H.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\UniKS-UTF32-V.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\UniKS-UTF8-H.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\UniKS-UTF8-V.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\V.bcmap" />
+    <Content Include="UI\pdfjs\web\cmaps\WP-Symbol.bcmap" />
+    <Content Include="UI\pdfjs\web\locale\ach\viewer.properties" />
+    <Content Include="UI\pdfjs\web\locale\af\viewer.properties" />
+    <Content Include="UI\pdfjs\web\locale\ak\viewer.properties" />
+    <Content Include="UI\pdfjs\web\locale\an\viewer.properties" />
+    <Content Include="UI\pdfjs\web\locale\ar\viewer.properties" />
+    <Content Include="UI\pdfjs\web\locale\ast\viewer.properties" />
+    <Content Include="UI\pdfjs\web\locale\as\viewer.properties" />
+    <Content Include="UI\pdfjs\web\locale\az\viewer.properties" />
+    <Content Include="UI\pdfjs\web\locale\be\viewer.properties" />
+    <Content Include="UI\pdfjs\web\locale\bg\viewer.properties" />
+    <Content Include="UI\pdfjs\web\locale\bn-BD\viewer.properties" />
+    <Content Include="UI\pdfjs\web\locale\bn-IN\viewer.properties" />
+    <Content Include="UI\pdfjs\web\locale\br\viewer.properties" />
+    <Content Include="UI\pdfjs\web\locale\bs\viewer.properties" />
+    <Content Include="UI\pdfjs\web\locale\ca\viewer.properties" />
+    <Content Include="UI\pdfjs\web\locale\csb\viewer.properties" />
+    <Content Include="UI\pdfjs\web\locale\cs\viewer.properties" />
+    <Content Include="UI\pdfjs\web\locale\cy\viewer.properties" />
+    <Content Include="UI\pdfjs\web\locale\da\viewer.properties" />
+    <Content Include="UI\pdfjs\web\locale\de\viewer.properties" />
+    <Content Include="UI\pdfjs\web\locale\el\viewer.properties" />
+    <Content Include="UI\pdfjs\web\locale\en-GB\viewer.properties" />
+    <Content Include="UI\pdfjs\web\locale\en-US\viewer.properties" />
+    <Content Include="UI\pdfjs\web\locale\en-ZA\viewer.properties" />
+    <Content Include="UI\pdfjs\web\locale\eo\viewer.properties" />
+    <Content Include="UI\pdfjs\web\locale\es-AR\viewer.properties" />
+    <Content Include="UI\pdfjs\web\locale\es-CL\viewer.properties" />
+    <Content Include="UI\pdfjs\web\locale\es-ES\viewer.properties" />
+    <Content Include="UI\pdfjs\web\locale\es-MX\viewer.properties" />
+    <Content Include="UI\pdfjs\web\locale\et\viewer.properties" />
+    <Content Include="UI\pdfjs\web\locale\eu\viewer.properties" />
+    <Content Include="UI\pdfjs\web\locale\fa\viewer.properties" />
+    <Content Include="UI\pdfjs\web\locale\ff\viewer.properties" />
+    <Content Include="UI\pdfjs\web\locale\fi\viewer.properties" />
+    <Content Include="UI\pdfjs\web\locale\fr\viewer.properties" />
+    <Content Include="UI\pdfjs\web\locale\fy-NL\viewer.properties" />
+    <Content Include="UI\pdfjs\web\locale\ga-IE\viewer.properties" />
+    <Content Include="UI\pdfjs\web\locale\gd\viewer.properties" />
+    <Content Include="UI\pdfjs\web\locale\gl\viewer.properties" />
+    <Content Include="UI\pdfjs\web\locale\gu-IN\viewer.properties" />
+    <Content Include="UI\pdfjs\web\locale\he\viewer.properties" />
+    <Content Include="UI\pdfjs\web\locale\hi-IN\viewer.properties" />
+    <Content Include="UI\pdfjs\web\locale\hr\viewer.properties" />
+    <Content Include="UI\pdfjs\web\locale\hu\viewer.properties" />
+    <Content Include="UI\pdfjs\web\locale\hy-AM\viewer.properties" />
+    <Content Include="UI\pdfjs\web\locale\id\viewer.properties" />
+    <Content Include="UI\pdfjs\web\locale\is\viewer.properties" />
+    <Content Include="UI\pdfjs\web\locale\it\viewer.properties" />
+    <Content Include="UI\pdfjs\web\locale\ja\viewer.properties" />
+    <Content Include="UI\pdfjs\web\locale\ka\viewer.properties" />
+    <Content Include="UI\pdfjs\web\locale\kk\viewer.properties" />
+    <Content Include="UI\pdfjs\web\locale\km\viewer.properties" />
+    <Content Include="UI\pdfjs\web\locale\kn\viewer.properties" />
+    <Content Include="UI\pdfjs\web\locale\ko\viewer.properties" />
+    <Content Include="UI\pdfjs\web\locale\ku\viewer.properties" />
+    <Content Include="UI\pdfjs\web\locale\lg\viewer.properties" />
+    <Content Include="UI\pdfjs\web\locale\lij\viewer.properties" />
+    <Content Include="UI\pdfjs\web\locale\locale.properties" />
+    <Content Include="UI\pdfjs\web\locale\lt\viewer.properties" />
+    <Content Include="UI\pdfjs\web\locale\lv\viewer.properties" />
+    <Content Include="UI\pdfjs\web\locale\mai\viewer.properties" />
+    <Content Include="UI\pdfjs\web\locale\mk\viewer.properties" />
+    <Content Include="UI\pdfjs\web\locale\ml\viewer.properties" />
+    <Content Include="UI\pdfjs\web\locale\mn\viewer.properties" />
+    <Content Include="UI\pdfjs\web\locale\mr\viewer.properties" />
+    <Content Include="UI\pdfjs\web\locale\ms\viewer.properties" />
+    <Content Include="UI\pdfjs\web\locale\my\viewer.properties" />
+    <Content Include="UI\pdfjs\web\locale\nb-NO\viewer.properties" />
+    <Content Include="UI\pdfjs\web\locale\nl\viewer.properties" />
+    <Content Include="UI\pdfjs\web\locale\nn-NO\viewer.properties" />
+    <Content Include="UI\pdfjs\web\locale\nso\viewer.properties" />
+    <Content Include="UI\pdfjs\web\locale\oc\viewer.properties" />
+    <Content Include="UI\pdfjs\web\locale\or\viewer.properties" />
+    <Content Include="UI\pdfjs\web\locale\pa-IN\viewer.properties" />
+    <Content Include="UI\pdfjs\web\locale\pl\viewer.properties" />
+    <Content Include="UI\pdfjs\web\locale\pt-BR\viewer.properties" />
+    <Content Include="UI\pdfjs\web\locale\pt-PT\viewer.properties" />
+    <Content Include="UI\pdfjs\web\locale\rm\viewer.properties" />
+    <Content Include="UI\pdfjs\web\locale\ro\viewer.properties" />
+    <Content Include="UI\pdfjs\web\locale\ru\viewer.properties" />
+    <Content Include="UI\pdfjs\web\locale\rw\viewer.properties" />
+    <Content Include="UI\pdfjs\web\locale\sah\viewer.properties" />
+    <Content Include="UI\pdfjs\web\locale\si\viewer.properties" />
+    <Content Include="UI\pdfjs\web\locale\sk\viewer.properties" />
+    <Content Include="UI\pdfjs\web\locale\sl\viewer.properties" />
+    <Content Include="UI\pdfjs\web\locale\son\viewer.properties" />
+    <Content Include="UI\pdfjs\web\locale\sq\viewer.properties" />
+    <Content Include="UI\pdfjs\web\locale\sr\viewer.properties" />
+    <Content Include="UI\pdfjs\web\locale\sv-SE\viewer.properties" />
+    <Content Include="UI\pdfjs\web\locale\sw\viewer.properties" />
+    <Content Include="UI\pdfjs\web\locale\ta-LK\viewer.properties" />
+    <Content Include="UI\pdfjs\web\locale\ta\viewer.properties" />
+    <Content Include="UI\pdfjs\web\locale\te\viewer.properties" />
+    <Content Include="UI\pdfjs\web\locale\th\viewer.properties" />
+    <Content Include="UI\pdfjs\web\locale\tl\viewer.properties" />
+    <Content Include="UI\pdfjs\web\locale\tn\viewer.properties" />
+    <Content Include="UI\pdfjs\web\locale\tr\viewer.properties" />
+    <Content Include="UI\pdfjs\web\locale\uk\viewer.properties" />
+    <Content Include="UI\pdfjs\web\locale\ur\viewer.properties" />
+    <Content Include="UI\pdfjs\web\locale\vi\viewer.properties" />
+    <Content Include="UI\pdfjs\web\locale\wo\viewer.properties" />
+    <Content Include="UI\pdfjs\web\locale\xh\viewer.properties" />
+    <Content Include="UI\pdfjs\web\locale\zh-CN\viewer.properties" />
+    <Content Include="UI\pdfjs\web\locale\zh-TW\viewer.properties" />
+    <Content Include="UI\pdfjs\web\locale\zu\viewer.properties" />
+    <Content Include="ReportTemplates\BienLaiAnPhi.doc" />
+    <None Include="Properties\PublishProfiles\anhvh_anphi.pubxml" />
+    <Content Include="web.config" />
+    <None Include="web.Debug.config">
+      <DependentUpon>web.config</DependentUpon>
+    </None>
+    <None Include="web.Release.config">
+      <DependentUpon>web.config</DependentUpon>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="ChangePass.aspx" />
+    <Content Include="DS.aspx" />
+    <Content Include="Login.aspx" />
+    <Content Include="NopAnPhi.aspx" />
+    <Content Include="temp_anhvh.aspx" />
+    <Content Include="TrangChu.aspx" />
+    <Content Include="UC\Header.ascx" />
+    <Content Include="UI\css\bc\bootstrap.css" />
+    <Content Include="UI\css\bc\common.css" />
+    <Content Include="UI\css\bc\Manager.css" />
+    <Content Include="UI\css\bc\TreeView.css" />
+    <Content Include="UI\css\bc\WebResource.css" />
+    <Content Include="UI\css\chosen.css" />
+    <Content Include="UI\css\jquery-ui.css" />
+    <Content Include="UI\css\jquery.enhsplitter.css" />
+    <Content Include="UI\css\Paging.css" />
+    <Content Include="UI\css\style.css" />
+    <Content Include="UI\css\Table.css" />
+    <Content Include="UI\img\banner_home.png" />
+    <Content Include="UI\img\bg.png" />
+    <Content Include="UI\img\bggscm.png" />
+    <Content Include="UI\img\bglauncher.png" />
+    <Content Include="UI\img\bgmatkhau.png" />
+    <Content Include="UI\img\bgmatruycap.png" />
+    <Content Include="UI\img\bgmenu.png" />
+    <Content Include="UI\img\bgmenu2.png" />
+    <Content Include="UI\img\bgmnactive.png" />
+    <Content Include="UI\img\bguser.png" />
+    <Content Include="UI\img\bg_login.png" />
+    <Content Include="UI\img\btnChangePass.png" />
+    <Content Include="UI\img\btp.png" />
+    <Content Include="UI\img\download_file26.png" />
+    <Content Include="UI\img\lgbg_login.png" />
+    <Content Include="UI\img\lgbg_red.png" />
+    <Content Include="UI\img\lgdangnhap_button.png" />
+    <Content Include="UI\img\lgheader.png" />
+    <Content Include="UI\img\lgho_tro.png" />
+    <Content Include="UI\img\logout.png" />
+    <Content Include="UI\img\logo_btp.png" />
+    <Content Include="UI\img\logo_Congbobanan.png" />
+    <Content Include="UI\img\logo_DK_cap_sao.png" />
+    <Content Include="UI\img\logo_header.png" />
+    <Content Include="UI\img\logo_TAND.png" />
+    <Content Include="UI\img\process.gif" />
+    <Content Include="UI\img\quochuy.png" />
+    <Content Include="UI\img\refresh18.png" />
+    <Content Include="UI\img\search.png" />
+    <Content Include="UI\img\search2.png" />
+    <Content Include="UI\img\user_ico.png" />
+    <Content Include="UI\js\base64.js" />
+    <Content Include="UI\js\chosen.jquery.js" />
+    <Content Include="UI\js\Common.js" />
+    <Content Include="UI\js\Common_01.js" />
+    <Content Include="UI\js\init.js" />
+    <Content Include="UI\js\jquery-3.2.1.min.js" />
+    <Content Include="UI\js\jquery-3.3.1.js" />
+    <Content Include="UI\js\jquery-ui.min.js" />
+    <Content Include="UI\js\jquery.enhsplitter.js" />
+    <Content Include="UI\js\vgcaplugin.js" />
+    <Content Include="UI\pdfjs\build\pdf.js" />
+    <Content Include="UI\pdfjs\build\pdf.worker.js" />
+    <Content Include="UI\pdfjs\web\compatibility.js" />
+    <Content Include="UI\pdfjs\web\debugger.js" />
+    <Content Include="UI\pdfjs\web\images\annotation-check.svg" />
+    <Content Include="UI\pdfjs\web\images\annotation-comment.svg" />
+    <Content Include="UI\pdfjs\web\images\annotation-help.svg" />
+    <Content Include="UI\pdfjs\web\images\annotation-insert.svg" />
+    <Content Include="UI\pdfjs\web\images\annotation-key.svg" />
+    <Content Include="UI\pdfjs\web\images\annotation-newparagraph.svg" />
+    <Content Include="UI\pdfjs\web\images\annotation-noicon.svg" />
+    <Content Include="UI\pdfjs\web\images\annotation-note.svg" />
+    <Content Include="UI\pdfjs\web\images\annotation-paragraph.svg" />
+    <Content Include="UI\pdfjs\web\images\findbarButton-next%402x.png" />
+    <Content Include="UI\pdfjs\web\images\findbarButton-next-rtl%402x.png" />
+    <Content Include="UI\pdfjs\web\images\findbarButton-next-rtl.png" />
+    <Content Include="UI\pdfjs\web\images\findbarButton-next.png" />
+    <Content Include="UI\pdfjs\web\images\findbarButton-previous%402x.png" />
+    <Content Include="UI\pdfjs\web\images\findbarButton-previous-rtl%402x.png" />
+    <Content Include="UI\pdfjs\web\images\findbarButton-previous-rtl.png" />
+    <Content Include="UI\pdfjs\web\images\findbarButton-previous.png" />
+    <Content Include="UI\pdfjs\web\images\grab.cur" />
+    <Content Include="UI\pdfjs\web\images\grabbing.cur" />
+    <Content Include="UI\pdfjs\web\images\loading-icon.gif" />
+    <Content Include="UI\pdfjs\web\images\loading-small%402x.png" />
+    <Content Include="UI\pdfjs\web\images\loading-small.png" />
+    <Content Include="UI\pdfjs\web\images\secondaryToolbarButton-documentProperties%402x.png" />
+    <Content Include="UI\pdfjs\web\images\secondaryToolbarButton-documentProperties.png" />
+    <Content Include="UI\pdfjs\web\images\secondaryToolbarButton-firstPage%402x.png" />
+    <Content Include="UI\pdfjs\web\images\secondaryToolbarButton-firstPage.png" />
+    <Content Include="UI\pdfjs\web\images\secondaryToolbarButton-handTool%402x.png" />
+    <Content Include="UI\pdfjs\web\images\secondaryToolbarButton-handTool.png" />
+    <Content Include="UI\pdfjs\web\images\secondaryToolbarButton-lastPage%402x.png" />
+    <Content Include="UI\pdfjs\web\images\secondaryToolbarButton-lastPage.png" />
+    <Content Include="UI\pdfjs\web\images\secondaryToolbarButton-rotateCcw%402x.png" />
+    <Content Include="UI\pdfjs\web\images\secondaryToolbarButton-rotateCcw.png" />
+    <Content Include="UI\pdfjs\web\images\secondaryToolbarButton-rotateCw%402x.png" />
+    <Content Include="UI\pdfjs\web\images\secondaryToolbarButton-rotateCw.png" />
+    <Content Include="UI\pdfjs\web\images\shadow.png" />
+    <Content Include="UI\pdfjs\web\images\texture.png" />
+    <Content Include="UI\pdfjs\web\images\toolbarButton-bookmark%402x.png" />
+    <Content Include="UI\pdfjs\web\images\toolbarButton-bookmark.png" />
+    <Content Include="UI\pdfjs\web\images\toolbarButton-download%402x.png" />
+    <Content Include="UI\pdfjs\web\images\toolbarButton-download.png" />
+    <Content Include="UI\pdfjs\web\images\toolbarButton-menuArrows%402x.png" />
+    <Content Include="UI\pdfjs\web\images\toolbarButton-menuArrows.png" />
+    <Content Include="UI\pdfjs\web\images\toolbarButton-openFile%402x.png" />
+    <Content Include="UI\pdfjs\web\images\toolbarButton-openFile.png" />
+    <Content Include="UI\pdfjs\web\images\toolbarButton-pageDown%402x.png" />
+    <Content Include="UI\pdfjs\web\images\toolbarButton-pageDown-rtl%402x.png" />
+    <Content Include="UI\pdfjs\web\images\toolbarButton-pageDown-rtl.png" />
+    <Content Include="UI\pdfjs\web\images\toolbarButton-pageDown.png" />
+    <Content Include="UI\pdfjs\web\images\toolbarButton-pageUp%402x.png" />
+    <Content Include="UI\pdfjs\web\images\toolbarButton-pageUp-rtl%402x.png" />
+    <Content Include="UI\pdfjs\web\images\toolbarButton-pageUp-rtl.png" />
+    <Content Include="UI\pdfjs\web\images\toolbarButton-pageUp.png" />
+    <Content Include="UI\pdfjs\web\images\toolbarButton-presentationMode%402x.png" />
+    <Content Include="UI\pdfjs\web\images\toolbarButton-presentationMode.png" />
+    <Content Include="UI\pdfjs\web\images\toolbarButton-print%402x.png" />
+    <Content Include="UI\pdfjs\web\images\toolbarButton-print.png" />
+    <Content Include="UI\pdfjs\web\images\toolbarButton-search%402x.png" />
+    <Content Include="UI\pdfjs\web\images\toolbarButton-search.png" />
+    <Content Include="UI\pdfjs\web\images\toolbarButton-secondaryToolbarToggle%402x.png" />
+    <Content Include="UI\pdfjs\web\images\toolbarButton-secondaryToolbarToggle-rtl%402x.png" />
+    <Content Include="UI\pdfjs\web\images\toolbarButton-secondaryToolbarToggle-rtl.png" />
+    <Content Include="UI\pdfjs\web\images\toolbarButton-secondaryToolbarToggle.png" />
+    <Content Include="UI\pdfjs\web\images\toolbarButton-sidebarToggle%402x.png" />
+    <Content Include="UI\pdfjs\web\images\toolbarButton-sidebarToggle-rtl%402x.png" />
+    <Content Include="UI\pdfjs\web\images\toolbarButton-sidebarToggle-rtl.png" />
+    <Content Include="UI\pdfjs\web\images\toolbarButton-sidebarToggle.png" />
+    <Content Include="UI\pdfjs\web\images\toolbarButton-viewAttachments%402x.png" />
+    <Content Include="UI\pdfjs\web\images\toolbarButton-viewAttachments.png" />
+    <Content Include="UI\pdfjs\web\images\toolbarButton-viewOutline%402x.png" />
+    <Content Include="UI\pdfjs\web\images\toolbarButton-viewOutline-rtl%402x.png" />
+    <Content Include="UI\pdfjs\web\images\toolbarButton-viewOutline-rtl.png" />
+    <Content Include="UI\pdfjs\web\images\toolbarButton-viewOutline.png" />
+    <Content Include="UI\pdfjs\web\images\toolbarButton-viewThumbnail%402x.png" />
+    <Content Include="UI\pdfjs\web\images\toolbarButton-viewThumbnail.png" />
+    <Content Include="UI\pdfjs\web\images\toolbarButton-zoomIn%402x.png" />
+    <Content Include="UI\pdfjs\web\images\toolbarButton-zoomIn.png" />
+    <Content Include="UI\pdfjs\web\images\toolbarButton-zoomOut%402x.png" />
+    <Content Include="UI\pdfjs\web\images\toolbarButton-zoomOut.png" />
+    <Content Include="UI\pdfjs\web\images\treeitem-collapsed%402x.png" />
+    <Content Include="UI\pdfjs\web\images\treeitem-collapsed-rtl%402x.png" />
+    <Content Include="UI\pdfjs\web\images\treeitem-collapsed-rtl.png" />
+    <Content Include="UI\pdfjs\web\images\treeitem-collapsed.png" />
+    <Content Include="UI\pdfjs\web\images\treeitem-expanded%402x.png" />
+    <Content Include="UI\pdfjs\web\images\treeitem-expanded.png" />
+    <Content Include="UI\pdfjs\web\l10n.js" />
+    <Content Include="UI\pdfjs\web\viewer.css" />
+    <Content Include="UI\pdfjs\web\viewer.html" />
+    <Content Include="UI\pdfjs\web\viewer.js" />
+    <Content Include="User_Infor.aspx" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Ajax\SearchDanhmuc.aspx.cs">
+      <DependentUpon>SearchDanhmuc.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Ajax\SearchDanhmuc.aspx.designer.cs">
+      <DependentUpon>SearchDanhmuc.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="baocao.aspx.cs">
+      <DependentUpon>baocao.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="baocao.aspx.designer.cs">
+      <DependentUpon>baocao.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="baocaotinhhinhsudungbienlai.aspx.cs">
+      <DependentUpon>baocaotinhhinhsudungbienlai.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="baocaotinhhinhsudungbienlai.aspx.designer.cs">
+      <DependentUpon>baocaotinhhinhsudungbienlai.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="ChangePass.aspx.cs">
+      <DependentUpon>ChangePass.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="ChangePass.aspx.designer.cs">
+      <DependentUpon>ChangePass.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="DS.aspx.cs">
+      <DependentUpon>DS.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="DS.aspx.designer.cs">
+      <DependentUpon>DS.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="error.aspx.cs">
+      <DependentUpon>error.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="error.aspx.designer.cs">
+      <DependentUpon>error.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="FileUploadHandler.aspx.cs">
+      <DependentUpon>FileUploadHandler.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="FileUploadHandler.aspx.designer.cs">
+      <DependentUpon>FileUploadHandler.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Global.asax.cs">
+      <DependentUpon>Global.asax</DependentUpon>
+    </Compile>
+    <Compile Include="huongdan.aspx.cs">
+      <DependentUpon>huongdan.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="huongdan.aspx.designer.cs">
+      <DependentUpon>huongdan.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="In\rptBienLaiAnPhi.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="In\rptBienLaiAnPhi.Designer.cs">
+      <DependentUpon>rptBienLaiAnPhi.cs</DependentUpon>
+    </Compile>
+    <Compile Include="In\rptDaNhanHoanTra_DS.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="In\rptDanhSach.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="In\rptDanhSachDaNop.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="In\rptDanhSach_DinhChi.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="In\rptTatCa_DS.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="In\TP_ANPHI.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>TP_ANPHI.xsd</DependentUpon>
+    </Compile>
+    <Compile Include="In\ViewReport.aspx.cs">
+      <DependentUpon>ViewReport.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="In\ViewReport.aspx.designer.cs">
+      <DependentUpon>ViewReport.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Login.aspx.cs">
+      <DependentUpon>Login.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Login.aspx.designer.cs">
+      <DependentUpon>Login.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="MasterPages\AN_PHI.Master.cs">
+      <DependentUpon>AN_PHI.Master</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="MasterPages\AN_PHI.Master.designer.cs">
+      <DependentUpon>AN_PHI.Master</DependentUpon>
+    </Compile>
+    <Compile Include="NopAnPhi.aspx.cs">
+      <DependentUpon>NopAnPhi.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="NopAnPhi.aspx.designer.cs">
+      <DependentUpon>NopAnPhi.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="QuanLy.aspx.cs">
+      <DependentUpon>QuanLy.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="QuanLy.aspx.designer.cs">
+      <DependentUpon>QuanLy.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Quantri\DON_VI\Capnhat.aspx.cs">
+      <DependentUpon>Capnhat.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Quantri\DON_VI\Capnhat.aspx.designer.cs">
+      <DependentUpon>Capnhat.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Quantri\DON_VI\Danhsach.aspx.cs">
+      <DependentUpon>Danhsach.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Quantri\DON_VI\Danhsach.aspx.designer.cs">
+      <DependentUpon>Danhsach.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Quantri\User\Capnhat.aspx.cs">
+      <DependentUpon>Capnhat.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Quantri\User\Capnhat.aspx.designer.cs">
+      <DependentUpon>Capnhat.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Quantri\User\Danhsach.aspx.cs">
+      <DependentUpon>Danhsach.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Quantri\User\Danhsach.aspx.designer.cs">
+      <DependentUpon>Danhsach.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Quantri\User\ResetPass.aspx.cs">
+      <DependentUpon>ResetPass.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Quantri\User\ResetPass.aspx.designer.cs">
+      <DependentUpon>ResetPass.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="TempUpload\TempUploadFiles.aspx.cs">
+      <DependentUpon>TempUploadFiles.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="TempUpload\TempUploadFiles.aspx.designer.cs">
+      <DependentUpon>TempUploadFiles.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="temp_anhvh.aspx.cs">
+      <DependentUpon>temp_anhvh.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="temp_anhvh.aspx.designer.cs">
+      <DependentUpon>temp_anhvh.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="TrangChu.aspx.cs">
+      <DependentUpon>TrangChu.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="TrangChu.aspx.designer.cs">
+      <DependentUpon>TrangChu.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="UC\Header.ascx.cs">
+      <DependentUpon>Header.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="UC\Header.ascx.designer.cs">
+      <DependentUpon>Header.ascx</DependentUpon>
+    </Compile>
+    <Compile Include="User_Infor.aspx.cs">
+      <DependentUpon>User_Infor.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="User_Infor.aspx.designer.cs">
+      <DependentUpon>User_Infor.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="User_Infor_his.aspx.cs">
+      <DependentUpon>User_Infor_his.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="User_Infor_his.aspx.designer.cs">
+      <DependentUpon>User_Infor_his.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="WebForm2.aspx.cs">
+      <DependentUpon>WebForm2.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="WebForm2.aspx.designer.cs">
+      <DependentUpon>WebForm2.aspx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\BL\BL.DonKK\BL.DonKK.csproj">
+      <Project>{477d1bfb-a02b-493b-89a8-6ead079e19cf}</Project>
+      <Name>BL.DonKK</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\BL\BL.GSTP\BL.GSTP.csproj">
+      <Project>{943ea3b5-b585-4825-b941-676276784073}</Project>
+      <Name>BL.GSTP</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\BL\BL.ThongKe\BL.ThongKe.csproj">
+      <Project>{8b3de891-f14e-4bbf-95db-23932c84f877}</Project>
+      <Name>BL.ThongKe</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\DAL\DAL.DKK\DAL.DKK.csproj">
+      <Project>{0ac9294a-205d-4d70-9248-8c53ccf35e84}</Project>
+      <Name>DAL.DKK</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\DAL\DAL.GSTP\DAL.GSTP.csproj">
+      <Project>{b15c8a53-09c3-4269-a9c5-799fde17aeb5}</Project>
+      <Name>DAL.GSTP</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Module\Module.Common\Module.Common.csproj">
+      <Project>{7982f824-43a1-4f02-af26-30d0d0a79234}</Project>
+      <Name>Module.Common</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="In\rptBienLaiAnPhi.resx">
+      <DependentUpon>rptBienLaiAnPhi.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="In\rptDaNhanHoanTra_DS.resx">
+      <DependentUpon>rptDaNhanHoanTra_DS.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="In\rptDanhSach.resx">
+      <DependentUpon>rptDanhSach.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="In\rptDanhSachDaNop.resx">
+      <DependentUpon>rptDanhSachDaNop.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="In\rptDanhSach_DinhChi.resx">
+      <DependentUpon>rptDanhSach_DinhChi.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="In\rptTatCa_DS.resx">
+      <DependentUpon>rptTatCa_DS.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Properties\licenses.licx" />
+  </ItemGroup>
+  <ItemGroup>
+    <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
+  </ItemGroup>
+  <ItemGroup>
+    <WCFMetadata Include="Connected Services\" />
+  </ItemGroup>
+  <PropertyGroup>
+    <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
+    <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
+  </PropertyGroup>
+  <PropertyGroup>
+    <StartupObject />
+  </PropertyGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <Import Project="$(VSToolsPath)\WebApplications\Microsoft.WebApplication.targets" Condition="'$(VSToolsPath)' != ''" />
+  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v10.0\WebApplications\Microsoft.WebApplication.targets" Condition="false" />
+  <ProjectExtensions>
+    <VisualStudio>
+      <FlavorProperties GUID="{349c5851-65df-11da-9384-00065b846f21}">
+        <WebProjectProperties>
+          <UseIIS>True</UseIIS>
+          <AutoAssignPort>True</AutoAssignPort>
+          <DevelopmentServerPort>41801</DevelopmentServerPort>
+          <DevelopmentServerVPath>/</DevelopmentServerVPath>
+          <IISUrl>http://localhost:9000/</IISUrl>
+          <NTLMAuthentication>False</NTLMAuthentication>
+          <UseCustomServer>False</UseCustomServer>
+          <CustomServerUrl>
+          </CustomServerUrl>
+          <SaveServerSettingsInUserFile>False</SaveServerSettingsInUserFile>
+          <servers defaultServer="">
+            <server name="SelfHostServer" exePath="" cmdArgs="" url="http://localhost:41801/" workingDir="" />
+          </servers>
+        </WebProjectProperties>
+      </FlavorProperties>
+    </VisualStudio>
+  </ProjectExtensions>
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\..\packages\Microsoft.Net.Compilers.1.3.2\build\Microsoft.Net.Compilers.props')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\Microsoft.Net.Compilers.1.3.2\build\Microsoft.Net.Compilers.props'))" />
+    <Error Condition="!Exists('..\..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.1.0.7\build\net45\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.1.0.7\build\net45\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props'))" />
+  </Target>
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

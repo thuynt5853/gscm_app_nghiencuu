@@ -1,0 +1,31 @@
+﻿using System;
+using System.Drawing;
+using System.Collections;
+using System.ComponentModel;
+using DevExpress.XtraReports.UI;
+
+namespace WEB.GSTP.QLAN.GDTTT.In
+{
+    public partial class rptNoiBoVuAnKhangNghi : DevExpress.XtraReports.UI.XtraReport
+    {
+        public rptNoiBoVuAnKhangNghi()
+        {
+            InitializeComponent();
+        }
+
+        private void xrTableCell12_BeforePrint(object sender, System.Drawing.Printing.PrintEventArgs e)
+        {
+            xrTableCell12.Text = xrTableCell12.Text.ToUpper();
+        }
+
+        private void xrTableCell12_BeforePrint_1(object sender, System.Drawing.Printing.PrintEventArgs e)
+        {
+            xrTableCell12.Text = xrTableCell12.Text.ToUpper();
+        }
+
+        private void xrTableCell1_BeforePrint(object sender, System.Drawing.Printing.PrintEventArgs e)
+        {
+            xrTableCell1.Text = xrTableCell1.Text.ToUpper();
+        }
+    }
+}

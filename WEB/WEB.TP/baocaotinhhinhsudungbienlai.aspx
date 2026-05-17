@@ -1,0 +1,384 @@
+﻿<%@ Page Title="" Language="C#" MasterPageFile="~/MasterPages/AN_PHI.Master" AutoEventWireup="true" CodeBehind="baocaotinhhinhsudungbienlai.aspx.cs" Inherits="WEB.TP.baocaotinhhinhsudungbienlai" %>
+
+<%@ Register Assembly="AjaxControlToolkit" Namespace="AjaxControlToolkit" TagPrefix="cc2" %>
+<%@ Register Assembly="DevExpress.Web.v22.2, Version=22.2.3.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a" Namespace="DevExpress.Web" TagPrefix="dx" %>
+
+<asp:Content ID="Content1" ContentPlaceHolderID="head" runat="server">
+</asp:Content>
+<asp:Content ID="Content2" ContentPlaceHolderID="ContentPlaceHolder1" runat="server">
+    <link href="/UI/css/bc/Manager.css" rel="Stylesheet" />
+    <link href="/UI/css/bc/TreeView.css" rel="Stylesheet" />
+    <%-- <link href="/UI/css/bc/bootstrap.css" rel="stylesheet" />--%>
+    <link href="/UI/css/bc/common.css" rel="stylesheet" />
+    <link href="/UI/css/bc/WebResource.css" type="text/css" rel="stylesheet" class="Telerik_stylesheet" />
+    <script src="/UI/js/Common.js"></script>
+    <style type="text/css">
+        .tree_menu, .tree_menu:visited, .tree_menu:link, .tree_menu a:link, .tree_menu a:visited {
+            color: #003317;
+            font-family: Arial,Helvetica,sans-serif;
+            font-size: 13px;
+        }
+
+        .modalBackground {
+            background-color: #000;
+            filter: alpha(opacity=15);
+            opacity: 0.65;
+        }
+
+        .instancse_tips {
+            color: #009900;
+            font-weight: bold;
+        }
+
+        .instancse_seconds {
+            color: #11449e;
+        }
+
+        input[type=checkbox] + label {
+            color: #009900;
+            padding-left: 4px;
+            font-style: italic;
+        }
+
+        input[type=checkbox]:checked + label {
+            color: #f00;
+            font-style: normal;
+        }
+
+        input[type=radio] + label {
+            color: #009900;
+            padding-left: 4px;
+            font-style: italic;
+        }
+
+        input[type=radio]:checked + label {
+            color: #f00;
+            font-style: normal;
+        }
+
+        .Radio_4E_div input[type=radio] + label {
+            color: #3f90c8;
+            /*padding-left: 4px;*/
+            font-style: italic;
+        }
+
+        .treeView_court_contail a {
+            padding: 4px;
+        }
+
+        .courts_btn {
+            float: left;
+            margin-top: 30px;
+            margin-left: 5px;
+        }
+
+        .textbox {
+            padding: 3px;
+        }
+
+        .button {
+            font-size: 12px;
+        }
+
+        .box_nd input {
+            font-size: 12px;
+        }
+    </style>
+    <div class="box">
+        <div class="box_nd">
+            <div style="width: 800px; float: left; margin-left: 200px; height: 500px;">
+                <div style="float: left; width: 800px; margin-top: 7px;">
+                    <div style="float: left; font-weight: bold; width: 130px;">Chọn năm</div>
+                    <div style="float: left; margin-left: 10px;">
+                        <span style="float: left">
+                            
+                            <asp:DropDownList CssClass="chosen-select" ID="ddlNam" runat="server" AutoPostBack="true" Width="120px">
+                            </asp:DropDownList>
+
+                        </span>
+                        <span style="margin-left: 5px; margin-right: 5px; line-height: 22px; float: left;">Chọn quý</span>
+                        <span style="float: left; margin-right: 2px;">
+                            <asp:DropDownList CssClass="chosen-select" ID="DropDownListQuy" runat="server" Width="320" AutoPostBack="true">
+                                <asp:ListItem Value="1" Text="Quý I" Selected="True"></asp:ListItem>
+                                <asp:ListItem Value="2" Text="Quý II"></asp:ListItem>
+                                <asp:ListItem Value="3" Text="Quý III"></asp:ListItem>
+                                <asp:ListItem Value="4" Text="Quý IV"></asp:ListItem>
+                            </asp:DropDownList>
+                            <%--<asp:TextBox ID="txtDenNgay" runat="server" CssClass="textbox"
+                                placeholder="......./....../....." Width="120px" MaxLength="10"></asp:TextBox>
+                            <cc2:CalendarExtender ID="CalendarExtender2" runat="server" TargetControlID="txtDenNgay" Format="dd/MM/yyyy" Enabled="true" />
+                            <cc2:MaskedEditExtender ID="MaskedEditExtender2" runat="server" TargetControlID="txtDenNgay" Mask="99/99/9999" MaskType="Date" CultureName="vi-VN" ErrorTooltipEnabled="true" />--%>
+                        </span>
+                    </div>
+                </div>
+                <div style="float: left; width: 800px; margin-top: 7px;">
+                    <div style="float: left; font-weight: bold; width: 130px;">Phạm vi tìm kiếm</div>
+                    <div style="float: left; margin-left: 10px;">
+                        <asp:DropDownList CssClass="chosen-select" ID="Drop_object" runat="server" Width="320" OnSelectedIndexChanged="Drop_object_SelectedIndexChanged" AutoPostBack="true">
+                            <asp:ListItem Value="TH" Selected="True" Text="Tất cả"></asp:ListItem>
+                            <asp:ListItem Value="T" Text="Cục THADS"></asp:ListItem>
+                            <asp:ListItem Value="H" Text="Chi cục THADS"></asp:ListItem>
+                        </asp:DropDownList>
+                    </div>
+                </div>
+                <div style="float: left; width: 800px; margin-top: 7px;">
+                    <div style="float: left; font-weight: bold; width: 130px;">Hình thức thanh toán</div>
+                    <div style="float: left; margin-left: 10px;">
+                        <asp:DropDownList CssClass="chosen-select" ID="ddl_TRUCTUYEN" runat="server" Width="320px">
+                            <asp:ListItem Value="" Selected="True" Text="Tất cả"></asp:ListItem>
+                            <asp:ListItem Value="0" Text="Trực tiếp"></asp:ListItem>
+                            <asp:ListItem Value="1" Text="Trực tuyến"></asp:ListItem>
+                        </asp:DropDownList>
+                    </div>
+                </div>
+                <div style="float: left; width: 800px; margin-top: 7px;">
+                    <div style="float: left; font-weight: bold; width: 130px;">Chọn đơn vị</div>
+                    <div style="float: left; margin-left: 10px;">
+                        <asp:TextBox ID="txt_courts_show" ReadOnly="true" ForeColor="Red" runat="server" TextMode="MultiLine" Rows="2"
+                            Width="482px" CssClass="textbox"></asp:TextBox>
+                    </div>
+                    <div style="float: left">
+                        <asp:Button ID="cmd_courts_selects" runat="server" Text="Chọn" OnClientClick="javascript:window_Shows_courts()"
+                            CssClass="button courts_btn"
+                            OnClick="cmd_courts_selects_Click" />
+                    </div>
+                </div>
+                <div style="float: left; width: 623px; margin-top: 28px;">
+                    <div style="float: right;">
+                        <asp:Button ID="cmd_reset" runat="server" CssClass="buttoninput" TabIndex="36"
+                            Text="Nhập mới" OnClick="cmd_reset_Click" />
+                    </div>
+                    <div style="float: right; margin-right: 3px;">
+                        <asp:Button ID="cmd_exels" runat="server" CssClass="buttoninput" TabIndex="36"
+                            Text="Báo cáo" OnClick="cmd_Ok_s_Click" />
+                    </div>
+                </div>
+            </div>
+            <asp:Panel ID="P_window_courts" runat="server">
+                <asp:UpdatePanel runat="server" ID="upload_criminal">
+                    <ContentTemplate>
+                        <div style="border: solid 1px #d71128; width: 400px; height: 500px; background-color: White; display: block;"
+                            class="modalPopup_judge" id="id_window_shows_courts">
+                            <div id="id_header_window" class="header_bc" style="cursor: move; width: 400px !important; background-color: #d71128; float: left;">
+                                <div class="header_bc_title" style="float: left; padding-top: 3px; color: #ffffff; padding-left: 5px; font-size: 13px; font-weight: bold;">
+                                    Chọn đơn vị cần báo cáo
+                                </div>
+                                <div class="head_windowList" style="padding-top: 2px;">
+                                    <img id="cmd_close_window_courts" alt="Thoát" src="/UI/img/close_arv.png" onclick="javascript:Hiden_window_courts();" />
+                                </div>
+                            </div>
+                            <div style="clear: both; width: 400px; height: 470px;">
+                                <div style="clear: both; height: 471px; overflow: auto; width: 400px;">
+                                    <div class="treeView_court_contail" style="padding-left: 25px; padding-top: 10px;">
+                                        <asp:HiddenField ID="Hi_value_ID_Court" runat="server" />
+                                        <asp:HiddenField ID="hi_text_courts" runat="server" />
+                                        <asp:HiddenField ID="hi_value_objects" runat="server" />
+                                        <asp:HiddenField ID="Show_Court_Cheks" runat="server" />
+                                        <asp:TreeView ID="TreeView_Courts" runat="server" ShowCheckBoxes="All" ShowLines="true">
+                                            <SelectedNodeStyle Font-Bold="True" />
+                                        </asp:TreeView>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </ContentTemplate>
+                    <Triggers>
+                        <asp:PostBackTrigger ControlID="cmd_exels" />
+                    </Triggers>
+                </asp:UpdatePanel>
+            </asp:Panel>
+        </div>
+    </div>
+    <div runat="server" id="id_show_ss" style="display: none; visibility: hidden;"></div>
+    <cc2:ModalPopupExtender ID="MP_Window_courts" runat="server" Y="65" X="2" TargetControlID="id_show_ss"
+        PopupControlID="P_window_courts" CancelControlID="cmd_close_window_courts" PopupDragHandleControlID="id_header_window_courts"
+        BackgroundCssClass="modalBackground" BehaviorID="mpe_courts">
+    </cc2:ModalPopupExtender>
+    <script type="text/javascript">
+        function Hiden_window_courts() {
+            $find('mpe_courts').hide();
+            document.getElementById('id_window_shows_courts').style.display = 'none';
+            return false;
+        }
+        function window_Shows_courts() {
+            TreeView_OnLoad("<%=TreeView_Courts.ClientID %>", 1);
+        }
+        //window.onload = TreeView_OnLoad;
+        /**
+         * Ham gan su kien cho cac node, duoc goi ngay khi load form xong, gan ham nay vao button goi popup
+         */
+        function TreeView_OnLoad(treeviewId, index) {
+            //console.log("=> TreeView_OnLoad");
+            //Treeview id
+            var tv = document.getElementById(treeviewId);
+            var links = tv.getElementsByTagName("a");
+            //Xac dinh parent node
+            var isParent = false;
+            var divParentId = "";
+            for (var i = 0; i < links.length; i++) {
+                //Xac dinh the +/- (khong add su kien cho the nay)
+                var imgs = links[i].getElementsByTagName("img");
+                if (imgs.length === 0) {
+                    //Xac dinh checkbox
+                    var p = links[i].parentElement;
+                    var ip = p.getElementsByTagName("input");
+                    //Xac dinh ham da gan truoc do
+                    var h = links[i].href;//console.log("h: " + h);
+                    var f = h.substring(0, h.indexOf("("));//console.log("f: " + f);
+                    //Lay value/text cua node duoc chon
+                    var value = h.substring(links[i].href.indexOf(",") + 3, links[i].href.length - 2);
+                    var text = links[i].innerHTML;
+                    //them su kien cho the link va checkbox, chi gan khi treeview bi load lai, thay ham __doPostBack() bang ham treeview_Click()
+                    if (f !== "javascript:treeview_Click") {
+                        links[i].setAttribute("href", "javascript:treeview_Click(\"" + tv.id + "\",\"" + ip[0].id + "\",\"" + links[i].id + "\",\"" + value + "\",\"" + text + "\"," + isParent + ",\"" + divParentId + "\",false," + index + ")");
+                        ip[0].setAttribute("onclick", "treeview_Click(\"" + tv.id + "\",\"" + ip[0].id + "\",\"" + links[i].id + "\",\"" + value + "\",\"" + text + "\"," + isParent + ",\"" + divParentId + "\",true," + index + ")");
+                    }
+                    //reset bien danh dau
+                    isParent = false;
+                    divParentId = "";
+                } else {
+                    isParent = true;
+                    divParentId = links[i].id + "Nodes";
+                }
+            }
+        }
+        /**
+         * Ham xac dinh xem checkbox hay link duoc nhan de goi ham xu ly tiep theo, tra ve chuoi danh sach duoc chon gom hai phan tu [value, text]
+         */
+        function treeview_Click(treeviewID, checkboxId, linkId, nodeValue, nodeText, isParent, divParentId, isCheckbox, index) {
+            //console.log("=> treeview_Click");
+            //console.log("treeviewID: " + treeviewID);
+            //console.log("checkboxId: " + checkboxId);
+            //console.log("linkId: " + linkId);
+            //console.log("nodeValue: " + nodeValue);
+            //console.log("nodeText: " + nodeText);
+            //console.log("isParent: " + isParent);
+            //console.log("isCheckbox: " + isCheckbox);            
+
+            //tu dong chon checkbox neu click link
+            if (!isCheckbox) {
+                var c = document.getElementById(checkboxId);
+                c.checked = !c.checked;
+            }
+            //Chon cay tu dong
+            if (isParent) {
+                treeview_ParentChecked(treeviewID, checkboxId, nodeValue, divParentId);
+            } else {
+                treeview_ChildChecked(treeviewID, checkboxId, nodeValue);
+            }
+            //Xac dinh node selected
+            if (index === 1) {
+                //var r = treeview_GetAllSelected(treeviewID)
+                //console.log("Nodes selected value: " + r[0]);
+                //console.log("Nodes selected text: " + r[1]);
+                TreeView_Courts_AfterCheck(treeviewID);
+            } else if (index === 2) {
+                Ra_Chapters_AfterCheck(treeviewID);
+            } else if (index === 3) {
+                RT_Cases_AfterCheck(treeviewID);
+            } else if (index === 4) {
+                RT_Criminals_AfterCheck(treeviewID);
+            }
+        }
+        /**
+         * Loai bo check node
+         * @param treeviewID
+         */
+        function treeview_Unchecked(treeviewID) {
+            //console.log("=> treeview_Unchecked => treeviewID => " + treeviewID);
+            var tv = document.getElementById(treeviewID);
+            var ips = tv.getElementsByTagName("input");
+            for (var i = 0; i < ips.length; i++) {
+                ips[i].checked = false;
+            }
+        }
+        /**
+         * Ham checked/uncheck toan bo child node khi parent node duoc chon
+         */
+        function treeview_ParentChecked(treeviewID, checkboxId, nodeValue, divParentId) {
+            //console.log("=> treeview_ParentChecked");
+            var tv = document.getElementById(treeviewID);
+            var div = document.getElementById(divParentId);
+            var ips = div.getElementsByTagName("input");
+            var isChecked = document.getElementById(checkboxId).checked;
+            for (var i = 0; i < ips.length; i++) {
+                ips[i].checked = isChecked;
+            }
+        }
+        /**
+         * Ham checked/uncheck parent node khi child node duoc chon
+         */
+        function treeview_ChildChecked(treeviewID, checkboxId, nodeValue) {
+            //console.log("=> treeview_ChildChecked");//nodeValue: 0\\2\\25
+            //Kiem tra toan bo nut con cua nut cha chua nut hien tai
+            //Neu tat ca check/uncheck thi check/uncheck parent node
+            //Tiep tuc de quy voi parent node uncheck
+
+            //-> C1
+            //bat dau tu current node
+            //tim the div bao toan bo nodes chua node hien tai
+            //duyet toan bo node, neu tat ca check/uncheck -> check/uncheck parent node
+            //de quy voi parent node, dung lai khi toi root node
+
+            //-> C2
+            //bat dau duyet tu root node 
+            //goi de quy parent node, khong de quy leaf node
+            //duyet toan bo child node cua node hien tai 
+            //neu toan bo child node duoc check/uncheck -> check/uncheck parent node
+        }
+        /**
+         * Ham lay danh sach gia tri duoc chon tren treewview, tra ve mang [value,text]
+         */
+        function treeview_GetAllSelected(treeviewID) {
+            //console.log("=> treeview_GetAllSelected");
+            var tv = document.getElementById(treeviewID);
+            var links = tv.getElementsByTagName("a");
+            var values = "";
+            var texts = "";
+            for (var i = 0; i < links.length; i++) {
+                //The +/-
+                var imgs = links[i].getElementsByTagName("img");
+                if (imgs.length === 0) {
+                    //Xac dinh checkbox
+                    var p = links[i].parentElement;
+                    var ip = p.getElementsByTagName("input");
+                    //Lay value/text cua node duoc chon
+                    var value_tmp = links[i].href.split(",")[3].replace(/"/g, "").split("\\");
+                    var value = value_tmp[value_tmp.length - 1];
+                    var text = links[i].innerHTML;
+                    if (ip[0].checked) {
+                        values = values + value + ",";
+                        texts = texts + text + ",";
+                    }
+                }
+            }
+            return [values, texts];
+        }
+
+        function TreeView_Courts_AfterCheck(treeviewID) {
+            console.log("=> TreeView_Courts_AfterCheck");
+            document.getElementById('<%= Hi_value_ID_Court.ClientID %>').value = "";
+            document.getElementById('<%= hi_text_courts.ClientID %>').value = "";
+            document.getElementById('<%= txt_courts_show.ClientID %>').value = "";
+            document.getElementById('<%= Show_Court_Cheks.ClientID %>').value = "";
+            var r = treeview_GetAllSelected(treeviewID);
+            var valueshowid = r[0];
+            var valueshotext = r[1];
+            //console.log("valueshowid: " + valueshowid);
+            //console.log("valueshotext: " + valueshotext);
+            document.getElementById('<%= Hi_value_ID_Court.ClientID %>').value = valueshowid.substring(0, valueshowid.length - 1);
+            document.getElementById('<%= txt_courts_show.ClientID %>').value = valueshotext.substring(0, valueshotext.length - 1);
+            document.getElementById('<%= hi_text_courts.ClientID %>').value = valueshotext.substring(0, valueshotext.length - 1);
+            document.getElementById('<%= Show_Court_Cheks.ClientID %>').value = document.getElementById('<%= txt_courts_show.ClientID %>').value;
+            //in tat ca gia tri
+            console.log("Hi_value_ID_Court: " + document.getElementById('<%= Hi_value_ID_Court.ClientID %>').value);
+
+        }
+    </script>
+    <script type="text/javascript">          
+        function pageLoad(sender, args) {
+            var config = { '.chosen-select': {}, '.chosen-select-deselect': { allow_single_deselect: true }, '.chosen-select-no-single': { disable_search_threshold: 10 }, '.chosen-select-no-results': { no_results_text: 'Oops, nothing found!' }, '.chosen-select-rtl': { rtl: true }, '.chosen-select-width': { width: '95%' } }
+            for (var selector in config) { $(selector).chosen(config[selector]); }
+        }
+    </script>
+</asp:Content>

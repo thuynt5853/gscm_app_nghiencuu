@@ -1,0 +1,109 @@
+﻿CREATE OR REPLACE PACKAGE GSCM.PKG_THA_GS AS
+    PROCEDURE THA_NHANUYTHAC_GETALL (
+        CURRTOAANID     IN NUMBER,
+        CURRTRANGTHAI   IN NUMBER,
+        V_TENBIAN       IN NVARCHAR2,
+        V_TENVUAN       IN NVARCHAR2,
+        V_NGAYUYTHAC    IN NVARCHAR2,
+        V_TOAANUYTHACID IN NUMBER,
+        V_SOQD          IN NVARCHAR2,
+        V_NGAYQD        IN NVARCHAR2,
+        V_NGAYQDFROM    IN NVARCHAR2,
+        V_NGAYQDTO      IN NVARCHAR2,
+        PAGE_INDEX      IN INT,
+        PAGE_SIZE       IN INT,
+        CURRETURN       OUT SYS_REFCURSOR
+    );
+PROCEDURE        THA_UYTHACDETAIL_GETINFO 
+(  
+  V_VUANID in number
+  ,curReturn    OUT   sys_refcursor	 
+) ;
+
+PROCEDURE THA_BIAN_GETANNGOAIHT (
+        TOA_AN_ID   IN NUMBER
+      , MA_BI_AN    IN NVARCHAR2
+      , TEN_BI_AN   IN NVARCHAR2
+      , MA_VU_AN    IN NVARCHAR2
+      , TEN_VU_AN   IN NVARCHAR2
+      , SO_BAN_AN   IN VARCHAR2
+      , NGAY_BAN_AN IN DATE
+      , P_TRANGTHAI   IN NUMBER
+      , TRANGTHAIGQ IN NUMBER
+      , V_SOCMND    IN NVARCHAR2
+      , V_TUNGAY    IN NVARCHAR2
+      , V_DENNGAY   IN NVARCHAR2
+      , PAGEINDEX   IN NUMBER
+      , PAGESIZE    IN NUMBER
+      , CURRETURN   OUT SYS_REFCURSOR
+    );
+
+PROCEDURE        THA_UYTHAC_QD_GETALL
+(
+  Curr_BiAnID in number
+  ,curReturn    OUT   sys_refcursor	 
+); 
+PROCEDURE        DM_LYDOUYTHAC_SEARCH
+(
+  SoLuong in number,
+	TextKey IN VARCHAR2,
+  	CurReturn OUT sys_refcursor 
+  );
+
+ PROCEDURE THA_BIAN_GETANHSTRONGHT_PAGING(
+        TOA_AN_ID   IN NUMBER,
+        MA_BI_AN    IN NVARCHAR2,
+        TEN_BI_AN   IN NVARCHAR2,
+        MA_VU_AN    IN NVARCHAR2,
+        TEN_VU_AN   IN NVARCHAR2,
+        SO_BAN_AN   IN VARCHAR2,
+        NGAY_BAN_AN IN DATE,
+        P_TRANGTHAI   IN NUMBER,
+        TRANGTHAIGQ IN NUMBER,
+        V_SOCMND    IN NVARCHAR2,
+        V_TUNGAY    IN NVARCHAR2,
+        V_DENNGAY   IN NVARCHAR2,
+        PAGEINDEX   IN NUMBER,
+        PAGESIZE    IN NUMBER,
+        CURRETURN   OUT SYS_REFCURSOR
+    );
+PROCEDURE THA_GET_MATHULY_TUSINH (
+    curReturn OUT SYS_REFCURSOR
+);
+PROCEDURE THA_GET_MABIAN_TUSINH (
+    curReturn OUT SYS_REFCURSOR
+);
+PROCEDURE THA_UYTHAC_DETAIL_GETALL 
+(
+  CurrBiAnID in number,	curReturn OUT sys_refcursor 
+);
+
+PROCEDURE CHECK_EXIST_PHATTIEN (
+    v_VUANID   IN  NUMBER,
+    v_BIANID   IN  NUMBER,
+    v_RESULT   OUT NUMBER   -- 1 = tồn tại, 0 = không tồn tại
+);
+-- vnpt - Lưu Quang Huy - lấy ds án phạt của bị án khi THA - 22/09/2025 14:25
+PROCEDURE GET_THA_BIAN_QUYETDINH_ANPHAT (
+        p_bian_id IN NUMBER,
+        p_vuan_id IN NUMBER,
+        CURRETURN  OUT SYS_REFCURSOR
+    );
+PROCEDURE THA_PT_BANAN_BICAO_GETBYVUANID
+(
+     vu_an_id in NUMBER,
+     bi_an_id IN NUMBER
+	 , curReturn    OUT   sys_refcursor
+);
+PROCEDURE THA_GETCHITIET_BANGIAO
+(
+     v_VUVIECID in NUMBER,
+     v_TOAANNHANID IN NUMBER,
+     v_VUVIECLOAI IN VARCHAR, 
+     curReturn    OUT   sys_refcursor
+);
+
+
+
+
+END PKG_THA_GS;

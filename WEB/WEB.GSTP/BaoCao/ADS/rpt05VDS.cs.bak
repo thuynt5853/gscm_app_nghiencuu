@@ -1,0 +1,39 @@
+﻿using System;
+using System.Drawing;
+using System.Collections;
+using System.ComponentModel;
+using DevExpress.XtraReports.UI;
+
+namespace WEB.GSTP.BaoCao.ADS
+{
+    public partial class rpt05VDS : DevExpress.XtraReports.UI.XtraReport
+    {
+        public rpt05VDS()
+        {
+            InitializeComponent();
+        }
+
+        private void xrTableCell19_BeforePrint(object sender, System.Drawing.Printing.PrintEventArgs e)
+        {
+            xrTableCell19.Text = xrTableCell19.Text.ToUpper();
+        }
+        private void xrLabel6_BeforePrint(object sender, System.Drawing.Printing.PrintEventArgs e)
+        {
+            //xrLabel6.Text = xrLabel6.Text.Replace(GetCurrentColumnValue("TENGIOITINH").ToString(), GetCurrentColumnValue("TENGIOITINH").ToString().ToLower());
+        }
+        private void PageFooter_BeforePrint(object sender, System.Drawing.Printing.PrintEventArgs e)
+        {
+            e.Cancel = PrintingSystem.PageCount % 2 == 1; //> 0;
+        }
+        private void PageHeader_BeforePrint(object sender, System.Drawing.Printing.PrintEventArgs e)
+        {
+            e.Cancel = PrintingSystem.PageCount % 2 == 1 ; //> 0;
+        }
+        private void DeleteEnterTentoaan_BeforePrint(object sender, System.Drawing.Printing.PrintEventArgs e)
+        {
+            xrLabel5.Text = xrLabel5.Text.Replace("TAND", "Tòa án nhân dân");
+            xrLabel5.Text = xrLabel5.Text.Replace("THADS", "thi hành án dân sự");
+            xrLabel5.Text = xrLabel5.Text.Replace("\n", ",");
+        }
+    }
+}

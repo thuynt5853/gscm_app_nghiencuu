@@ -1,0 +1,42 @@
+--------------------------------------------------------
+--  DDL for Package PKG_STPT_GS
+--------------------------------------------------------
+
+  CREATE OR REPLACE EDITIONABLE PACKAGE "GSCM"."PKG_STPT_GS" AS
+    PROCEDURE QLA_ST_PT_STL_GETMAXTT (
+        VLOAIAN     IN VARCHAR2,
+        V_THANHNIEN IN NUMBER,
+        VDONVIID    IN NUMBER,
+        VFROMDATE   IN DATE,
+        VTODATE     IN DATE,
+        CURRETURN   OUT SYS_REFCURSOR
+    );
+
+    PROCEDURE QLA_ST_PT_CHECKSOTHONGBAOTHULY (
+        VLOAIAN     IN VARCHAR2,
+        VDONVIID    IN NUMBER,
+        VFROMDATE   IN DATE,
+        VTODATE     IN DATE,
+        VSOTHONGBAO IN NVARCHAR2,
+        CURRETURN   OUT SYS_REFCURSOR
+    );
+
+    PROCEDURE QLA_ST_PT_STBTL_GETMAXTT (
+        VLOAIAN   IN VARCHAR2,
+        VDONVIID  IN NUMBER,
+        VFROMDATE IN DATE,
+        VTODATE   IN DATE,
+        CURRETURN OUT SYS_REFCURSOR
+    );
+
+    PROCEDURE QLA_ST_PT_CHECKSOTHULY (
+        VLOAIAN     IN VARCHAR2,
+        V_THANHNIEN IN NUMBER,
+        VDONVIID    IN NUMBER,
+        VFROMDATE   IN DATE,
+        VTODATE     IN DATE,
+        VSOTHULY    IN NVARCHAR2,
+        CURRETURN   OUT SYS_REFCURSOR
+    );
+
+END PKG_STPT_GS;

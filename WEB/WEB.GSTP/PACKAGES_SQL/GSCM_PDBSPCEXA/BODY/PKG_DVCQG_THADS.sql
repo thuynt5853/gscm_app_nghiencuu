@@ -1,0 +1,31 @@
+--------------------------------------------------------
+--  DDL for Package Body PKG_DVCQG_THADS
+--------------------------------------------------------
+
+  CREATE OR REPLACE NONEDITIONABLE PACKAGE BODY "GSCM"."PKG_DVCQG_THADS" AS
+PROCEDURE SEARCH_SEND_MAIL 
+(
+  CurReturn OUT sys_refcursor
+)
+AS
+BEGIN
+     OPEN CurReturn FOR
+      SELECT --THA.EMAIL
+      'csdl.chicuc@moj.gov.vn' EMAIL,to_char(to_date(TT.NGAYTHONGBAO,'dd/MM/yyyy'),'dd/MM/yyyy') NGAYTB
+      ,TT.* FROM DVCQG_THANH_TOAN TT
+        LEFT JOIN DM_DONVITHIHANHAN THA ON THA.ID=TT.DONVITHA_ID
+        WHERE TT.TRANGTHAITHANHTOAN=1 AND TT.NGAYGUIMAIL_THADS IS NULL;
+        --AND TT.ID=115;
+       --FETCH FIRST 1 ROWS ONLY;
+END SEARCH_SEND_MAIL;
+PROCEDURE UPDATE_DATE_SENDMAIL
+(
+   V_ID IN VARCHAR2
+)
+AS
+  BEGIN 
+    UPDATE DVCQG_THANH_TOAN 
+               SET NGAYGUIMAIL_THADS=SYSDATE
+               WHERE ID=V_ID;
+  END UPDATE_DATE_SENDMAIL;
+END PKG_DVCQG_THADS;

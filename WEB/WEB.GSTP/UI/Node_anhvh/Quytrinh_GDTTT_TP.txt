@@ -1,0 +1,135 @@
+- Lấy form nhận đơn của các vụ cho thẩm phán
+- Chuyển đơn từ hành chính tư pháp cho -> thẩm phán->thẩm phán chuyển cho các vụ
+- Thẩm phán có quyển gửi đơn, trả lại đơn, trả lời đơn....; lấy những vụ án đã phân công thẩm phán tìm kiếm theo công văn, sửa lại chức năng chuyển đơn chỉnh lại luồng,
+-->không chuyển cho các vụ nữa mà giờ chuyển cho thẩm phán
+- Sửa các biểu mẫu liên quan đến chuyển nhận
+- cột trạng thái hiển thị đơn đang ở thẩm phán hay ở các vụ 
+
+  --thụ lý mới đi thẩm phán ISTHULY
+  --đơn đã thụ lý đi vụ
+  --1:Thụ lý mới;2:Đã thụ lý;3:TLM trùng;4:TLM đã phân công;5:TLM chưa phân công
+  -- 
+
+select * from gdttt_don where id=268402;
+select count(*) from gdttt_don;-- where id=268402;
+select * from gdttt_don_chuyen where donid=268402;-- TRANGTHAI = 2 đã nhận; TRANGTHAI=1 đã chuyển
+select * from dm_toaan;
+select * from dm_canbo;
+select * from dm_phongban;
+select ID,toaanid,tenphongban,madongbo,madongbo_pb,capchaid from dm_phongban;
+select * from dm_canbo where phongbanid=102 and hieuluc=1;--Hội đồng Thẩm phán TANDTC
+SELECT * FROM dm_canbo WHERE toaanid=1 AND chucdanhid=486 AND hieuluc=1;
+
+
+Người gửi: Hồng Văn Dễ
+Địa chỉ: số 72, âpps Thạnh Quới, xã Thạnh Đông, huyện Tân Châu, tỉnh Tây Ninh
+Ngày trên đơn : 18/09/2023   Ngày nhận: 24/10/2023
+Mã đơn: 090198941  Số hiệu:   Hình thức: Đơn + Công văn (Vụ Giám đốc, kiểm tra II chuyển đến theo CV/PC số 82/CV-GĐKTII ngày 20/10/2023) 
+
+Số BA/QĐ: 571/2023/DSPT Ngày: 21/08/2023  Tòa án nhân dân cấp cao tại thành phố Hồ Chí Minh
+BA:01/2023/DSST ngày: 04/01/2023 Tòa án nhân dân tỉnh Tây Ninh
+Chưa chuyển: Vụ Giám đốc kiểm tra II (Số 1093 - 17/11/2023)
+Ghi chú: 
+
+test thử user Đào Minh Thủy
+
+
+1. Nhận đơn và TL vụ án
+GDT_GQ
+QLAN/GDTTT/Giaiquyet/Danhsach.aspx
+
+CD_TA_DONVIID=3  bang gdttt_don
+PHONGBANNHANID=   bang gdttt_don_chuyen
+DM_PHONGBAN -> phai set ISGIAIQUYETDON=1
+
+A123456a@
+
+select * from gdttt_don where id=266871;
+
+select count(*) from gdttt_don;-- where id=268402;
+select * from gdttt_don_chuyen where donid=266871;-- TRANGTHAI = 2 đã nhận; TRANGTHAI=1 đã chuyển
+select * from dm_toaan;
+select * from dm_canbo;
+select * from dm_phongban;
+select ID,toaanid,tenphongban,madongbo,madongbo_pb,capchaid from dm_phongban;
+
+select * from dm_canbo where phongbanid=102 and hieuluc=1;--Hội đồng Thẩm phán TANDTC
+
+SELECT * FROM dm_canbo WHERE toaanid=1 AND chucdanhid=486 AND hieuluc=1;
+
+
+select * from QT_NGUOISUDUNG where username ='thuydtm.tatc';
+
+SELECT  PHONGBANID  v_phongban FROM QT_NGUOISUDUNG where upper(USERNAME)=upper('thuydtm.tatc');
+
+
+Số BA/QĐ: 112233 Ngày: 21/02/2024  Tòa án nhân dân tỉnh Hà Giang
+Chưa chuyển: Vụ Giám đốc kiểm tra II (Số 2266 - 21/02/2024)
+
+-------------------------------------------------------------------
+
+select * from dm_phongban WHERE ID=1;
+
+select count(*) from gdttt_don;-- where id=268402;
+
+select THAMPHANID from gdttt_don where id=268547;
+
+select DISTINCT THAMPHANID from gdttt_don;
+
+select CD_TRANGTHAI from gdttt_don where id=268547;
+select CD_SOCV,CD_TRANGTHAI from gdttt_don where  id=268547;
+--CD_TRANGTHAI IS 'TRANG THAI CHUYEN(0,null Chưa chuyển,1 Đã chuyển,2 Đã nhận,3 Bị trả lại)';
+--CD_TRANGTHAI (0,null Chưa chuyển,1 Đã chuyển,2 Đã nhận,3 Bị trả lại)';
+--update gdttt_don
+--set CD_TRANGTHAI=0
+--where id=268549;
+--commit;
+
+
+SELECT * FROM DM_CANBO WHERE UPPER(hoten) LIKE 'ĐÀO THỊ MINH THỦY';--12563
+
+--khi demo phai nhan vao nut phan cong de dư lieu inser o hai bang 
+GDTTT_PCTP_CHITIET;GDTTT_PCTP_KETQUA
+
+--update gdttt_don
+--SET THAMPHANID=12563 --tham phan: Đào Thị Minh Thủy
+--WHERE ID=268563;
+--COMMIT;
+
+d.CD_SOTOTRINH = reStr(txtBC_SoCV.Text);
+d.CD_NGAYTOTRINH = dNgayCV == DateTime.MinValue ? (DateTime?)null : dNgayCV;
+
+SELECT * FROM  GDTTT_PCTP_KETQUA;
+
+select * from dm_canbo where id=5060;
+
+
+select * from gdttt_don_chuyen where donid=268547;
+select * from dm_phongban where toaanid=1;
+--102 Hội đồng Thẩm phán TANDTC
+
+
+
+COMMENT ON COLUMN gdttt_don.CD_TA_TRANGTHAI
+   IS '1 Don chua du dieu kien,0 Don du dieu kien,2 truong hop tu chua du dk thanh du dk thu ly';
+
+-- COMMENT ON COLUMN gdttt_don.CD_TA_TRANGTHAI IS '';
+
+-------------------ngày mai 20/03/2024 sẽ làm tiếp------------------------
+đổi tên:thêm đơn và bổ sung tài liệu,
+bỏ link: bỏ thêm nhiều đơn trùng
+Số đơn >1 thì mới view
+---
+--sẽ turn chuyển thành join
+,(SELECT COUNT(*) FROM GDTTT_DON cv WHERE
+                  (cv.ID = d.ID or cv.ARR_DON_ID=d.ID Or ( ID in ( select ID from GDTTT_DON where (ARR_DON_ID=d.ARR_DON_ID Or ID=d.ARR_DON_ID) And d.ARR_DON_ID>0)))
+                  and  1=case when vNgayNhapTu is null then 1 when vNgayNhapTu <= cv.NGAYTAO then 1 else 0 end
+                  and 1=case when vNguoiNhap || ' '=' ' then 1 when  lower(vNguoiNhap) like ('%,' || lower(cv.nguoitao)|| ',%') then 1 else 0 end
+         ) TONG_SODON  
+--chuyển thành chỉ lấy 1 id mới nhất
+        ,(SELECT LISTAGG(TO_CHAR(cv.ID), ',')WITHIN GROUP (ORDER BY cv.NGAYTAO desc) FROM GDTTT_DON cv WHERE
+                  (cv.ID = d.ID or cv.ARR_DON_ID=d.ID Or ( ID in ( select ID from GDTTT_DON where (ARR_DON_ID=d.ARR_DON_ID Or ID=d.ARR_DON_ID) And d.ARR_DON_ID>0)))
+                  and  1=case when vNgayNhapTu is null then 1 when vNgayNhapTu <= cv.NGAYTAO then 1 else 0 end
+                  and 1=case when vNguoiNhap || ' '=' ' then 1 when  lower(vNguoiNhap) like ('%,' || lower(cv.nguoitao)|| ',%') then 1 else 0 end
+         )ARR_DON_IDS
+		 

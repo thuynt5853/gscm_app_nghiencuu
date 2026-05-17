@@ -1,0 +1,8 @@
+﻿select tt.TOAANID,tt.emp_id from (
+select CB.TOAANID,MAX(CB.ID) OVER (PARTITION BY CB.TOAANID ORDER BY CB.ID DESC ) AS emp_id  
+    from dm_canbo cb 
+    )tt
+     WHERE tt.TOAANID IN(29,27)
+    group by tt.TOAANID,tt.emp_id;
+--co the ung dung lay 1 tham phan moi nhat trong danh sach phan cong nhieu tham phan cua mot vu an
+--emp_id ma can bo moi nhat

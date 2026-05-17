@@ -1,0 +1,86 @@
+﻿<%@ Master Language="C#" AutoEventWireup="true" CodeBehind="User.master.cs" Inherits="WEB.DONKHOIKIEN.MasterPages.User" %>
+
+<%@ Register Src="~/UserControl/Footer.ascx" TagPrefix="uc1" TagName="Footer" %>
+<%@ Register Src="~/UserControl/Header.ascx" TagPrefix="uc1" TagName="Header" %>
+<%@ Register Src="~/Personnal/UC/DKNhanVB.ascx" TagPrefix="uc1" TagName="DKNhanVB" %>
+<%@ Register Src="~/UserControl/TraCuu_Gray.ascx" TagPrefix="uc1" TagName="TraCuu_Gray" %>
+<%@ Register Src="~/UserControl/HuongDan.ascx" TagPrefix="uc1" TagName="HuongDan" %>
+<%@ Register Src="~/UserControl/MenuDon.ascx" TagPrefix="uc1" TagName="MenuDon" %>
+
+<!DOCTYPE html>
+<html>
+<head runat="server">
+    <title>ĐƠN KHỞI KIỆN</title>
+    <link href="/UI/css/style.css" rel="stylesheet" />
+    <link href="/UI/css/Table.css" rel="stylesheet" />
+    <link href="/UI/css/Paging.css" rel="stylesheet" />
+    <link href="/UI/img/spcLogo.png" type="image/png" rel="shortcut icon" />
+    <link href="/UI/css/chosen.css" rel="stylesheet" />
+
+
+    <link href="/UI/css/jquery-ui.css" rel="stylesheet" />
+    <script src="/UI/js/jquery-3.3.1.js"></script>
+    <script src="/UI/js/jquery-ui.min.js"></script>
+    <script src="/UI/js/Common.js"></script>
+    <script src="/UI/js/vgcaplugin.js"></script>
+    <script src="/UI/js/base64.js"></script>
+    
+    <asp:ContentPlaceHolder ID="head" runat="server"></asp:ContentPlaceHolder>
+</head>
+<body>
+    <form id="form2" runat="server">
+        <asp:ScriptManager ID="ScriptManager1" runat="server"></asp:ScriptManager>
+        <uc1:Header runat="server" ID="Header1" />
+        <div class="content_body">
+            <uc1:TraCuu_Gray runat="server" ID="TraCuu_Gray" />
+            <div class="content_center">
+                <div class="content_form">
+                    <div class="hosoleft">
+                        <uc1:MenuDon runat="server" ID="MenuDon" />
+                        <uc1:HuongDan runat="server" ID="HuongDan" />
+                        <%-- <uc1:DKNhanVB runat="server" ID="DKNhanVB" />--%>
+                    </div>
+                    <div class="hosoright">
+                        <div class="guidonkien">
+
+                            <asp:Literal ID="ltt" runat="server"></asp:Literal>
+                            <!--------------------------->
+                            <asp:UpdatePanel ID="UpdatePanel1" runat="server">
+                                <ContentTemplate>
+                                    <asp:ContentPlaceHolder ID="ContentPlaceHolder1" runat="server">
+                                    </asp:ContentPlaceHolder>
+                                </ContentTemplate>
+                            </asp:UpdatePanel>
+                            <asp:UpdateProgress ID="UpdateProgress1" runat="server" AssociatedUpdatePanelID="UpdatePanel1">
+                                <ProgressTemplate>
+                                    <div class="processmodal">
+                                        <div class="processcenter">
+                                            <img src="/UI/img/process.gif" />
+                                        </div>
+                                    </div>
+                                </ProgressTemplate>
+                            </asp:UpdateProgress>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <uc1:Footer runat="server" ID="Footer1" />
+        <script>     
+
+            function PopupCenter(pageURL, title, w, h) {
+                var left = (screen.width / 2) - (w / 2);
+                var top = (screen.height / 2) - (h / 2);
+                var targetWin = window.open(pageURL, title, 'toolbar=yes,scrollbars=yes,resizable=yes,width=' + w + ', height=' + h + ', top=' + top + ', left=' + left);
+                return targetWin;
+            }
+        </script>
+        
+    </form>
+
+</body>
+<script src="/UI/js/chosen.jquery.js"></script>
+<script src="/UI/js/init.js"></script>
+<script src="/UI/js/jquery.enhsplitter.js"></script>
+
+</html>

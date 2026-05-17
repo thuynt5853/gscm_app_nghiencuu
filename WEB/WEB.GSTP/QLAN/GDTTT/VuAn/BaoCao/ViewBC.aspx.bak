@@ -1,0 +1,22 @@
+﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="ViewBC.aspx.cs" Inherits="WEB.GSTP.QLAN.GDTTT.VuAn.BaoCao.ViewBC" %>
+
+<!DOCTYPE html>
+<%@ Register Assembly="DevExpress.XtraReports.v18.2.Web.WebForms, Version=18.2.6.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a" Namespace="DevExpress.XtraReports.Web" TagPrefix="dx" %>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head runat="server">
+    <title>In báo cáo</title>
+</head>
+<body>
+    <form id="form1" runat="server">
+        <div>
+            <dx:ASPxWebDocumentViewer ID="reportcontrol" runat="server">
+                <ClientSideEvents Init="function(s, e) {
+                                                    s.previewModel.reportPreview.zoom(0.8);
+                                                    }" />
+            </dx:ASPxWebDocumentViewer>
+        </div>
+        <script></script>
+    </form>
+</body>
+</html>

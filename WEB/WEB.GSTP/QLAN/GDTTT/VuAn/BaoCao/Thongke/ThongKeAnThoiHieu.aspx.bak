@@ -1,0 +1,116 @@
+﻿<%@ Page Title="" Language="C#" MasterPageFile="~/MasterPages/GSTP.Master" AutoEventWireup="true" CodeBehind="ThongKeAnThoiHieu.aspx.cs" Inherits="WEB.GSTP.QLAN.GDTTT.VuAn.BaoCao.Thongke.ThongKeAnThoiHieu" %>
+
+<%@ Register Assembly="DevExpress.XtraReports.v18.2.Web.WebForms, Version=18.2.6.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a" Namespace="DevExpress.XtraReports.Web" TagPrefix="dx" %>
+<%@ Register Assembly="AjaxControlToolkit" Namespace="AjaxControlToolkit" TagPrefix="cc1" %>
+<asp:Content ID="Content1" ContentPlaceHolderID="head" runat="server">
+</asp:Content>
+<asp:Content ID="Content2" ContentPlaceHolderID="ContentPlaceHolder1" runat="server">
+    <script src="../../../../UI/js/Common.js"></script>
+      <asp:HiddenField ID="hddLoaiTK" runat="server" value=""/>
+    <div style="padding: 15px;">
+        <table class="table1">
+            <tr>
+                <td>Loại án</td>
+                <td>
+                    <asp:DropDownList ID="ddlLoaiAn" CssClass="chosen-select"
+                         AutoPostBack="true" OnSelectedIndexChanged="ddlLoaiAn_SelectedIndexChanged"
+                        runat="server" Width="250px">
+                    </asp:DropDownList></td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td style="width: 55px;">Đến ngày</td>
+                <td style="width: 265px;">
+                    <asp:TextBox ID="txtNgay_Tu" runat="server" CssClass="user" Width="242px" MaxLength="10"></asp:TextBox>
+                    <cc1:CalendarExtender ID="CalendarExtender1" runat="server" TargetControlID="txtNgay_Tu" Format="dd/MM/yyyy" Enabled="true" />
+                    <cc1:MaskedEditExtender ID="MaskedEditExtender1" runat="server" TargetControlID="txtNgay_Tu" Mask="99/99/9999" MaskType="Date" CultureName="vi-VN" ErrorTooltipEnabled="true" />
+                </td>
+                <td style="width: 55px;">Thời hiệu giải quyết</td>
+                <td>
+                    <asp:DropDownList ID="ddlThoiHieu" CssClass="chosen-select" 
+                         AutoPostBack="true" OnSelectedIndexChanged="ddlThoiHieu_SelectedIndexChanged"
+                        runat="server" Width="250px">
+                         <asp:ListItem Value="0" Text="----Tất cả------"></asp:ListItem>
+                        <asp:ListItem Value="1" Text="< 1 tháng"></asp:ListItem>
+                        <asp:ListItem Value="2" Text="< 2 tháng"></asp:ListItem>
+                        <asp:ListItem Value="3" Text="< 3 tháng"></asp:ListItem>
+                        <asp:ListItem Value="4" Text="< 4 tháng"></asp:ListItem>
+                        <asp:ListItem Value="5" Text="< 5 tháng"></asp:ListItem>
+                        <asp:ListItem Value="6" Text="< 6 tháng"></asp:ListItem>
+                        <asp:ListItem Value="9" Text="< 9 tháng"></asp:ListItem>
+                        <asp:ListItem Value="12" Text="< 12 tháng"></asp:ListItem>
+                    </asp:DropDownList>
+                </td>
+            </tr>
+            <tr>
+                <td style="width: 100px;">Lãnh đạo</td>
+                <td style="width: 265px;">
+
+                    <asp:DropDownList ID="ddlPhoVuTruong" CssClass="chosen-select"
+                        AutoPostBack="true" OnSelectedIndexChanged="ddlPhoVuTruong_SelectedIndexChanged"
+                        runat="server" Width="250px"></asp:DropDownList>
+                </td>
+                <td style="width: 80px;">Thẩm tra viên</td>
+                <td>
+                    <asp:DropDownList ID="ddlThamtravien" CssClass="chosen-select"
+                         AutoPostBack="true" OnSelectedIndexChanged="ddlThamtravien_SelectedIndexChanged"
+                        runat="server" Width="250px"></asp:DropDownList>
+                </td>
+            </tr>
+            <tr>
+                <td>Thẩm phán</td>
+                <td>
+                    <asp:DropDownList ID="ddlThamphan" CssClass="chosen-select"
+                         AutoPostBack="true" OnSelectedIndexChanged="ddlThamphan_SelectedIndexChanged"
+                        runat="server" Width="250px"></asp:DropDownList>
+                </td>
+                <td>Tình trạng giải quyết</td>
+                <td>
+                    <asp:DropDownList ID="ddlKetquaThuLy" CssClass="chosen-select"
+                         AutoPostBack="true" OnSelectedIndexChanged="ddlKetquaThuLy_SelectedIndexChanged"
+                        runat="server" Width="250px">
+                        <asp:ListItem Value="3" Text="--Tất cả--"></asp:ListItem>
+                        <asp:ListItem Value="4" Text="Chưa có kết quả" Selected="True"></asp:ListItem>
+                        <asp:ListItem Value="5" Text="Đã có kết quả"></asp:ListItem>
+                        <asp:ListItem Value="0" Text="...Trả lời đơn"></asp:ListItem>
+                        <asp:ListItem Value="1" Text="...Kháng nghị"></asp:ListItem>
+                        <asp:ListItem Value="2" Text="...Xếp đơn"></asp:ListItem>
+                        <asp:ListItem Value="8" Text="...VKS đang nghiên cứu"></asp:ListItem>
+                        <asp:ListItem Value="6" Text="...Giải quyết khác"></asp:ListItem>
+                    </asp:DropDownList>
+                </td>
+            </tr>
+            <tr>
+                <td class="DonGDTCol1">Tiêu đề báo cáo</td>
+                <td colspan="3">
+                    <asp:TextBox ID="txtTieuDeBC" runat="server"
+                        CssClass="user" Width="601px" MaxLength="250" Text="Danh sách các vụ án"></asp:TextBox></td>
+            </tr>
+            <tr>
+                <td></td>
+                <td colspan="3">
+                    <asp:Button ID="btnXemBC" runat="server" CssClass="buttoninput" Text="Xem báo cáo" OnClick="btnXemBC_Click" />
+                </td>
+            </tr>
+            <tr>
+                <td colspan="4" style="padding-top: 10px; font-weight: bold; font-size: 13pt;">
+                    <asp:Literal ID="lttMsg" runat="server"></asp:Literal>
+                    <%--<asp:Label ID="lblmsg" runat="server" style="color: red; float: left; padding-top: 10px;"></asp:Label>--%>
+                </td>
+            </tr>
+        </table>
+    </div>
+    <dx:ASPxWebDocumentViewer ID="rptView" runat="server">
+        <ClientSideEvents Init="function(s, e) {
+                                                    s.previewModel.reportPreview.zoom(0.80);
+                                                    }" />
+    </dx:ASPxWebDocumentViewer>
+   
+    <script type="text/javascript">
+        function pageLoad(sender, args) {
+            var config = { '.chosen-select': {}, '.chosen-select-deselect': { allow_single_deselect: true }, '.chosen-select-no-single': { disable_search_threshold: 10 }, '.chosen-select-no-results': { no_results_text: 'Oops, nothing found!' }, '.chosen-select-rtl': { rtl: true }, '.chosen-select-width': { width: '95%' } }
+            for (var selector in config) { $(selector).chosen(config[selector]); }
+        }
+    </script>
+</asp:Content>

@@ -1,0 +1,40 @@
+﻿using System;
+using System.Drawing;
+using System.Collections;
+using System.ComponentModel;
+using DevExpress.XtraReports.UI;
+
+namespace WEB.GSTP.BaoCao.ADS
+{
+    public partial class rpt17DS : DevExpress.XtraReports.UI.XtraReport
+    {
+        public rpt17DS()
+        {
+            InitializeComponent();
+        }
+
+        private void SubBand_An7_8_BeforePrint(object sender, System.Drawing.Printing.PrintEventArgs e)
+        {
+            if (Parameters["prmKhoanBoSung"].Value + "" == "2")//Khoản 2 Điều 111 của Bộ luật tố tụng dân sự
+            {
+                SubBand_An7_8.Visible = false;
+            }
+            else
+            {
+                SubBand_An7_8.Visible = true;
+            }
+        }
+
+        private void SubBand5_An11_BeforePrint(object sender, System.Drawing.Printing.PrintEventArgs e)
+        {
+            if (Parameters["prmKhoanBoSung"].Value + "" == "2")//Khoản 2 Điều 111 của Bộ luật tố tụng dân sự
+            {
+                SubBand5_An11.Visible = false;
+            }
+            else
+            {
+                SubBand5_An11.Visible = true;
+            }
+        }
+    }
+}

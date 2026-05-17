@@ -1,0 +1,124 @@
+﻿<%@ Master Language="C#" AutoEventWireup="true" CodeBehind="GSTP.master.cs" Inherits="WEB.GSTP.MasterPages.GSTP" %>
+
+<%@ Register Src="~/UserControl/MenuLeft.ascx" TagPrefix="uc1" TagName="MenuLeft" %>
+<%@ Register Src="~/UserControl/Footer.ascx" TagPrefix="uc1" TagName="Footer" %>
+<%@ Register Src="~/UserControl/Header.ascx" TagPrefix="uc1" TagName="Header" %>
+<%@ Register Src="~/UserControl/DieuHuong.ascx" TagPrefix="uc1" TagName="DieuHuong" %>
+<%@ Register Assembly="DevExpress.Web.v22.2, Version=22.2.3.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a" Namespace="DevExpress.Web" TagPrefix="dx" %>
+
+<!DOCTYPE html>
+<html>
+<head runat="server">
+    <title>HỆ THỐNG GIÁM SÁT THẨM PHÁN</title>
+    <link href="/UI/css/style.css" rel="stylesheet" />
+    <link href="/UI/img/spcLogo.png" type="image/png" rel="shortcut icon" />
+    <link href="/UI/css/chosen.css" rel="stylesheet" />
+
+    <link href="/UI/css/jquery.enhsplitter.css" rel="stylesheet" />
+    <link href="/UI/css/jquery-ui.css" rel="stylesheet" />
+    <script src="/UI/js/jquery-3.3.1.js"></script>
+    <script src="/UI/js/jquery-ui.min.js"></script>
+
+    <asp:ContentPlaceHolder ID="head" runat="server"></asp:ContentPlaceHolder>
+    <meta name="robots" content="noindex, nofollow" />
+</head>
+<body>
+    <style>
+        .splitter_panel > div {
+            padding: 0 0px;
+        }
+    </style>
+    <form id="form1" runat="server" enctype="multipart/form-data">
+        <div style="width: 100%;">
+            <asp:ScriptManager ID="ScriptManager1" AsyncPostBackTimeout="3600" runat="server" EnablePageMethods="true"></asp:ScriptManager>
+            <uc1:Header runat="server" ID="Header1" />
+            <div class="home_index" style="margin-bottom: 35px;">
+                <dx:ASPxSplitter runat="server" ID="dvSpliter" Styles-Pane-Border-BorderColor="#dcdcdc" Styles-Pane-Paddings-Padding="0px" ResizingMode="Live">
+                    <Panes>
+                        <dx:SplitterPane AutoHeight="True" Size="250px">
+                            <ContentCollection>
+                                <dx:SplitterContentControl ID="SplitterContentControl1" runat="server"
+                                    SupportsDisabledAttribute="True">
+                                    <div id="pnLeft">
+                                        <asp:UpdatePanel ID="UpdatePanel2" runat="server" OnUnload="UpdatePanel2_Unload">
+                                            <ContentTemplate>
+                                                <uc1:MenuLeft runat="server" ID="menu_vertical"></uc1:MenuLeft>
+                                            </ContentTemplate>
+                                        </asp:UpdatePanel>
+                                    </div>
+                                </dx:SplitterContentControl>
+                            </ContentCollection>
+                        </dx:SplitterPane>
+                        <dx:SplitterPane AutoHeight="True" AutoWidth="true">
+                            <ContentCollection>
+                                <dx:SplitterContentControl ID="SplitterContentControl2" runat="server"
+                                    SupportsDisabledAttribute="True">
+                                    <div id="pnRight">
+                                        <uc1:DieuHuong runat="server" ID="DieuHuong1"></uc1:DieuHuong>
+
+                                        <asp:UpdatePanel ID="UpdatePanel1" runat="server" OnUnload="UpdatePanel1_Unload">
+                                            <ContentTemplate>
+                                                <asp:ContentPlaceHolder ID="ContentPlaceHolder1" runat="server">
+                                                </asp:ContentPlaceHolder>
+                                            </ContentTemplate>
+                                        </asp:UpdatePanel>
+
+                                        <asp:UpdateProgress ID="UpdateProgress1" runat="server" AssociatedUpdatePanelID="UpdatePanel1">
+                                            <ProgressTemplate>
+                                                <div class="processmodal">
+                                                    <div class="processcenter">
+                                                        <img src="/UI/img/process.gif" />
+                                                    </div>
+                                                </div>
+                                            </ProgressTemplate>
+                                        </asp:UpdateProgress>
+
+                                    </div>
+                                </dx:SplitterContentControl>
+                            </ContentCollection>
+                        </dx:SplitterPane>
+                    </Panes>
+                </dx:ASPxSplitter>
+            </div>
+            <uc1:Footer runat="server" ID="Footer1" />
+        </div>
+
+    </form>
+</body>
+<script src="/UI/js/chosen.jquery.js"></script>
+<script src="/UI/js/init.js"></script>
+<%--  <script src="/UI/js/jquery.enhsplitter.js"></script>--%>
+
+<script>      
+    function PopupCenter(pageURL, title, w, h) {
+        var left = (screen.width / 2) - (w / 2);
+        var top = (screen.height / 2) - (h / 2);
+        var targetWin = window.open(pageURL, title, 'toolbar=yes,scrollbars=yes,resizable=yes,width=' + w + ', height=' + h + ', top=' + top + ', left=' + left);
+        return targetWin;
+    }
+</script>
+<script type="text/javascript" language="javascript">
+
+    Sys.WebForms.PageRequestManager.getInstance().add_beginRequest(BeginRequestHandler);
+    function BeginRequestHandler(sender, args) { var oControl = args.get_postBackElement(); oControl.disabled = true; }
+
+</script>
+    <script>
+        window.onload = function (e) {
+            var check_menuleft = $('#Header1_lbtTrangchu').hasClass('menubuttonActive');
+            var Header1_lk_HDSD = $('#Header1_lk_HDSD').hasClass('menubuttonActive');
+            
+            if (check_menuleft == true) {
+                $("#dvSpliter_0").attr("style", "display: none;");
+            }
+            else {
+                if (Header1_lk_HDSD == true) {
+                    $("#dvSpliter_0").attr("style", "display: none;");
+                }
+                else {
+                    $("#dvSpliter_0").attr("style", "display: block;");
+                }
+            }
+        };
+</script>
+</html>

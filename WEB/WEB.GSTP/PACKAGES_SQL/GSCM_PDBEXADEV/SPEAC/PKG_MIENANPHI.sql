@@ -1,0 +1,41 @@
+--------------------------------------------------------
+--  DDL for Package PKG_MIENANPHI
+--------------------------------------------------------
+
+  CREATE OR REPLACE EDITIONABLE PACKAGE "GSCM"."PKG_MIENANPHI" 
+AS
+
+	PROCEDURE UPSERT_MIENANPHI(
+		N_ID  			IN NUMBER,
+		N_ANPHI_ID 		IN NUMBER,
+		N_DONID 		IN NUMBER,
+		N_LOAIAN 		IN NUMBER,
+		V_LYDO 			IN VARCHAR2,
+		V_NGUOITAO 		IN NVARCHAR2,
+		D_NGAYTAO 		IN DATE,
+		V_NGUOISUA 		IN NVARCHAR2, 
+		D_NGAYSUA 		IN DATE,
+		N_SOTHONGBAO 	IN NVARCHAR2,
+		D_NGAYTHONGBAO 	IN DATE,
+		V_STB_PHU 		IN VARCHAR2,
+		OUT_ID OUT NUMBER
+	) ;
+
+	PROCEDURE GET_DON_MIENANPHI_BY_ID(
+		N_ID IN NUMBER,
+		curReturn OUT sys_refcursor
+	);
+
+	PROCEDURE GET_DON_MIENANPHI_BY_ANPHI_ID(
+		N_ANPHI_ID IN NUMBER,
+		N_LOAIAN IN NUMBER,
+		curReturn OUT sys_refcursor
+	);
+
+	PROCEDURE DELETE_MIENANPHI_BY_ID (
+		N_ID IN NUMBER
+	);
+-- Package header
+END PKG_MIENANPHI;
+
+/

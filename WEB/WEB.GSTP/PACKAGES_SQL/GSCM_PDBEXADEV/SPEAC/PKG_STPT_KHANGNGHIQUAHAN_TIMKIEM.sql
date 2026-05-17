@@ -1,0 +1,48 @@
+--------------------------------------------------------
+--  DDL for Package PKG_STPT_KHANGNGHIQUAHAN_TIMKIEM
+--------------------------------------------------------
+
+  CREATE OR REPLACE EDITIONABLE PACKAGE "GSCM"."PKG_STPT_KHANGNGHIQUAHAN_TIMKIEM" 
+AS
+  PROCEDURE XLHC_PT_KNQUAHAN(
+    VLOAIAN         IN NUMBER,
+    VDONVIID        IN NUMBER,
+    VMAVUVIEC       IN VARCHAR2, 
+    VTENVUVIEC      IN VARCHAR2,
+    VSOBAQD         IN VARCHAR2,
+    VNGAYBAQD       IN VARCHAR2,
+
+    VNGUOIKN        IN VARCHAR2,
+    VKCTUNGAY       IN VARCHAR2,
+    VKCDENNGAY      IN VARCHAR2,
+
+    VSOTL           IN VARCHAR2,
+    VTLTUNGAY       IN VARCHAR2,
+    VTLDENNGAY      IN VARCHAR2,
+
+    VTRANGTHAI      IN NUMBER,
+    VTUNGAY         IN VARCHAR2,
+    VDENNGAY        IN VARCHAR2,
+
+    VTHAMPHANIDID   IN NUMBER,
+    VTHUKYID        IN NUMBER,
+
+    VCHECKEDLIST    IN VARCHAR2,
+    VPAGEINDEX      IN INT,
+    VPAGESIZE       IN INT,
+    CURRETURN  		OUT SYS_REFCURSOR
+  );
+
+ PROCEDURE  ADS_PT_KCQUAHAN_PRINT
+(
+    VTHULY_KCQH_ID          IN NUMBER,
+    VLOAIAN                 IN NUMBER,
+    VDONID                  IN NUMBER,
+    VTOAANID                IN NUMBER,
+    VKHANGCAOID             IN NUMBER,
+    CURRETURN       OUT SYS_REFCURSOR
+);
+-- Package header
+END PKG_STPT_KHANGNGHIQUAHAN_TIMKIEM;
+
+/

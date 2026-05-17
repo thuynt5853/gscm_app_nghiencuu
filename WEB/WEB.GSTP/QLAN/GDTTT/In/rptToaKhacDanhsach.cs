@@ -1,0 +1,21 @@
+﻿using System;
+using System.Drawing;
+using System.Collections;
+using System.ComponentModel;
+using DevExpress.XtraReports.UI;
+
+namespace WEB.GSTP.QLAN.GDTTT.In
+{
+    public partial class rptToaKhacDanhsach : DevExpress.XtraReports.UI.XtraReport
+    {
+        public rptToaKhacDanhsach()
+        {
+            InitializeComponent();
+        }
+
+        private void xrTableCell68_BeforePrint(object sender, CancelEventArgs e)
+        {
+            xrTableCell68.Text = System.Web.HttpUtility.HtmlDecode(xrTableCell68.Text);
+        }
+    }
+}

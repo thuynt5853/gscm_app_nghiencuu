@@ -1,0 +1,14 @@
+--------------------------------------------------------
+--  DDL for Package PKG_TUPHAP_ANPHI_GET
+--------------------------------------------------------
+
+  CREATE OR REPLACE NONEDITIONABLE PACKAGE "GSCM"."PKG_TUPHAP_ANPHI_GET" AS 
+FUNCTION GET_SOLUONG
+(
+   V_USERNAME IN VARCHAR2 DEFAULT NULL,
+   V_DONVITHA_ID  IN VARCHAR2 DEFAULT NULL
+)
+RETURN SYS_REFCURSOR;
+END PKG_TUPHAP_ANPHI_GET;
+
+/

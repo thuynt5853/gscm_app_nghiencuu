@@ -1,0 +1,82 @@
+--------------------------------------------------------
+--  DDL for Package PKG_STPT_SEARCH_ALL
+--------------------------------------------------------
+
+  CREATE OR REPLACE EDITIONABLE PACKAGE "GSCM"."PKG_STPT_SEARCH_ALL" AS
+
+FUNCTION NHAPLIEU_HS_DS_EXT_ALL_V2_TOICAO
+(
+    vDonViID  IN number,
+    v_TINHTRANG_THULY IN VARCHAR2,
+    v_TINHTRANG_GIAIQUYET IN VARCHAR2,
+    V_TUNGAY IN VARCHAR2,
+    V_DENNGAY IN VARCHAR2,
+    v_TOAANID in VARCHAR2
+)RETURN  SYS_REFCURSOR;
+
+FUNCTION NHAPLIEU_HS_DS_EXT_ALL_V2
+(
+    vDonViID  IN number,
+    v_TINHTRANG_THULY IN VARCHAR2,
+    v_TINHTRANG_GIAIQUYET IN VARCHAR2,
+    V_TUNGAY IN VARCHAR2,
+    V_DENNGAY IN VARCHAR2,
+    v_TOAANID in VARCHAR2
+)RETURN  SYS_REFCURSOR;
+
+PROCEDURE HS_DS_AN_DATHULY
+(
+    V_CAP_XET_XU_LOGIN      IN VARCHAR2,
+    V_TEN_VU_AN             IN VARCHAR2, 
+    V_TOIDANH               IN VARCHAR2, 
+    V_MA_VU_AN              IN VARCHAR2, 
+    V_BI_CAN                IN VARCHAR2,
+    V_CAPXX                 IN VARCHAR2,
+    V_TOAAN_ID              IN VARCHAR2, 
+    V_TINHTRANG_THULY       IN VARCHAR2,
+    V_NGAYTHULY_TU          IN VARCHAR2,
+    V_NGAYTHULY_DEN         IN VARCHAR2,
+    V_SOTHULY               IN VARCHAR2,
+    V_TINHTRANG_GIAIQUYET   IN VARCHAR2,
+    V_TUNGAY                IN VARCHAR2,
+    V_DENNGAY               IN VARCHAR2,
+    V_KETQUA                IN VARCHAR2,
+    V_SO_QD                 IN VARCHAR2,
+    V_NGAY_QD               IN VARCHAR2,
+    V_THAMPHAN_ID           IN VARCHAR2,  
+    V_VAITRO_THAMPHAN       IN VARCHAR2,
+    V_THUKY_ID              IN VARCHAR2, 
+    V_THOIHAN_GQ            IN VARCHAR2, 
+    V_QD_TAMGIAM            IN VARCHAR2,
+    V_UTTP                  IN VARCHAR2,
+    V_LOAIAN_ID             IN VARCHAR2,
+    PAGE_INDEX              IN INT,
+    PAGE_SIZE	            IN INT,
+    CURRETURN               OUT SYS_REFCURSOR
+);
+
+
+FUNCTION NHAPLIEU_HS_DS_EXT_ALL
+(
+    vDonViID  IN number,
+    v_TINHTRANG_THULY IN VARCHAR2,
+    v_TINHTRANG_GIAIQUYET IN VARCHAR2,
+    V_TUNGAY IN VARCHAR2,
+    V_DENNGAY IN VARCHAR2,
+    v_TOAANID in VARCHAR2
+)RETURN SYS_REFCURSOR;
+
+FUNCTION HS_DS_AN_CHUYENVKS
+(
+    V_DON_ID  IN varchar2,
+    V_DONVIID IN NUMBER
+)RETURN SYS_REFCURSOR;
+PROCEDURE HS_DS_GIAO_HOSO_VKS
+(
+    V_DON_ID  IN varchar2,
+    curReturn OUT sys_refcursor
+);
+
+END PKG_STPT_SEARCH_ALL;
+
+/

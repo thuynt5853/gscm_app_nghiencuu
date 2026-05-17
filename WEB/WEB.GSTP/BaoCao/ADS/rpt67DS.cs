@@ -1,0 +1,37 @@
+﻿using System;
+using System.Drawing;
+using System.Collections;
+using System.ComponentModel;
+using DevExpress.XtraReports.UI;
+
+namespace WEB.GSTP.BaoCao.ADS
+{
+    public partial class rpt67DS : DevExpress.XtraReports.UI.XtraReport
+    {
+        public rpt67DS()
+        {
+            InitializeComponent();
+        }
+
+        private void xrLabel4_BeforePrint(object sender, CancelEventArgs e)
+        {
+            xrLabel4.Text = xrLabel4.Text.ToUpper();
+        }
+
+        private void DetailReport4_BeforePrint(object sender, CancelEventArgs e)
+        {
+            System.Data.DataRowView r = (System.Data.DataRowView)DetailReport4.GetCurrentRow();
+
+            if (r == null || r.DataView.Count == 0)
+            {
+                xrTable8.Visible = false;
+                xrTable9.Visible = false;
+            }
+        }
+
+        private void xrTableCell4_BeforePrint(object sender, CancelEventArgs e)
+        {
+            xrTableCell4.Text = xrTableCell4.Text.ToUpper();
+        }
+    }
+}
