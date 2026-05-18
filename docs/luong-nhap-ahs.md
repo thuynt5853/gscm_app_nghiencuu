@@ -259,3 +259,42 @@ AHS_XULY_VIPHAMHC
 ```
 
 Tong so sheet hien tai: 29.
+
+## 8. Dot ra soat bo sung Phuc tham va khang cao qua han ngay 18/05/2026
+
+Da bo sung mapping cho cac URL:
+
+```text
+/QLAN/AHS/PhucTham/ThuLy.aspx
+/QLAN/AHS/Thamphan/GiaiquyetPhuctham.aspx
+/QLAN/AHS/PhucTham/BiCao.aspx
+/QLAN/AHS/PhucTham/NguoiThamgiaTT.aspx
+/QLAN/AHS/PhucTham/NguoiTienhanhTT.aspx
+/QLAN/AHS/PhucTham/Quyetdinhbicanbicao.aspx
+/QLAN/AHS/PhucTham/RutKCKN_Sotham.aspx
+/QLAN/AHS/PhucTham/Quyetdinhvuan.aspx
+/QLAN/AHS/PhucTham/BanAn/BanAn.aspx
+/QLAN/KHANGCAOQUAHAN/Capnhatkhangcaoquahan_AHS.aspx
+```
+
+Da bo sung cac sheet/bang chinh:
+
+```text
+AHS_PHUCTHAM_THULY
+AHS_PHUCTHAM_BICANBICAO
+AHS_PHUCTHAM_HDXX
+AHS_PHUCTHAM_QUYETDINH_BICAN
+AHS_SOTHAM_RUTKHANGCAO
+AHS_SOTHAM_RUTKHANGNGHI
+AHS_PHUCTHAM_QUYETDINH_VUAN
+AHS_PHUCTHAM_BANAN
+AHS_PHUCTHAM_BANAN_BICAO
+AHS_PHUCTHAM_BANAN_DIEU_CT
+KHANGCAOQUAHAN_THULY
+KHANGCAOQUAHAN_HDXX
+KHANGCAOQUAHAN_QUYETDINH
+```
+
+Ngoai ra, cac sheet da co nhu `AHS_VUAN`, `AHS_FILE`, `AHS_THAMPHANGIAIQUYET`, `AHS_NGUOITHAMGIATOTUNG`, `AHS_NGUOITHAMGIATOTUNG_TUCACH`, `AHS_NGUOI_DAIDIEN`, `AHS_SOTHAM_KHANGCAO` cung duoc bo sung them dong mapping phat sinh tu cac man hinh moi.
+
+Tong so sheet hien tai: 42.
