@@ -317,7 +317,6 @@ Hai file moi van giu quy uoc moi sheet la mot bang DB, nhung da bo cac cot:
 
 ```text
 Screen
-Label
 Control
 Source/Logic
 ```
@@ -326,6 +325,7 @@ Hai file moi chi giu cac cot:
 
 ```text
 URL
+Label
 Column
 Notes
 Is Lookup
