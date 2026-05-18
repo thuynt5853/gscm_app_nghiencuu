@@ -298,3 +298,40 @@ KHANGCAOQUAHAN_QUYETDINH
 Ngoai ra, cac sheet da co nhu `AHS_VUAN`, `AHS_FILE`, `AHS_THAMPHANGIAIQUYET`, `AHS_NGUOITHAMGIATOTUNG`, `AHS_NGUOITHAMGIATOTUNG_TUCACH`, `AHS_NGUOI_DAIDIEN`, `AHS_SOTHAM_KHANGCAO` cung duoc bo sung them dong mapping phat sinh tu cac man hinh moi.
 
 Tong so sheet hien tai: 42.
+
+## 9. Tach workbook theo giai doan
+
+Da tao them 2 file Excel rieng theo giai doan:
+
+```text
+docs/cau-truc-du-lieu-ahs-so-tham.xlsx
+docs/cau-truc-du-lieu-ahs-phuc-tham.xlsx
+```
+
+Tieu chi tach:
+
+- Phuc tham: URL co `/PhucTham/` hoac `GiaiquyetPhuctham`.
+- So tham/lien quan so tham: URL co `/SoTham/`, `/Hoso/`, `/TaoHS/`, `/KHANGCAOQUAHAN/` hoac `GiaiquyetSotham`.
+
+Hai file moi van giu quy uoc moi sheet la mot bang DB, nhung da bo cac cot:
+
+```text
+Screen
+Label
+Control
+Source/Logic
+```
+
+Hai file moi chi giu cac cot:
+
+```text
+URL
+Column
+Notes
+Is Lookup
+Lookup Name/Group
+Lookup Source
+Hardcoded/Filter Values
+```
+
+Header trong 2 file moi khong to mau xanh.
