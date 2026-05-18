@@ -219,3 +219,43 @@ Quy uoc:
 - Cot `Lookup Name/Group` ghi ten nhom danh muc, enum, hoac bang nguon.
 - Cot `Lookup Source` ghi bang/procedure/code dung de load danh muc.
 - Cot `Hardcoded/Filter Values` ghi cac ma hardcode hoac dieu kien loc danh muc.
+
+## 7. Dot ra soat bo sung ngay 18/05/2026
+
+Da bo sung mapping cho cac URL:
+
+```text
+/QLAN/AHS/Hoso/Thongtinan.aspx
+/QLAN/AHS/Hoso/DSBiCao.aspx
+/QLAN/AHS/Hoso/BienPhapNganChan.aspx
+/QLAN/AHS/Hoso/NguoiThamGiaToTung.aspx
+/QLAN/AHS/SoTham/ThuLy.aspx
+/QLAN/AHS/Thamphan/GiaiquyetSotham.aspx
+/QLAN/AHS/SoTham/NguoiTienhanhTT.aspx
+/QLAN/AHS/SoTham/Quyetdinhbicanbicao.aspx
+/QLAN/AHS/SoTham/Quyetdinhvuan.aspx
+/QLAN/AHS/SoTham/BanAnST/BanAnSoTham.aspx
+/QLAN/AHS/SoTham/TrungCauGD.aspx
+/QLAN/AHS/SoTham/XulyVPHC.aspx
+/QLAN/AHS/SoTham/KhangCaoKhangNghi.aspx
+/QLAN/AHS/TaoHS/TaoHosoKC.asp
+```
+
+Luu y: trong source code chi co `TaoHosoKC.aspx`, khong co file `.asp`; dong mapping trong Excel ghi chu URL `.asp` la legacy/rewrite va map ve `.aspx`.
+
+Sau dot bo sung nay, file Excel co cac sheet moi/chinh:
+
+```text
+AHS_FILE
+AHS_NGUOI_DAIDIEN
+STPT_QUANLY_SOTHULY
+LICHSU_XOA_SOTHULY
+AHS_THAMPHANGIAIQUYET
+AHS_SOTHAM_HDXX
+AHS_SOTHAM_QUYETDINH_BICAN
+BAQD_CONGBO
+AHS_TRUNGCAU_GIAMDINH
+AHS_XULY_VIPHAMHC
+```
+
+Tong so sheet hien tai: 29.
